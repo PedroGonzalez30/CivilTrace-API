@@ -5,6 +5,7 @@
   "type": "module",
   "description": "La conexion API del proyecto CivilTrace",
   "scripts": {
+    "dev": "tsx watch src/servidor.ts",
     "typecheck": "tsc --noEmit",
     "formatear": "prettier --write .",
     "verificar-formato": "prettier --check ."
