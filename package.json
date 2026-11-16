@@ -5,7 +5,9 @@
   "type": "module",
   "description": "La conexion API del proyecto CivilTrace",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "formatear": "prettier --write .",
+    "verificar-formato": "prettier --check ."
   },
   "repository": {
     "type": "git",
@@ -18,6 +20,7 @@
   "devDependencies": {
     "@types/node": "^24.19.2",
     "@types/pg": "^8.23.1",
+    "prettier": "^3.10.1",
     "prisma": "^7.10.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
