@@ -1,0 +1,81 @@
+// Esquema de datos de Civil Trace.
+// Regla: toda tabla de negocio llega a una Empresa (directa o por su obra),
+// para poder filtrar siempre por empresaId.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Rol {
+  DUENO
+  SUPERVISOR
+  TRABAJADOR
+}
+
+model Empresa {
+  id                 String    @id @default(cuid())
+  nombre             String
+  // Se guardan tal cual (no con hash) porque el dueño debe poder consultarlos.
+  codigoTrabajadores String    @unique
+  codigoSupervisores String    @unique
+  creadaEn           DateTime  @default(now())
+  usuarios           Usuario[]
+  obras              Obra[]
+}
+
+model Usuario {
+  id                String          @id @default(cuid())
+  nombre            String
+  // La API lo guarda normalizado (minúsculas y sin espacios).
+  correo            String          @unique
+  contrasenaHash    String
+  rol               Rol
+  empresaId         String
+  empresa           Empresa         @relation(fields: [empresaId], references: [id])
+  obrasSupervisadas Obra[]          @relation("SupervisorDeObra")
+  tokensRefresco    TokenRefresco[]
+  creadoEn          DateTime        @default(now())
+
+  @@index([empresaId])
+}
+
+model Obra {
+  id           String   @id @default(cuid())
+  nombre       String
+  resumen      String
+  descripcion  String
+  direccion    String
+  fechaInicio  DateTime @db.Date
+  fechaFinal   DateTime @db.Date
+  cliente      String?
+  empresaId    String
+  empresa      Empresa  @relation(fields: [empresaId], references: [id])
+  supervisorId String?
+  // Si se borra al supervisor, la obra se conserva sin supervisor.
+  supervisor   Usuario? @relation("SupervisorDeObra", fields: [supervisorId], references: [id], onDelete: SetNull)
+  creadaEn     DateTime @default(now())
+
+  @@index([empresaId])
+  @@index([supervisorId])
+}
+
+model TokenRefresco {
+  id         String    @id @default(cuid())
+  // Solo se guarda el hash; el token real nunca queda en la base.
+  tokenHash  String    @unique
+  // Agrupa los tokens de una misma sesión, para revocarla completa si se detecta reutilización.
+  familiaId  String
+  usuarioId  String
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  venceEn    DateTime
+  revocadoEn DateTime?
+  creadoEn   DateTime  @default(now())
+
+  @@index([usuarioId])
+  @@index([familiaId])
+}
