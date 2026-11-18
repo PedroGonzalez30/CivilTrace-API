@@ -14,8 +14,9 @@
 export class ErrorHttp extends Error {
   readonly statusCode: number;
 
-  constructor(codigoEstado: number, mensaje: string) {
-    super(mensaje);
+  // "causa" guarda el error original para el registro del servidor; el cliente no la recibe.
+  constructor(codigoEstado: number, mensaje: string, causa?: unknown) {
+    super(mensaje, { cause: causa });
     this.name = 'ErrorHttp';
     this.statusCode = codigoEstado;
   }

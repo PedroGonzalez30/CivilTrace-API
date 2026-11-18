@@ -17,6 +17,7 @@ const PUERTO_MINIMO = 1;
 const PUERTO_MAXIMO = 65535;
 // Un secreto corto se puede adivinar por fuerza bruta; por eso se exige una longitud mínima.
 const LONGITUD_MINIMA_SECRETO_JWT = 32;
+const TAMANO_MAXIMO_POR_DEFECTO_MB = 5;
 
 const esquemaEntorno = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -25,6 +26,14 @@ const esquemaEntorno = z.object({
   PORT: z.coerce.number().int().min(PUERTO_MINIMO).max(PUERTO_MAXIMO).default(PUERTO_POR_DEFECTO),
   DATABASE_URL: z.string().min(1),
   JWT_SECRETO: z.string().min(LONGITUD_MINIMA_SECRETO_JWT),
+  // Opcionales: sin ellas la API arranca, pero la subida de imágenes responde 503.
+  AZURE_STORAGE_CUENTA: z.string().min(1).optional(),
+  AZURE_STORAGE_CONTENEDOR: z.string().min(1).optional(),
+  TAMANO_MAX_EVIDENCIA_MB: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(TAMANO_MAXIMO_POR_DEFECTO_MB),
 });
 
 // 4. Función principal
