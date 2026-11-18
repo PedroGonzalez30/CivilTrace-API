@@ -21,6 +21,7 @@ import { rutasAutenticacion } from '@/rutas/rutasAutenticacion';
 import { rutasSalud } from '@/rutas/rutasSalud';
 import { rutasEmpresa } from '@/rutas/rutasEmpresa';
 import { rutasObras } from '@/rutas/rutasObras';
+import { rutasPruebaAlmacenamiento } from '@/rutas/rutasPruebaAlmacenamiento';
 
 // 3. Constantes del módulo
 const LIMITE_TAMANO_PETICION_BYTES = 100 * 1024;
@@ -76,6 +77,8 @@ export async function construirApp() {
   await app.register(rutasAutenticacion, { prefix: '/auth' });
   await app.register(rutasEmpresa, { prefix: '/empresa' });
   await app.register(rutasObras, { prefix: '/obras' });
+  // TEMPORAL: prueba de Blob Storage. Se reemplaza por las rutas de evidencias.
+  await app.register(rutasPruebaAlmacenamiento, { prefix: '/almacenamiento-prueba' });
 
   return app;
 }
