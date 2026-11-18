@@ -23,6 +23,7 @@ const CODIGO_PETICION_INVALIDA = 400;
 const BYTES_POR_MEGABYTE = 1024 * 1024;
 const LIMITE_CUERPO_BYTES = entorno.TAMANO_MAX_EVIDENCIA_MB * BYTES_POR_MEGABYTE;
 const CARPETA_PRUEBA = 'prueba';
+const TIPO_PNG = 'image/png';
 
 // 4. Función principal
 /**
@@ -51,7 +52,8 @@ export async function rutasPruebaAlmacenamiento(app: FastifyInstance): Promise<v
         throw new ErrorHttp(CODIGO_PETICION_INVALIDA, 'Envía una imagen en formato JPEG o PNG');
       }
 
-      const archivo = await guardarImagen(peticion.user.empresaId, CARPETA_PRUEBA, cuerpo);
+      const tipo = peticion.headers['content-type']?.startsWith(TIPO_PNG) ? TIPO_PNG : 'image/jpeg';
+      const archivo = await guardarImagen(peticion.user.empresaId, CARPETA_PRUEBA, cuerpo, tipo);
       return respuesta.status(CODIGO_CREADO).send({ archivo });
     },
   );
