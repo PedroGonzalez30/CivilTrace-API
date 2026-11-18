@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "formatear": "prettier --write .",
     "verificar-formato": "prettier --check .",
-    "start": "tsx src/servidor.ts",
+    "start": "node --import tsx src/servidor.ts",
     "generar": "prisma generate",
     "postinstall": "prisma generate"
   },
