@@ -19,6 +19,8 @@ import { DURACION_TOKEN_ACCESO } from '@/constantes/autenticacion';
 import { entorno } from '@/configuracion/entorno';
 import { rutasAutenticacion } from '@/rutas/rutasAutenticacion';
 import { rutasSalud } from '@/rutas/rutasSalud';
+import { rutasEmpresa } from '@/rutas/rutasEmpresa';
+import { rutasObras } from '@/rutas/rutasObras';
 
 // 3. Constantes del módulo
 const LIMITE_TAMANO_PETICION_BYTES = 100 * 1024;
@@ -72,6 +74,8 @@ export async function construirApp() {
   });
   await app.register(rutasSalud);
   await app.register(rutasAutenticacion, { prefix: '/auth' });
+  await app.register(rutasEmpresa, { prefix: '/empresa' });
+  await app.register(rutasObras, { prefix: '/obras' });
 
   return app;
 }
