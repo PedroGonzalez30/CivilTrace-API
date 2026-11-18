@@ -31,8 +31,6 @@ const CODIGO_PETICION_INVALIDA = 400;
 const CODIGO_FALLO_ALMACENAMIENTO = 502;
 const CODIGO_NO_DISPONIBLE = 503;
 const BYTES_POR_MEGABYTE = 1024 * 1024;
-const FIRMA_JPEG = [0xff, 0xd8, 0xff];
-const FIRMA_PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 const EXTENSION_POR_TIPO: Record<TipoImagen, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -41,21 +39,6 @@ const EXTENSION_POR_TIPO: Record<TipoImagen, string> = {
 let contenedorEnCache: ContainerClient | null = null;
 
 // 4. Funciones privadas
-function empiezaCon(datos: Buffer, firma: number[]): boolean {
-  return firma.every((byte, indice) => datos[indice] === byte);
-}
-
-// Se lee el contenido real del archivo: el tipo que declara el cliente no es de fiar.
-function detectarTipoImagen(datos: Buffer): TipoImagen | null {
-  if (empiezaCon(datos, FIRMA_JPEG)) {
-    return 'image/jpeg';
-  }
-  if (empiezaCon(datos, FIRMA_PNG)) {
-    return 'image/png';
-  }
-  return null;
-}
-
 function obtenerContenedor(): ContainerClient {
   if (contenedorEnCache) {
     return contenedorEnCache;
@@ -76,25 +59,24 @@ function obtenerContenedor(): ContainerClient {
 
 // 5. Funciones públicas
 /**
- * Valida una imagen (tipo real y tamaño) y la sube al contenedor privado.
+ * Valida el tamaño de una imagen y la sube al contenedor privado.
+ * TEMPORAL: no se revisa el contenido real del archivo; se confía en el tipo declarado.
+ * TODO(Equipo): restaurar la validación del tipo real antes del endpoint definitivo.
  *
  * @param empresaId - Id de la empresa; debe salir del token, nunca de la petición.
  * @param carpeta - Subcarpeta dentro de la empresa, por ejemplo "prueba".
  * @param datos - Bytes de la imagen.
- * @returns Nombre del blob, tipo detectado y tamaño.
- * @throws ErrorHttp 400 si no es JPEG o PNG, o si excede el tamaño máximo.
+ * @param tipo - Tipo declarado por el cliente.
+ * @returns Nombre del blob, tipo y tamaño.
+ * @throws ErrorHttp 400 si excede el tamaño máximo.
  * @throws ErrorHttp 502 si Azure rechaza o falla al guardar.
  */
 export async function guardarImagen(
   empresaId: string,
   carpeta: string,
   datos: Buffer,
+  tipo: TipoImagen,
 ): Promise<ArchivoGuardado> {
-  const tipo = detectarTipoImagen(datos);
-  if (!tipo) {
-    throw new ErrorHttp(CODIGO_PETICION_INVALIDA, 'El archivo no es una imagen JPEG o PNG válida');
-  }
-
   const maximoBytes = entorno.TAMANO_MAX_EVIDENCIA_MB * BYTES_POR_MEGABYTE;
   if (datos.length > maximoBytes) {
     throw new ErrorHttp(
