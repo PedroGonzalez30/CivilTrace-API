@@ -12,7 +12,7 @@ import type { FastifyInstance } from 'fastify';
 
 import { Rol } from '@/generated/prisma/enums';
 import { exigirRol, verificarToken } from '@/middleware/autenticacion';
-import { obtenerCodigosEmpresa } from '@/servicios/servicioEmpresa';
+import { obtenerCodigosEmpresa,  obtenerPersonalEmpresa } from '@/servicios/servicioEmpresa';
 
 // 4. Función principal
 /**
@@ -26,6 +26,13 @@ export async function rutasEmpresa(app: FastifyInstance): Promise<void> {
     { preHandler: [verificarToken, exigirRol(Rol.DUENO)] },
     async (peticion) => ({
       codigos: await obtenerCodigosEmpresa(peticion.user.empresaId),
+    }),
+  );
+    app.get(
+    '/personal',
+    { preHandler: [verificarToken, exigirRol(Rol.DUENO)] },
+    async (peticion) => ({
+      personal: await obtenerPersonalEmpresa(peticion.user.empresaId),
     }),
   );
 }

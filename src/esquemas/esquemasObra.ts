@@ -4,7 +4,7 @@
  * @descripcion Esquema Zod de la petición para crear una obra.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 16/11/2026
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 // 1. Importaciones
@@ -13,11 +13,14 @@ import { z } from 'zod';
 // 3. Constantes del módulo
 const LONGITUD_MINIMA_NOMBRE_OBRA = 3;
 const LONGITUD_MAXIMA_NOMBRE_OBRA = 120;
+const LONGITUD_MINIMA_DESCRIPCION = 10;
+const LONGITUD_MAXIMA_DESCRIPCION = 1000;
 const LONGITUD_MAXIMA_CLIENTE = 100;
 const LONGITUD_MAXIMA_CORREO = 254;
 const LONGITUD_MINIMA_DIRECCION = 5;
 const LONGITUD_MAXIMA_DIRECCION = 200;
-const LONGITUD_MAXIMA_SUPERVISOR = 100;
+const LONGITUD_MAXIMA_ID = 64;
+const MAXIMO_TRABAJADORES_POR_OBRA = 500;
 const MENSAJE_DATOS_INVALIDOS = 'Datos inválidos';
 
 export const esquemaCrearObra = z
@@ -30,6 +33,13 @@ export const esquemaCrearObra = z
           error: `Mínimo ${LONGITUD_MINIMA_NOMBRE_OBRA} caracteres en el nombre de la obra`,
         })
         .max(LONGITUD_MAXIMA_NOMBRE_OBRA, { error: 'El nombre de la obra es demasiado largo' }),
+      descripcion: z
+        .string({ error: 'La descripción es requerida' })
+        .trim()
+        .min(LONGITUD_MINIMA_DESCRIPCION, {
+          error: `Mínimo ${LONGITUD_MINIMA_DESCRIPCION} caracteres en la descripción`,
+        })
+        .max(LONGITUD_MAXIMA_DESCRIPCION, { error: 'La descripción es demasiado larga' }),
       cliente: z
         .string({ error: 'El nombre del cliente es requerido' })
         .trim()
@@ -49,11 +59,24 @@ export const esquemaCrearObra = z
       // Las fechas viajan en ISO 8601 (AAAA-MM-DD); la app las muestra como DD/MM/AAAA.
       fechaInicio: z.iso.date({ error: 'Fecha de inicio inválida' }),
       fechaFinal: z.iso.date({ error: 'Fecha de fin inválida' }),
-      supervisor: z
-        .string()
+      // Opcional: una obra puede crearse sin supervisor. El servicio comprueba que sea de la empresa.
+      supervisorId: z
+        .string({ error: 'Supervisor inválido' })
         .trim()
-        .max(LONGITUD_MAXIMA_SUPERVISOR, { error: 'El nombre del supervisor es demasiado largo' })
+        .min(1, { error: 'Supervisor inválido' })
+        .max(LONGITUD_MAXIMA_ID, { error: 'Supervisor inválido' })
         .optional(),
+      trabajadoresIds: z
+        .array(
+          z
+            .string({ error: 'Trabajador inválido' })
+            .trim()
+            .min(1, { error: 'Trabajador inválido' })
+            .max(LONGITUD_MAXIMA_ID, { error: 'Trabajador inválido' }),
+          { error: 'Lista de trabajadores inválida' },
+        )
+        .max(MAXIMO_TRABAJADORES_POR_OBRA, { error: 'Demasiados trabajadores en una obra' })
+        .default([]),
     },
     { error: MENSAJE_DATOS_INVALIDOS },
   )

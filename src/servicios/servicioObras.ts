@@ -45,6 +45,7 @@ interface ObraConSupervisor {
 const CODIGO_PETICION_INVALIDA = 400;
 const LARGO_FECHA_ISO = 10;
 const MAXIMO_COINCIDENCIAS_SUPERVISOR = 2;
+const LONGITUD_MAXIMA_RESUMEN = 100;
 
 // Solo se leen estos campos: así nunca se filtra por error un dato interno.
 const SELECCION_OBRA = {
@@ -101,6 +102,44 @@ async function buscarIdSupervisor(
   return primera.id;
 }
 
+function crearResumen(descripcion: string): string {
+  return descripcion.length > LONGITUD_MAXIMA_RESUMEN
+    ? `${descripcion.slice(0, LONGITUD_MAXIMA_RESUMEN)}…`
+    : descripcion;
+}
+
+async function validarSupervisor(
+  empresaId: string,
+  supervisorId: string | undefined,
+): Promise<string | null> {
+  if (!supervisorId) {
+    return null;
+  }
+  const supervisor = await prisma.usuario.findFirst({
+    where: { id: supervisorId, empresaId, rol: Rol.SUPERVISOR },
+    select: { id: true },
+  });
+  if (!supervisor) {
+    throw new ErrorHttp(CODIGO_PETICION_INVALIDA, 'El supervisor no pertenece a tu empresa');
+  }
+  return supervisor.id;
+}
+
+async function validarTrabajadores(empresaId: string, ids: string[]): Promise<string[]> {
+  const idsUnicos = [...new Set(ids)];
+  if (idsUnicos.length === 0) {
+    return [];
+  }
+  const encontrados = await prisma.usuario.count({
+    where: { id: { in: idsUnicos }, empresaId, rol: Rol.TRABAJADOR },
+  });
+  if (encontrados !== idsUnicos.length) {
+    throw new ErrorHttp(CODIGO_PETICION_INVALIDA, 'Un trabajador no pertenece a tu empresa');
+  }
+  return idsUnicos;
+}
+
+
 // 5. Funciones públicas
 /**
  * Lista las obras de una empresa, de la más reciente a la más antigua.
@@ -126,11 +165,14 @@ export async function listarObras(empresaId: string): Promise<ObraRespuesta[]> {
  * @throws ErrorHttp 400 si el supervisor indicado no existe o es ambiguo.
  */
 export async function crearObra(empresaId: string, datos: DatosCrearObra): Promise<ObraRespuesta> {
-  const supervisorId = await buscarIdSupervisor(empresaId, datos.supervisor);
+  const supervisorId = await validarSupervisor(empresaId, datos.supervisorId);
+  const trabajadoresIds = await validarTrabajadores(empresaId, datos.trabajadoresIds);
 
   const obra = await prisma.obra.create({
     data: {
       nombre: datos.nombre,
+      descripcion: datos.descripcion,
+      resumen: crearResumen(datos.descripcion),
       direccion: datos.direccion,
       cliente: datos.cliente,
       correoCliente: datos.correoCliente,
@@ -139,6 +181,7 @@ export async function crearObra(empresaId: string, datos: DatosCrearObra): Promi
       fechaFinal: new Date(`${datos.fechaFinal}T00:00:00.000Z`),
       empresaId,
       supervisorId,
+      trabajadores: { connect: trabajadoresIds.map((id) => ({ id })) },
     },
     select: SELECCION_OBRA,
   });
