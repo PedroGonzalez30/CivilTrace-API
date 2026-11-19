@@ -21,7 +21,7 @@ const TAMANO_MAXIMO_POR_DEFECTO_MB = 5;
 
 const esquemaEntorno = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  // En Azure y en desarrollo con el teléfono la API debe escuchar en todas las interfaces.
+  // En Azure y en desarrollo con el telefono la API debe escuchar en todas las interfaces.
   HOST: z.string().min(1).default('0.0.0.0'),
   PORT: z.coerce.number().int().min(PUERTO_MINIMO).max(PUERTO_MAXIMO).default(PUERTO_POR_DEFECTO),
   DATABASE_URL: z.string().min(1),
