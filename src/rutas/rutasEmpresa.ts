@@ -12,7 +12,12 @@ import type { FastifyInstance } from 'fastify';
 
 import { Rol } from '@/generated/prisma/enums';
 import { exigirRol, verificarToken } from '@/middleware/autenticacion';
-import { obtenerCodigosEmpresa,  obtenerPersonalEmpresa } from '@/servicios/servicioEmpresa';
+import { obtenerCodigosEmpresa,  obtenerPersonalEmpresa, eliminarPersonalEmpresa, } from '@/servicios/servicioEmpresa';
+import { esquemaIdPersona } from '@/esquemas/esquemasEmpresa';
+import { validar } from '@/utilidades/validar';
+
+// 3. Constantes del módulo
+const CODIGO_SIN_CONTENIDO = 204;
 
 // 4. Función principal
 /**
@@ -34,5 +39,14 @@ export async function rutasEmpresa(app: FastifyInstance): Promise<void> {
     async (peticion) => ({
       personal: await obtenerPersonalEmpresa(peticion.user.empresaId),
     }),
+  );
+  app.delete(
+    '/personal/:idPersona',
+    { preHandler: [verificarToken, exigirRol(Rol.DUENO)] },
+    async (peticion, respuesta) => {
+      const { idPersona } = validar(esquemaIdPersona, peticion.params);
+      await eliminarPersonalEmpresa(peticion.user.empresaId, idPersona);
+      return respuesta.status(CODIGO_SIN_CONTENIDO).send();
+    },
   );
 }

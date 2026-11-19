@@ -79,3 +79,24 @@ export async function obtenerPersonalEmpresa(empresaId: string): Promise<Persona
     trabajadores: usuarios.filter((usuario) => usuario.rol === Rol.TRABAJADOR).map(aPersona),
   };
 }
+
+/**
+ * Elimina a un supervisor o trabajador de la empresa. Filtra por empresaId (que sale del
+ * token) y por rol, así el dueño no puede borrarse a sí mismo ni borrar personal ajeno.
+ * Las obras que supervisaba quedan sin supervisor y sus sesiones se borran (FK de la base).
+ *
+ * @param empresaId - Id de la empresa del usuario autenticado.
+ * @param idPersona - Id de la persona a eliminar.
+ * @throws ErrorHttp 404 si no existe en esa empresa o no es supervisor/trabajador.
+ */
+export async function eliminarPersonalEmpresa(
+  empresaId: string,
+  idPersona: string,
+): Promise<void> {
+  const resultado = await prisma.usuario.deleteMany({
+    where: { id: idPersona, empresaId, rol: { in: [Rol.SUPERVISOR, Rol.TRABAJADOR] } },
+  });
+  if (resultado.count === 0) {
+    throw new ErrorHttp(CODIGO_NO_ENCONTRADO, 'Persona no encontrada');
+  }
+}
