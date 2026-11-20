@@ -26,6 +26,10 @@ model Empresa {
   creadaEn           DateTime  @default(now())
   usuarios           Usuario[]
   obras              Obra[]
+  correo             String?
+  descripcion        String?
+  direccion          String?
+  logoBlob           String?
 }
 
 model Usuario {
