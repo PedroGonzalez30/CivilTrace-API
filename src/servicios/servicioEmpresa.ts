@@ -9,20 +9,85 @@
 
 // 1. Importaciones
 import { prisma } from '@/baseDatos/clientePrisma';
-import { Rol } from '@/generated/prisma/browser';
+import { Rol } from '@/generated/prisma/enums';
 import { ErrorHttp } from '@/utilidades/errores';
+import { generarCodigoAcceso } from '@/utilidades/codigosAcceso';
+import type { DatosActualizarEmpresa } from '@/esquemas/esquemasEmpresa';
+import {
+  eliminarImagen,
+  guardarImagen,
+  obtenerImagen,
+  type TipoImagen,
+} from '@/servicios/servicioAlmacenamiento';
 
 // 2. Tipos e interfaces
 export interface CodigosEmpresa {
   trabajadores: string;
   supervisores: string;
 }
+export type TipoCodigoEmpresa = 'trabajadores' | 'supervisores';
+
+export interface PersonaEmpresa {
+  id: string;
+  nombre: string;
+}
+
+export interface PersonalEmpresa {
+  supervisores: PersonaEmpresa[];
+  trabajadores: PersonaEmpresa[];
+}
+
+export interface DatosEmpresa {
+  nombre: string;
+  correo: string | null;
+  descripcion: string | null;
+  direccion: string | null;
+  tieneLogo: boolean;
+}
+
+interface FilaDatosEmpresa {
+  nombre: string;
+  correo: string | null;
+  descripcion: string | null;
+  direccion: string | null;
+  logoBlob: string | null;
+}
 
 // 3. Constantes del módulo
 const CODIGO_NO_ENCONTRADO = 404;
 const MENSAJE_EMPRESA_NO_ENCONTRADA = 'Empresa no encontrada';
+const CARPETA_LOGOS = 'logos';
+const SELECCION_DATOS = {
+  nombre: true,
+  correo: true,
+  descripcion: true,
+  direccion: true,
+  logoBlob: true,
+} as const;
 
-// 4. Funciones
+// 4. Funciones privadas
+function aDatosEmpresa(fila: FilaDatosEmpresa): DatosEmpresa {
+  return {
+    nombre: fila.nombre,
+    correo: fila.correo,
+    descripcion: fila.descripcion,
+    direccion: fila.direccion,
+    tieneLogo: fila.logoBlob !== null,
+  };
+}
+
+async function buscarFilaEmpresa(empresaId: string): Promise<FilaDatosEmpresa> {
+  const fila = await prisma.empresa.findUnique({
+    where: { id: empresaId },
+    select: SELECCION_DATOS,
+  });
+  if (!fila) {
+    throw new ErrorHttp(CODIGO_NO_ENCONTRADO, MENSAJE_EMPRESA_NO_ENCONTRADA);
+  }
+  return fila;
+}
+
+// 5. Funciones públicas
 /**
  * Devuelve los códigos de acceso de una empresa. El empresaId debe salir del token,
  * nunca de lo que mande el cliente.
@@ -45,14 +110,29 @@ export async function obtenerCodigosEmpresa(empresaId: string): Promise<CodigosE
   };
 }
 
-export interface PersonaEmpresa {
-  id: string;
-  nombre: string;
-}
+/**
+ * Reemplaza uno de los códigos de acceso por uno nuevo. El otro código no cambia.
+ *
+ * @param empresaId - Id de la empresa del usuario autenticado (sale del token).
+ * @param tipo - Código a regenerar.
+ * @returns Los dos códigos ya actualizados.
+ * @throws ErrorHttp 404 si la empresa ya no existe.
+ */
+export async function regenerarCodigoEmpresa(
+  empresaId: string,
+  tipo: TipoCodigoEmpresa,
+): Promise<CodigosEmpresa> {
+  const codigoNuevo = generarCodigoAcceso();
+  const datos =
+    tipo === 'supervisores'
+      ? { codigoSupervisores: codigoNuevo }
+      : { codigoTrabajadores: codigoNuevo };
 
-export interface PersonalEmpresa {
-  supervisores: PersonaEmpresa[];
-  trabajadores: PersonaEmpresa[];
+  const { count } = await prisma.empresa.updateMany({ where: { id: empresaId }, data: datos });
+  if (count === 0) {
+    throw new ErrorHttp(CODIGO_NO_ENCONTRADO, MENSAJE_EMPRESA_NO_ENCONTRADA);
+  }
+  return obtenerCodigosEmpresa(empresaId);
 }
 
 /**
@@ -121,4 +201,78 @@ export async function eliminarPersonalEmpresa(
       data: { revocadoEn: new Date() },
     });
   });
+}
+
+/**
+ * @param empresaId - Id de la empresa del usuario autenticado (sale del token).
+ * @returns Los datos de la empresa.
+ * @throws ErrorHttp 404 si la empresa ya no existe.
+ */
+export async function obtenerDatosEmpresa(empresaId: string): Promise<DatosEmpresa> {
+  return aDatosEmpresa(await buscarFilaEmpresa(empresaId));
+}
+
+/**
+ * Actualiza nombre, correo, descripción y dirección de la empresa.
+ *
+ * @param empresaId - Id de la empresa del usuario autenticado (sale del token).
+ * @param datos - Datos ya validados.
+ * @returns Los datos actualizados.
+ * @throws ErrorHttp 404 si la empresa ya no existe.
+ */
+export async function actualizarDatosEmpresa(
+  empresaId: string,
+  datos: DatosActualizarEmpresa,
+): Promise<DatosEmpresa> {
+  await buscarFilaEmpresa(empresaId);
+  const fila = await prisma.empresa.update({
+    where: { id: empresaId },
+    data: {
+      nombre: datos.nombre,
+      correo: datos.correo,
+      descripcion: datos.descripcion,
+      direccion: datos.direccion,
+    },
+    select: SELECCION_DATOS,
+  });
+  return aDatosEmpresa(fila);
+}
+
+/**
+ * Guarda el logotipo de la empresa y borra el anterior.
+ *
+ * @param empresaId - Id de la empresa (sale del token, nunca de la petición).
+ * @param datos - Bytes de la imagen.
+ * @param tipo - Tipo de la imagen (image/algo).
+ * @throws ErrorHttp 400 si excede el tamaño máximo; 502 si Azure falla.
+ */
+export async function guardarLogoEmpresa(
+  empresaId: string,
+  datos: Buffer,
+  tipo: TipoImagen,
+): Promise<void> {
+  const anterior = (await buscarFilaEmpresa(empresaId)).logoBlob;
+  const archivo = await guardarImagen(empresaId, CARPETA_LOGOS, datos, tipo);
+  await prisma.empresa.update({
+    where: { id: empresaId },
+    data: { logoBlob: archivo.nombreBlob },
+  });
+  if (anterior) {
+    await eliminarImagen(anterior);
+  }
+}
+
+/**
+ * @param empresaId - Id de la empresa del usuario autenticado.
+ * @returns Los bytes y el tipo del logotipo.
+ * @throws ErrorHttp 404 si la empresa no tiene logotipo.
+ */
+export async function obtenerLogoEmpresa(
+  empresaId: string,
+): Promise<{ datos: Buffer; tipo: string }> {
+  const { logoBlob } = await buscarFilaEmpresa(empresaId);
+  if (!logoBlob) {
+    throw new ErrorHttp(CODIGO_NO_ENCONTRADO, 'La empresa no tiene logotipo');
+  }
+  return obtenerImagen(logoBlob);
 }
