@@ -22,6 +22,7 @@ import { rutasSalud } from '@/rutas/rutasSalud';
 import { rutasEmpresa } from '@/rutas/rutasEmpresa';
 import { rutasObras } from '@/rutas/rutasObras';
 import { rutasPruebaAlmacenamiento } from '@/rutas/rutasPruebaAlmacenamiento';
+import { rutasPerfil } from '@/rutas/rutasPerfil';
 
 // 3. Constantes del módulo
 const LIMITE_TAMANO_PETICION_BYTES = 100 * 1024;
@@ -47,7 +48,7 @@ export async function construirApp() {
     // Detrás del proxy de Azure: así el límite de intentos cuenta la IP real de cada persona.
     trustProxy: true,
   });
-  
+
   // El manejador de errores va ANTES de registrar plugins y rutas; si no, no les aplica.
   app.setErrorHandler((error: FastifyError, peticion, respuesta) => {
     const codigoEstado = error.statusCode ?? CODIGO_ERROR_SERVIDOR;
@@ -81,6 +82,6 @@ export async function construirApp() {
   await app.register(rutasObras, { prefix: '/obras' });
   // TEMPORAL: prueba de Blob Storage. Se reemplaza por las rutas de evidencias.
   await app.register(rutasPruebaAlmacenamiento, { prefix: '/almacenamiento-prueba' });
-
+  await app.register(rutasPerfil, { prefix: '/perfil' });
   return app;
 }
