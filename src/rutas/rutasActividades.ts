@@ -1,15 +1,16 @@
 /**
  * @archivo rutasActividades.ts
  * @proyecto Civil Trace
- * @descripcion Rutas de actividades y avances de una obra (listar, consultar detalle, crear,
- *              cambiar estado, subir evidencia fotográfica y descargar foto).
+ * @descripcion Rutas de actividades y avances de una obra (listar, consultar detalle, reporte,
+ *              crear, cambiar estado, subir evidencia fotográfica y descargar foto).
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.0.1
+ * @version 1.1.0
  */
 
 // 1. Importaciones
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 
 import { entorno } from '@/configuracion/entorno';
 import {
@@ -30,6 +31,7 @@ import {
   obtenerFotoAvance,
   registrarAvanceActividad,
 } from '@/servicios/servicioActividades';
+import { obtenerReporteObra } from '@/servicios/servicioReportes';
 import { esTipoImagen } from '@/servicios/servicioAlmacenamiento';
 import { ErrorHttp } from '@/utilidades/errores';
 import { validar } from '@/utilidades/validar';
@@ -41,12 +43,27 @@ const BYTES_POR_MEGABYTE = 1024 * 1024;
 const LIMITE_CUERPO_BYTES = entorno.TAMANO_MAX_EVIDENCIA_MB * BYTES_POR_MEGABYTE;
 const CABECERA_COMENTARIO = 'x-comentario-avance';
 
+const esquemaQueryReporte = z.object({
+  fechaInicio: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  fechaFin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+});
+
 // 4. Función principal
 export async function rutasActividades(app: FastifyInstance): Promise<void> {
   app.addContentTypeParser(
     /^image\/.+$/,
     { parseAs: 'buffer', bodyLimit: LIMITE_CUERPO_BYTES },
     (_peticion, cuerpo, terminar) => terminar(null, cuerpo),
+  );
+
+  app.get(
+    '/:idObra/reporte',
+    { preHandler: [verificarToken] },
+    async (peticion) => {
+      const { idObra } = validar(esquemaParametrosObra, peticion.params);
+      const { fechaInicio, fechaFin } = validar(esquemaQueryReporte, peticion.query);
+      return await obtenerReporteObra(peticion.user.empresaId, idObra, fechaInicio, fechaFin);
+    },
   );
 
   app.get(
