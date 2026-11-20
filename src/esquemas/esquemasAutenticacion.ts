@@ -88,6 +88,29 @@ export const esquemaUnirseEmpresa = esquemaLogin.extend({
     .max(LONGITUD_MAXIMA_EMPRESA, { error: 'Código de empresa inválido' }),
 });
 
+export const esquemaCambiarContrasena = z
+  .object(
+    {
+      contrasenaActual: z
+        .string({ error: 'La contraseña actual es requerida' })
+        .min(1, { error: 'La contraseña actual es requerida' })
+        .max(LONGITUD_MAXIMA_CONTRASENA, { error: 'La contraseña actual es incorrecta' }),
+      contrasenaNueva: contrasenaNueva
+        .regex(/[a-z]/, { error: 'La contraseña debe tener una minúscula' })
+        .regex(/[A-Z]/, { error: 'La contraseña debe tener una mayúscula' })
+        .regex(/[0-9]/, { error: 'La contraseña debe tener un número' }),
+      // Permite conservar la sesión del dispositivo que cambia la contraseña.
+      tokenRefresco: tokenRefresco.optional(),
+    },
+    { error: MENSAJE_DATOS_INVALIDOS },
+  )
+  .refine((datos) => datos.contrasenaNueva !== datos.contrasenaActual, {
+    error: 'La nueva contraseña debe ser distinta a la actual',
+    path: ['contrasenaNueva'],
+  });
+
 export type DatosRegistro = z.output<typeof esquemaRegistro>;
 export type DatosLogin = z.output<typeof esquemaLogin>;
 export type DatosUnirseEmpresa = z.output<typeof esquemaUnirseEmpresa>;
+export type DatosCambioContrasena = z.output<typeof esquemaCambiarContrasena>;
+
