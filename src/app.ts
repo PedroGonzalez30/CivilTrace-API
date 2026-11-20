@@ -3,8 +3,8 @@
  * @proyecto Civil Trace
  * @descripcion Construye la aplicación Fastify con sus plugins de seguridad y sus rutas.
  * @autor Pedro Ivan Gonzalez Valdez
- * @fecha 16/11/2026
- * @version 1.0.0
+ * @fecha 20/11/2026
+ * @version 1.1.0
  */
 
 // 1. Importaciones
@@ -21,6 +21,7 @@ import { rutasAutenticacion } from '@/rutas/rutasAutenticacion';
 import { rutasSalud } from '@/rutas/rutasSalud';
 import { rutasEmpresa } from '@/rutas/rutasEmpresa';
 import { rutasObras } from '@/rutas/rutasObras';
+import { rutasActividades } from '@/rutas/rutasActividades';
 import { rutasPruebaAlmacenamiento } from '@/rutas/rutasPruebaAlmacenamiento';
 import { rutasPerfil } from '@/rutas/rutasPerfil';
 
@@ -32,24 +33,16 @@ const CODIGO_ERROR_SERVIDOR = 500;
 const CODIGO_DEMASIADAS_PETICIONES = 429;
 
 // 4. Función principal
-/**
- * Crea la aplicación lista para escuchar peticiones.
- *
- * @returns La aplicación Fastify configurada.
- */
 export async function construirApp() {
   const app = Fastify({
     logger: {
       level: entorno.NODE_ENV === 'production' ? 'info' : 'debug',
-      // Nunca se registran los tokens de sesión.
       redact: ['req.headers.authorization'],
     },
     bodyLimit: LIMITE_TAMANO_PETICION_BYTES,
-    // Detrás del proxy de Azure: así el límite de intentos cuenta la IP real de cada persona.
     trustProxy: true,
   });
 
-  // El manejador de errores va ANTES de registrar plugins y rutas; si no, no les aplica.
   app.setErrorHandler((error: FastifyError, peticion, respuesta) => {
     const codigoEstado = error.statusCode ?? CODIGO_ERROR_SERVIDOR;
 
@@ -80,7 +73,7 @@ export async function construirApp() {
   await app.register(rutasAutenticacion, { prefix: '/auth' });
   await app.register(rutasEmpresa, { prefix: '/empresa' });
   await app.register(rutasObras, { prefix: '/obras' });
-  // TEMPORAL: prueba de Blob Storage. Se reemplaza por las rutas de evidencias.
+  await app.register(rutasActividades, { prefix: '/obras' });
   await app.register(rutasPruebaAlmacenamiento, { prefix: '/almacenamiento-prueba' });
   await app.register(rutasPerfil, { prefix: '/perfil' });
   return app;
