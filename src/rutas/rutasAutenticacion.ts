@@ -34,6 +34,8 @@ import {
 import { validar } from '@/utilidades/validar';
 import { unirseAEmpresa } from '@/servicios/servicioAutenticacion';
 import { esquemaUnirseEmpresa } from '@/esquemas/esquemasAutenticacion';
+import { cambiarContrasena } from '@/servicios/servicioAutenticacion';
+import { esquemaCambiarContrasena } from '@/esquemas/esquemasAutenticacion';
 
 // 3. Constantes del módulo
 const CODIGO_CREADO = 201;
@@ -89,4 +91,16 @@ export async function rutasAutenticacion(app: FastifyInstance): Promise<void> {
     const resultado = await unirseAEmpresa(validar(esquemaUnirseEmpresa, peticion.body));
     return armarRespuesta(resultado);
   });
+
+    app.post(
+    '/cambiar-contrasena',
+    { preHandler: [verificarToken], ...limiteDe(MAXIMO_INTENTOS_LOGIN) },
+    async (peticion, respuesta) => {
+      await cambiarContrasena(
+        peticion.user.sub,
+        validar(esquemaCambiarContrasena, peticion.body),
+      );
+      return respuesta.status(CODIGO_SIN_CONTENIDO).send();
+    },
+  );
 }

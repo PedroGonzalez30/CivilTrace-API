@@ -14,7 +14,7 @@ import * as argon2 from 'argon2';
 
 import { prisma } from '@/baseDatos/clientePrisma';
 import { DURACION_TOKEN_REFRESCO_MS } from '@/constantes/autenticacion';
-import type { DatosLogin, DatosRegistro, DatosUnirseEmpresa } from '@/esquemas/esquemasAutenticacion'; 
+import type { DatosLogin, DatosRegistro, DatosUnirseEmpresa ,  DatosCambioContrasena,} from '@/esquemas/esquemasAutenticacion'; 
 import { Prisma } from '@/generated/prisma/client';
 import { Rol } from '@/generated/prisma/enums';
 import { generarCodigoAcceso } from '@/utilidades/codigosAcceso';
@@ -68,6 +68,7 @@ const MENSAJE_CODIGO_INVALIDO = 'Código de empresa inválido';
 const SELECCION_EMPRESA = { select: { nombre: true } } as const;
 const CODIGO_PROHIBIDO = 403;
 const MENSAJE_SIN_EMPRESA = 'Ya no perteneces a ninguna empresa';
+const MENSAJE_CONTRASENA_ACTUAL = 'La contraseña actual es incorrecta';
 
 // Hash de relleno: si el correo no existe se verifica contra este, para que la respuesta tarde
 // lo mismo y no se pueda descubrir qué correos están registrados midiendo el tiempo.
@@ -375,4 +376,51 @@ export async function obtenerUsuarioActual(usuarioId: string): Promise<UsuarioPu
     throw new ErrorHttp(CODIGO_NO_AUTORIZADO, MENSAJE_SESION);
   }
   return aUsuarioPublico(filaConEmpresa);
+}
+/**
+ * Cambia la contraseña de un usuario y cierra sus demás sesiones. La sesión del dispositivo
+ * que hizo el cambio se conserva si manda su token de refresco.
+ *
+ * @param usuarioId - Id del usuario que inició sesión (viene del token de acceso).
+ * @param datos - Contraseña actual, contraseña nueva y token de refresco opcional.
+ * @throws ErrorHttp 400 si la contraseña actual no coincide; 401 si el usuario ya no existe.
+ */
+export async function cambiarContrasena(
+  usuarioId: string,
+  datos: DatosCambioContrasena,
+): Promise<void> {
+  const fila = await prisma.usuario.findUnique({
+    where: { id: usuarioId },
+    select: { contrasenaHash: true },
+  });
+  if (!fila) {
+    throw new ErrorHttp(CODIGO_NO_AUTORIZADO, MENSAJE_SESION);
+  }
+
+  const esCorrecta = await argon2.verify(fila.contrasenaHash, datos.contrasenaActual);
+  if (!esCorrecta) {
+    // Es 400 y no 401: la app trata el 401 como sesión vencida.
+    throw new ErrorHttp(CODIGO_PETICION_INVALIDA, MENSAJE_CONTRASENA_ACTUAL);
+  }
+
+  const contrasenaHash = await argon2.hash(datos.contrasenaNueva);
+  const registro = datos.tokenRefresco
+    ? await prisma.tokenRefresco.findUnique({
+        where: { tokenHash: calcularHashToken(datos.tokenRefresco) },
+        select: { familiaId: true, usuarioId: true },
+      })
+    : null;
+  const familiaActual = registro?.usuarioId === usuarioId ? registro.familiaId : null;
+
+  await prisma.$transaction([
+    prisma.usuario.update({ where: { id: usuarioId }, data: { contrasenaHash } }),
+    prisma.tokenRefresco.updateMany({
+      where: {
+        usuarioId,
+        revocadoEn: null,
+        ...(familiaActual ? { familiaId: { not: familiaActual } } : {}),
+      },
+      data: { revocadoEn: new Date() },
+    }),
+  ]);
 }
