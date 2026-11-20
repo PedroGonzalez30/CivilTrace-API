@@ -80,5 +80,14 @@ export const esquemaLogin = z.object(
 
 export const esquemaTokenRefresco = z.object({ tokenRefresco }, { error: MENSAJE_DATOS_INVALIDOS });
 
+export const esquemaUnirseEmpresa = esquemaLogin.extend({
+  codigo: z
+    .string({ error: 'El código es requerido' })
+    .trim()
+    .min(1, { error: 'El código es requerido' })
+    .max(LONGITUD_MAXIMA_EMPRESA, { error: 'Código de empresa inválido' }),
+});
+
 export type DatosRegistro = z.output<typeof esquemaRegistro>;
 export type DatosLogin = z.output<typeof esquemaLogin>;
+export type DatosUnirseEmpresa = z.output<typeof esquemaUnirseEmpresa>;

@@ -32,6 +32,8 @@ import {
   type ResultadoSesion,
 } from '@/servicios/servicioAutenticacion';
 import { validar } from '@/utilidades/validar';
+import { unirseAEmpresa } from '@/servicios/servicioAutenticacion';
+import { esquemaUnirseEmpresa } from '@/esquemas/esquemasAutenticacion';
 
 // 3. Constantes del módulo
 const CODIGO_CREADO = 201;
@@ -82,4 +84,9 @@ export async function rutasAutenticacion(app: FastifyInstance): Promise<void> {
   app.get('/yo', { preHandler: [verificarToken] }, async (peticion) => ({
     usuario: await obtenerUsuarioActual(peticion.user.sub),
   }));
+
+    app.post('/unirse-empresa', limiteDe(MAXIMO_INTENTOS_LOGIN), async (peticion) => {
+    const resultado = await unirseAEmpresa(validar(esquemaUnirseEmpresa, peticion.body));
+    return armarRespuesta(resultado);
+  });
 }

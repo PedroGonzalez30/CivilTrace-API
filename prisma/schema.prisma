@@ -35,8 +35,8 @@ model Usuario {
   correo            String          @unique
   contrasenaHash    String
   rol               Rol
-  empresaId         String
-  empresa           Empresa         @relation(fields: [empresaId], references: [id])
+  empresaId         String?
+  empresa           Empresa?        @relation(fields: [empresaId], references: [id], onDelete: Restrict)
   obrasSupervisadas Obra[]          @relation("SupervisorDeObra")
   tokensRefresco    TokenRefresco[]
   creadoEn          DateTime        @default(now())
@@ -46,20 +46,20 @@ model Usuario {
 }
 
 model Obra {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   nombre        String
-  resumen       String   @default("")
-  descripcion   String   @default("")
+  resumen       String    @default("")
+  descripcion   String    @default("")
   direccion     String
-  fechaInicio   DateTime @db.Date
-  fechaFinal    DateTime @db.Date
+  fechaInicio   DateTime  @db.Date
+  fechaFinal    DateTime  @db.Date
   cliente       String?
   empresaId     String
-  empresa       Empresa  @relation(fields: [empresaId], references: [id])
+  empresa       Empresa   @relation(fields: [empresaId], references: [id])
   supervisorId  String?
   // Si se borra al supervisor, la obra se conserva sin supervisor.
-  supervisor    Usuario? @relation("SupervisorDeObra", fields: [supervisorId], references: [id], onDelete: SetNull)
-  creadaEn      DateTime @default(now())
+  supervisor    Usuario?  @relation("SupervisorDeObra", fields: [supervisorId], references: [id], onDelete: SetNull)
+  creadaEn      DateTime  @default(now())
   correoCliente String?
   trabajadores  Usuario[] @relation("TrabajadoresDeObra")
 

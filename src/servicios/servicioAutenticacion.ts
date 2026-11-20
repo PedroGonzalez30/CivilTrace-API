@@ -14,12 +14,13 @@ import * as argon2 from 'argon2';
 
 import { prisma } from '@/baseDatos/clientePrisma';
 import { DURACION_TOKEN_REFRESCO_MS } from '@/constantes/autenticacion';
-import type { DatosLogin, DatosRegistro } from '@/esquemas/esquemasAutenticacion';
+import type { DatosLogin, DatosRegistro, DatosUnirseEmpresa } from '@/esquemas/esquemasAutenticacion'; 
 import { Prisma } from '@/generated/prisma/client';
 import { Rol } from '@/generated/prisma/enums';
 import { generarCodigoAcceso } from '@/utilidades/codigosAcceso';
 import { ErrorHttp } from '@/utilidades/errores';
 import { calcularHashToken, generarTokenRefresco } from '@/utilidades/tokens';
+
 
 // 2. Tipos e interfaces
 export interface UsuarioPublico {
@@ -45,6 +46,16 @@ interface FilaUsuario {
   empresa: { nombre: string };
 }
 
+// Así llega un usuario desde la base: puede no tener empresa.
+interface FilaUsuarioOpcional {
+  id: string;
+  nombre: string;
+  correo: string;
+  rol: Rol;
+  empresaId: string | null;
+  empresa: { nombre: string } | null;
+}
+
 // 3. Constantes del módulo
 const CODIGO_NO_AUTORIZADO = 401;
 const CODIGO_CONFLICTO = 409;
@@ -55,6 +66,8 @@ const MENSAJE_SESION = 'Sesión no válida o expirada';
 const MENSAJE_CORREO_REGISTRADO = 'Este correo ya está registrado';
 const MENSAJE_CODIGO_INVALIDO = 'Código de empresa inválido';
 const SELECCION_EMPRESA = { select: { nombre: true } } as const;
+const CODIGO_PROHIBIDO = 403;
+const MENSAJE_SIN_EMPRESA = 'Ya no perteneces a ninguna empresa';
 
 // Hash de relleno: si el correo no existe se verifica contra este, para que la respuesta tarde
 // lo mismo y no se pueda descubrir qué correos están registrados midiendo el tiempo.
@@ -70,6 +83,14 @@ function aUsuarioPublico(fila: FilaUsuario): UsuarioPublico {
     empresaId: fila.empresaId,
     empresa: fila.empresa.nombre,
   };
+}
+
+// Devuelve el usuario solo si todavía pertenece a una empresa; si no, null.
+function conEmpresa(fila: FilaUsuarioOpcional): FilaUsuario | null {
+  if (fila.empresaId === null || fila.empresa === null) {
+    return null;
+  }
+  return { ...fila, empresaId: fila.empresaId, empresa: fila.empresa };
 }
 
 async function crearTokenRefresco(usuarioId: string, familiaId: string): Promise<string> {
@@ -125,7 +146,7 @@ async function crearUsuarioYEmpresa(
     if (!dueno) {
       throw new Error('No se creó el usuario dueño');
     }
-    return { ...dueno, empresa: { nombre: empresa.nombre } };
+    return { ...dueno, empresaId: empresa.id, empresa: { nombre: empresa.nombre } };
   }
 
   const codigo = datos.empresa.toUpperCase();
@@ -141,7 +162,7 @@ async function crearUsuarioYEmpresa(
   const usuario = await prisma.usuario.create({
     data: { ...datosUsuario, empresaId: empresa.id },
   });
-  return { ...usuario, empresa: { nombre: empresa.nombre } };
+  return { ...usuario, empresaId: empresa.id, empresa: { nombre: empresa.nombre } };
 }
 
 // 5. Funciones públicas
@@ -198,8 +219,64 @@ export async function iniciarSesion(datos: DatosLogin): Promise<ResultadoSesion>
     throw new ErrorHttp(CODIGO_NO_AUTORIZADO, MENSAJE_CREDENCIALES);
   }
 
-  const tokenRefresco = await crearTokenRefresco(fila.id, randomUUID());
-  return { usuario: aUsuarioPublico(fila), tokenRefresco };
+  // Se revisa después de la contraseña para no revelar qué correos existen.
+  const filaConEmpresa = conEmpresa(fila);
+  if (!filaConEmpresa) {
+    throw new ErrorHttp(CODIGO_PROHIBIDO, MENSAJE_SIN_EMPRESA);
+  }
+
+  const tokenRefresco = await crearTokenRefresco(filaConEmpresa.id, randomUUID());
+  return { usuario: aUsuarioPublico(filaConEmpresa), tokenRefresco };
+}
+
+/**
+ * Une a un usuario que quedó sin empresa a otra (o a la misma) con un código de acceso.
+ * Pide correo y contraseña porque quien está sin empresa no puede iniciar sesión. El código
+ * decide el rol: el de supervisores lo vuelve supervisor y el de trabajadores, trabajador.
+ *
+ * @param datos - Correo, contraseña y código de la empresa.
+ * @returns El usuario ya dentro de la empresa y un token de refresco nuevo.
+ * @throws ErrorHttp 401 si las credenciales fallan; 409 si ya tiene empresa; 400 si el código no existe.
+ */
+export async function unirseAEmpresa(datos: DatosUnirseEmpresa): Promise<ResultadoSesion> {
+  const fila = await prisma.usuario.findUnique({
+    where: { correo: datos.correo },
+    select: { id: true, contrasenaHash: true, empresaId: true },
+  });
+
+  const hashAVerificar = fila?.contrasenaHash ?? HASH_RELLENO;
+  const esCorrecta = await argon2.verify(hashAVerificar, datos.contrasena);
+  if (!fila || !esCorrecta) {
+    throw new ErrorHttp(CODIGO_NO_AUTORIZADO, MENSAJE_CREDENCIALES);
+  }
+  if (fila.empresaId !== null) {
+    throw new ErrorHttp(CODIGO_CONFLICTO, 'Ya perteneces a una empresa');
+  }
+
+  const codigo = datos.codigo.toUpperCase();
+  const empresa = await prisma.empresa.findFirst({
+    where: { OR: [{ codigoSupervisores: codigo }, { codigoTrabajadores: codigo }] },
+    select: { id: true, nombre: true, codigoSupervisores: true },
+  });
+  if (!empresa) {
+    throw new ErrorHttp(CODIGO_PETICION_INVALIDA, MENSAJE_CODIGO_INVALIDO);
+  }
+
+  const rol = empresa.codigoSupervisores === codigo ? Rol.SUPERVISOR : Rol.TRABAJADOR;
+  const usuario = await prisma.usuario.update({
+    where: { id: fila.id },
+    data: { empresaId: empresa.id, rol },
+  });
+
+  const tokenRefresco = await crearTokenRefresco(usuario.id, randomUUID());
+  return {
+    usuario: aUsuarioPublico({
+      ...usuario,
+      empresaId: empresa.id,
+      empresa: { nombre: empresa.nombre },
+    }),
+    tokenRefresco,
+  };
 }
 
 /**
@@ -225,6 +302,10 @@ export async function refrescarSesion(tokenPlano: string): Promise<ResultadoSesi
     throw sesionInvalida;
   }
   if (registro.venceEn <= new Date()) {
+    throw sesionInvalida;
+  }
+  const usuarioConEmpresa = conEmpresa(registro.usuario);
+  if (!usuarioConEmpresa) {
     throw sesionInvalida;
   }
 
@@ -255,7 +336,7 @@ export async function refrescarSesion(tokenPlano: string): Promise<ResultadoSesi
     throw sesionInvalida;
   }
 
-  return { usuario: aUsuarioPublico(registro.usuario), tokenRefresco: tokenNuevo };
+  return { usuario: aUsuarioPublico(usuarioConEmpresa), tokenRefresco: tokenNuevo };
 }
 
 /**
@@ -289,5 +370,9 @@ export async function obtenerUsuarioActual(usuarioId: string): Promise<UsuarioPu
   if (!fila) {
     throw new ErrorHttp(CODIGO_NO_AUTORIZADO, MENSAJE_SESION);
   }
-  return aUsuarioPublico(fila);
+  const filaConEmpresa = fila ? conEmpresa(fila) : null;
+  if (!filaConEmpresa) {
+    throw new ErrorHttp(CODIGO_NO_AUTORIZADO, MENSAJE_SESION);
+  }
+  return aUsuarioPublico(filaConEmpresa);
 }
