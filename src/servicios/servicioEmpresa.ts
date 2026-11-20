@@ -81,22 +81,44 @@ export async function obtenerPersonalEmpresa(empresaId: string): Promise<Persona
 }
 
 /**
- * Elimina a un supervisor o trabajador de la empresa. Filtra por empresaId (que sale del
- * token) y por rol, así el dueño no puede borrarse a sí mismo ni borrar personal ajeno.
- * Las obras que supervisaba quedan sin supervisor y sus sesiones se borran (FK de la base).
+ * Saca a un supervisor o trabajador de la empresa SIN borrar su cuenta. Filtra por empresaId
+ * (que sale del token) y por rol, así el dueño no puede sacarse a sí mismo ni a personal ajeno.
+ * Sus obras como supervisor quedan sin supervisor, sale de las obras donde era trabajador y
+ * sus sesiones se cierran.
  *
  * @param empresaId - Id de la empresa del usuario autenticado.
- * @param idPersona - Id de la persona a eliminar.
+ * @param idPersona - Id de la persona a sacar de la empresa.
  * @throws ErrorHttp 404 si no existe en esa empresa o no es supervisor/trabajador.
  */
 export async function eliminarPersonalEmpresa(
   empresaId: string,
   idPersona: string,
 ): Promise<void> {
-  const resultado = await prisma.usuario.deleteMany({
-    where: { id: idPersona, empresaId, rol: { in: [Rol.SUPERVISOR, Rol.TRABAJADOR] } },
+  await prisma.$transaction(async (transaccion) => {
+    const persona = await transaccion.usuario.findFirst({
+      where: { id: idPersona, empresaId, rol: { in: [Rol.SUPERVISOR, Rol.TRABAJADOR] } },
+      select: { id: true },
+    });
+    if (!persona) {
+      throw new ErrorHttp(CODIGO_NO_ENCONTRADO, 'Persona no encontrada');
+    }
+
+    // Las obras que supervisaba se conservan, pero sin supervisor.
+    await transaccion.obra.updateMany({
+      where: { supervisorId: persona.id },
+      data: { supervisorId: null },
+    });
+
+    // Sale de la empresa y de las obras donde estaba como trabajador. La cuenta se conserva.
+    await transaccion.usuario.update({
+      where: { id: persona.id },
+      data: { empresaId: null, obrasAsignadas: { set: [] } },
+    });
+
+    // Cierra todas sus sesiones abiertas.
+    await transaccion.tokenRefresco.updateMany({
+      where: { usuarioId: persona.id, revocadoEn: null },
+      data: { revocadoEn: new Date() },
+    });
   });
-  if (resultado.count === 0) {
-    throw new ErrorHttp(CODIGO_NO_ENCONTRADO, 'Persona no encontrada');
-  }
 }
