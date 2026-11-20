@@ -18,7 +18,7 @@ import { entorno } from '@/configuracion/entorno';
 import { ErrorHttp } from '@/utilidades/errores';
 
 // 2. Tipos e interfaces
-export type TipoImagen = 'image/jpeg' | 'image/png';
+export type TipoImagen = `image/${string}`;
 
 export interface ArchivoGuardado {
   nombreBlob: string;
@@ -31,10 +31,6 @@ const CODIGO_PETICION_INVALIDA = 400;
 const CODIGO_FALLO_ALMACENAMIENTO = 502;
 const CODIGO_NO_DISPONIBLE = 503;
 const BYTES_POR_MEGABYTE = 1024 * 1024;
-const EXTENSION_POR_TIPO: Record<TipoImagen, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-};
 
 let contenedorEnCache: ContainerClient | null = null;
 
@@ -55,6 +51,11 @@ function obtenerContenedor(): ContainerClient {
   );
   contenedorEnCache = servicio.getContainerClient(AZURE_STORAGE_CONTENEDOR);
   return contenedorEnCache;
+}
+
+function obtenerExtension(tipo: TipoImagen): string {
+  const subtipo = tipo.slice('image/'.length).replace(/[^a-z0-9]/gi, '').toLowerCase();
+  return subtipo === 'jpeg' ? 'jpg' : subtipo || 'img';
 }
 
 // 5. Funciones públicas
@@ -87,7 +88,7 @@ export async function guardarImagen(
 
   const contenedor = obtenerContenedor();
   // El nombre lo genera el servidor; nunca se usa el nombre que mande el cliente.
-  const nombreBlob = `${empresaId}/${carpeta}/${randomUUID()}.${EXTENSION_POR_TIPO[tipo]}`;
+  const nombreBlob = `${empresaId}/${carpeta}/${randomUUID()}.${obtenerExtension(tipo)}`;
 
   try {
     await contenedor
@@ -102,4 +103,45 @@ export async function guardarImagen(
   }
 
   return { nombreBlob, tipo, tamanoBytes: datos.length };
+}
+
+/**
+ * @param valor - Tipo de contenido declarado por el cliente.
+ * @returns Verdadero si es un tipo de imagen (image/algo).
+ */
+export function esTipoImagen(valor: string): valor is TipoImagen {
+  return /^image\/[a-z0-9.+-]+$/i.test(valor);
+}
+
+/**
+ * Descarga una imagen del contenedor privado.
+ *
+ * @param nombreBlob - Nombre con el que se guardó.
+ * @returns Los bytes y el tipo de la imagen.
+ * @throws ErrorHttp 502 si Azure falla o la imagen no existe.
+ */
+export async function obtenerImagen(
+  nombreBlob: string,
+): Promise<{ datos: Buffer; tipo: string }> {
+  const cliente = obtenerContenedor().getBlockBlobClient(nombreBlob);
+  try {
+    const datos = await cliente.downloadToBuffer();
+    const propiedades = await cliente.getProperties();
+    return { datos, tipo: propiedades.contentType ?? 'application/octet-stream' };
+  } catch (error) {
+    throw new ErrorHttp(CODIGO_FALLO_ALMACENAMIENTO, 'No se pudo leer la imagen', error);
+  }
+}
+
+/**
+ * Borra una imagen. Si falla no importa: solo queda un archivo huérfano.
+ *
+ * @param nombreBlob - Nombre con el que se guardó.
+ */
+export async function eliminarImagen(nombreBlob: string): Promise<void> {
+  try {
+    await obtenerContenedor().getBlockBlobClient(nombreBlob).deleteIfExists();
+  } catch {
+    // La foto nueva ya quedó guardada; no se bloquea al usuario por no borrar la vieja.
+  }
 }

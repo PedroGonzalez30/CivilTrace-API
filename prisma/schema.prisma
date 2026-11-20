@@ -41,6 +41,8 @@ model Usuario {
   tokensRefresco    TokenRefresco[]
   creadoEn          DateTime        @default(now())
   obrasAsignadas    Obra[]          @relation("TrabajadoresDeObra")
+  telefono          String?
+  fotoBlob          String?
 
   @@index([empresaId])
 }
