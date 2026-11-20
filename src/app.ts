@@ -44,8 +44,10 @@ export async function construirApp() {
       redact: ['req.headers.authorization'],
     },
     bodyLimit: LIMITE_TAMANO_PETICION_BYTES,
+    // Detrás del proxy de Azure: así el límite de intentos cuenta la IP real de cada persona.
+    trustProxy: true,
   });
-
+  
   // El manejador de errores va ANTES de registrar plugins y rutas; si no, no les aplica.
   app.setErrorHandler((error: FastifyError, peticion, respuesta) => {
     const codigoEstado = error.statusCode ?? CODIGO_ERROR_SERVIDOR;
