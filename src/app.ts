@@ -56,7 +56,9 @@ export async function construirApp() {
 
     if (codigoEstado >= CODIGO_ERROR_SERVIDOR) {
       peticion.log.error(error);
-      return respuesta.status(CODIGO_ERROR_SERVIDOR).send({ mensaje: 'Error interno del servidor' });
+      return respuesta
+        .status(CODIGO_ERROR_SERVIDOR)
+        .send({ mensaje: 'Error interno del servidor' });
     }
 
     if (codigoEstado === CODIGO_DEMASIADAS_PETICIONES) {
