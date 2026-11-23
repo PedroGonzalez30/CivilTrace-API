@@ -73,9 +73,7 @@
 200 { "codigoQr": "ct1.Q2l2aWxUcmFjZS4uLg", "creadaEn": "..." }
 ```
 
-### `POST /asistencia/mi-credencial/regenerar`
-
-**Quién**: TRABAJADOR. Revoca la credencial actual y crea otra. Responde **201** con el mismo formato.
+El código es permanente: siempre devuelve el mismo (D-17).
 
 ### `GET /asistencia/mi-dia`
 
@@ -212,6 +210,15 @@ Hay una sola tasa de peticiones para todos los endpoints de asistencia: 100 por 
 - **403** si quien la pide no es el supervisor de la obra.
 
 Si el día no tenía registro, lo crea (FR-018). Cada campo que cambia genera un `CambioAsistencia`.
+
+---
+
+## Perfil: oficio (FR-025a, D-18)
+
+Son cambios a los endpoints que ya existen:
+
+- `GET /perfil` agrega `"oficio": "Plomero" | null`.
+- `PUT /perfil` acepta `"oficio"`: texto opcional de máximo 60 caracteres; una cadena vacía lo borra.
 
 ---
 

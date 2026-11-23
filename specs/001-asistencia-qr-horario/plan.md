@@ -13,7 +13,8 @@
 Se agregan a la API:
 
 - el horario por obra, general o "solo hoy" con tolerancia;
-- la credencial QR de cada trabajador;
+- la credencial QR permanente de cada trabajador;
+- el oficio del trabajador en su perfil;
 - el registro de entrada y salida por lotes idempotentes, que sirve con conexión o sin ella;
 - la edición de los detalles de asistencia con historial por campo;
 - el calendario mensual con colores, faltas calculadas y el símbolo $ de descuento.
@@ -103,6 +104,7 @@ prisma/
 
 src/
 ├── app.ts                                # registra rutasAsistencia y rutasHorario
+├── esquemas/esquemasPerfil.ts           # + oficio opcional (D-18)
 ├── constantes/asistencia.ts              # TOLERANCIAS_PERMITIDAS, PREFIJO_QR, límites
 ├── esquemas/esquemasAsistencia.ts        # zod: horario, lote de escaneos, detalles, calendario
 ├── rutas/
@@ -110,7 +112,7 @@ src/
 │   └── rutasAsistencia.ts                # /asistencia/* y /obras/:obraId/asistencia/*
 ├── servicios/
 │   ├── servicioHorario.ts                # horario efectivo del día, guardar general o solo hoy
-│   ├── servicioCredencialAsistencia.ts   # obtener, crear, regenerar y resolver token
+│   ├── servicioCredencialAsistencia.ts   # obtener o crear la credencial permanente y resolver el token
 │   ├── servicioRegistroAsistencia.ts     # vista previa, lote, clasificación, resumen del día
 │   ├── servicioDetallesAsistencia.ts     # detalle del día y edición con historial
 │   └── servicioCalendarioAsistencia.ts   # calendario mensual, faltas calculadas, resumen
@@ -140,8 +142,8 @@ Las dos utilidades nuevas (`fechasLocales` y `permisosObra`) las reutilizarán l
 
 ## Pendientes para el equipo (no bloquean la API)
 
-1. **Dónde se captura el oficio del trabajador** (R-10). El Figma lo muestra, pero no tiene pantalla para editarlo. Mientras tanto, el campo existe y es opcional.
-2. **Agregar al plan de pruebas** los casos `CP21` (Registrar asistencia con QR) y `CP22` (Fijar horario de obra), porque RF-19 y RF-27 ahora son Must (P-04).
+1. **Oficio en el perfil** (D-18): el Figma de perfil debe agregar el campo "Oficio".
+2. **Agregar al plan de pruebas** los casos `CP21` (Registrar asistencia con QR) y `CP22` (Fijar horario de obra). El equipo ya lo aprobó (D-19).
 3. **Fecha de asignación de un trabajador a una obra** (R-08). Sin ella, las faltas calculadas empiezan a contar desde el inicio de la obra o el alta del usuario. Se propone un modelo `AsignacionObra` con fechas en un feature posterior.
 4. **Actualizar el Figma** con el símbolo $ (D-13).
 

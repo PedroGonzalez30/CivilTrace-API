@@ -37,7 +37,8 @@ npm run typecheck && npm run lint && npm test
 | CP21-A1 | Tercer escaneo del día | `RECHAZADO` `ASISTENCIA_COMPLETA` |
 | CP21-A2 | Mismo `idLocal` enviado dos veces | La segunda respuesta es `DUPLICADO`, con un solo registro |
 | CP21-A3 | Lote sin conexión con `capturadoEn` de las 08:01 enviado a las 11:00 | La entrada queda a las 08:01, con `entradaSinConexion = true` |
-| CP21-A4 | El QR regenerado deja inválido al anterior | El código viejo da `QR_INVALIDO` |
+| CP21-A4 | Ana pide su credencial dos veces, desde dos sesiones distintas | Recibe el mismo `codigoQr` (D-17) |
+| CP06-A1 | Ana guarda el oficio "Albañil" en su perfil | `GET /perfil` lo devuelve y la vista previa del escaneo lo muestra |
 | CP19-E1 | Ana llega 08:25; María guarda `RETARDO`, anotación "Llegó 25 minutos tarde", `MEDIO_DIA` | El día sale `NARANJA` en el calendario, con `conDescuento = true` y la anotación |
 | CP19-E2 | Ana abre su calendario de diciembre 2026 con un descuento el día 5 | El día 5 tiene `conDescuento = true` y su detalle muestra el motivo |
 | CP19-E3 | María guarda `RETARDO` sin anotación | 400 "La observación es obligatoria" y nada cambia |

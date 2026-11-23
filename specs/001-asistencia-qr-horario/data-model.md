@@ -18,7 +18,7 @@ Los cambios van en `prisma/schema.prisma` en una sola migración, `asistencia_qr
 | Modelo | Campo nuevo | Tipo | Regla |
 |---|---|---|---|
 | `Empresa` | `zonaHoraria` | `String @default("America/Tijuana")` | Identificador IANA válido (R-05, D-15). |
-| `Usuario` | `oficio` | `String?` | Máximo 60 caracteres. Opcional (R-10). |
+| `Usuario` | `oficio` | `String?` | Máximo 60 caracteres. Opcional. Se edita en el perfil (R-10, D-18). |
 
 ## Entidades nuevas
 
@@ -55,9 +55,8 @@ Los cambios van en `prisma/schema.prisma` en una sola migración, `asistencia_qr
 | `token` | `String @unique` | 32 bytes aleatorios en base64url |
 | `tokenHash` | `String @unique` | SHA-256 en hex de `token` |
 | `creadaEn` | `DateTime @default(now())` | |
-| `revocadaEn` | `DateTime?` | Se llena al regenerar. Nunca se borra |
 
-Un trabajador tiene a lo sumo una credencial con `revocadaEn = null`. La primera se crea la primera vez que la pide.
+`trabajadorId` es `@unique`: hay una credencial por trabajador. Se crea la primera vez que la pide y no cambia (D-17). Nunca se borra.
 
 ### RegistroAsistencia (FR-006, FR-007, FR-012 a FR-016)
 

@@ -6,12 +6,12 @@ Cada punto sigue el formato Decisión / Razón / Alternativas. Ninguno cambia el
 
 ## R-01. Contenido del código QR
 
-- **Decisión**: el QR contiene la cadena `ct1.<token>`. El token son 32 bytes aleatorios en base64url (256 bits) de una **credencial de asistencia** propia del trabajador. La API guarda el token y su huella SHA-256. Al regenerarlo, la credencial anterior queda revocada (`revocadaEn`) y no se borra.
-- **Razón**: no expone el nombre, el correo ni el id (FR-001), y no se puede fabricar. El trabajador necesita volver a ver su QR en cualquier teléfono, así que la API debe poder devolver el token, y por eso se guarda tal cual. El riesgo es bajo: el token no da acceso a la cuenta, solo identifica para un registro que el supervisor confirma con la foto (FR-005), y se puede revocar.
+- **Decisión**: el QR contiene la cadena `ct1.<token>`. El token son 32 bytes aleatorios en base64url (256 bits) de una **credencial de asistencia** propia del trabajador. La API guarda el token y su huella SHA-256. El token es **permanente**: se crea la primera vez que el trabajador lo pide y no cambia (D-17).
+- **Razón**: no expone el nombre, el correo ni el id (FR-001), y no se puede fabricar. El trabajador necesita volver a ver su QR en cualquier teléfono, así que la API debe poder devolver el token, y por eso se guarda tal cual. El riesgo es bajo: el token no da acceso a la cuenta, solo identifica para un registro que el supervisor confirma con la foto (FR-005). Si un trabajador deja la empresa, su QR deja de servir porque ya no está asignado a ninguna obra.
 - **Alternativas descartadas**:
   - QR con el id del usuario firmado con JWT: el secreto de firma tendría que estar en el teléfono del supervisor para validar sin conexión.
   - Guardar solo el hash: el trabajador no podría recuperar su QR en otro teléfono.
-  - QR que rota cada minuto (TOTP): requiere que el teléfono del trabajador tenga la hora correcta y complica la validación sin conexión. Queda como mejora futura.
+  - QR que rota cada minuto (TOTP) o regenerable: el equipo decidió que el QR sea siempre el mismo (D-17).
 
 ## R-02. Validación sin conexión (D-14, FR-026 a FR-030)
 
@@ -91,7 +91,7 @@ Cada punto sigue el formato Decisión / Razón / Alternativas. Ninguno cambia el
 ## R-10. Oficio del trabajador
 
 - **Hallazgo**: el Figma muestra el oficio ("Plomero") en cinco pantallas, pero `Usuario` no tiene ese campo y no existe en la app.
-- **Decisión**: agregar `Usuario.oficio String?` (opcional). Si no hay oficio, se muestra solo el nombre. **Dónde se captura** el oficio queda fuera de este feature y se pregunta al equipo, porque el Figma no muestra dónde se edita.
+- **Decisión**: agregar `Usuario.oficio String?` (opcional, máximo 60 caracteres). Se captura en el **perfil** (D-18): `GET /perfil` lo devuelve y `PUT /perfil` lo acepta. Si no hay oficio, se muestra solo el nombre. El Figma de perfil debe actualizarse con este campo.
 
 ## R-11. Fotografía del trabajador
 
