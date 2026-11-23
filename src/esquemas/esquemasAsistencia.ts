@@ -14,7 +14,12 @@
 // 1. Importaciones
 import { z } from 'zod';
 
-import { MAXIMO_ESCANEOS_POR_LOTE } from '@/constantes/asistencia';
+import {
+  DIA_SEMANA_MAXIMO,
+  DIA_SEMANA_MINIMO,
+  MAXIMO_ESCANEOS_POR_LOTE,
+  TOLERANCIAS_PERMITIDAS,
+} from '@/constantes/asistencia';
 
 // 3. Constantes del módulo
 const LATITUD_MAXIMA = 90;
@@ -72,3 +77,34 @@ export const esquemaLoteEscaneos = z.object({
 });
 
 export type DatosEscaneo = z.output<typeof esquemaEscaneo>;
+
+const PATRON_HORA = /^([01]\d|2[0-3]):[0-5]\d$/;
+const esquemaHora = z
+  .string({ error: 'La hora es inválida' })
+  .regex(PATRON_HORA, { error: 'La hora debe tener el formato HH:MM (24 horas)' });
+
+export const esquemaGuardarHorario = z
+  .object({
+    horaEntrada: esquemaHora,
+    horaSalida: esquemaHora,
+    toleranciaMinutos: z
+      .number({ error: 'La tolerancia debe ser de 10, 15 o 20 minutos' })
+      .refine((valor) => (TOLERANCIAS_PERMITIDAS as readonly number[]).includes(valor), {
+        error: 'La tolerancia debe ser de 10, 15 o 20 minutos',
+      }),
+    diasLaborales: z
+      .array(z.number().int().min(DIA_SEMANA_MINIMO).max(DIA_SEMANA_MAXIMO), {
+        error: 'Los días laborales son inválidos',
+      })
+      .min(1, { error: 'Elige al menos un día laboral' })
+      .transform((dias) => [...new Set(dias)].sort((a, b) => a - b)),
+    alcance: z.enum(['TODOS_LOS_DIAS', 'SOLO_HOY'], {
+      error: 'Elige si aplica a todos los días o solo hoy',
+    }),
+  })
+  // "HH:MM" con ceros a la izquierda se puede comparar como texto.
+  .refine((horario) => horario.horaSalida > horario.horaEntrada, {
+    error: 'La hora de salida debe ser posterior a la de entrada',
+  });
+
+export type DatosGuardarHorario = z.output<typeof esquemaGuardarHorario>;

@@ -27,6 +27,7 @@ import { rutasActividades } from '@/rutas/rutasActividades';
 import { rutasPruebaAlmacenamiento } from '@/rutas/rutasPruebaAlmacenamiento';
 import { rutasPerfil } from '@/rutas/rutasPerfil';
 import { rutasAsistencia } from '@/rutas/rutasAsistencia';
+import { rutasHorario } from '@/rutas/rutasHorario';
 import { ErrorHttp } from '@/utilidades/errores';
 
 // 3. Constantes del módulo
@@ -95,5 +96,6 @@ export async function construirApp() {
   await app.register(rutasPerfil, { prefix: '/perfil' });
   // Sin prefijo: combina rutas /asistencia/* y /obras/:obraId/asistencia/*.
   await app.register(rutasAsistencia);
+  await app.register(rutasHorario, { prefix: '/obras' });
   return app;
 }

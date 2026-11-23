@@ -13,14 +13,22 @@
 // 1. Importaciones
 import { prisma } from '@/baseDatos/clientePrisma';
 import { ZONA_HORARIA_POR_DEFECTO } from '@/constantes/asistencia';
+import type { DatosGuardarHorario } from '@/esquemas/esquemasAsistencia';
 import { AlcanceHorario } from '@/generated/prisma/enums';
+import type { DatosTokenAcceso } from '@/tipos/fastifyJwt';
 import {
   construirInstante,
   convertirFechaADate,
   formatearFecha,
   obtenerDiaSemana,
+  obtenerFechaLocal,
   sumarDias,
 } from '@/utilidades/fechasLocales';
+import {
+  exigirAccesoAObra,
+  exigirSupervisorODueno,
+  obtenerObraDeEmpresa,
+} from '@/utilidades/permisosObra';
 
 // 2. Tipos e interfaces
 export interface FilaHorario {
@@ -169,4 +177,76 @@ export async function obtenerHorarioGeneral(obraId: string) {
     orderBy: { creadoEn: 'desc' },
     select: { ...SELECCION_HORARIO, creadoPor: { select: { nombre: true } } },
   });
+}
+
+/**
+ * Horario de la obra para la pantalla SUP_HorarioObra y "Mi asistencia": el general vigente y el
+ * que aplica hoy.
+ *
+ * @throws ErrorHttp 404 si la obra no es de la empresa; 403 si no tiene relación con ella.
+ */
+export async function obtenerHorarioParaPantalla(usuario: DatosTokenAcceso, obraId: string) {
+  const obra = await obtenerObraDeEmpresa(obraId, usuario.empresaId);
+  await exigirAccesoAObra(obra, usuario);
+  return armarRespuestaHorario(obra.id, usuario.empresaId);
+}
+
+/**
+ * Guarda el horario (D-06). Nunca actualiza filas: "Todos los días" agrega un general nuevo y
+ * "Solo hoy" agrega una excepción para la fecha local de hoy (research R-06).
+ *
+ * @throws ErrorHttp 404/403 según la obra y el rol (supervisor de la obra o dueño).
+ */
+export async function guardarHorario(
+  usuario: DatosTokenAcceso,
+  obraId: string,
+  datos: DatosGuardarHorario,
+) {
+  const obra = await obtenerObraDeEmpresa(obraId, usuario.empresaId);
+  exigirSupervisorODueno(obra, usuario);
+  const zona = await obtenerZonaHorariaEmpresa(usuario.empresaId);
+  const esSoloHoy = datos.alcance === 'SOLO_HOY';
+
+  await prisma.horarioObra.create({
+    data: {
+      obraId: obra.id,
+      empresaId: usuario.empresaId,
+      creadoPorId: usuario.sub,
+      alcance: esSoloHoy ? AlcanceHorario.DIA : AlcanceHorario.GENERAL,
+      fecha: esSoloHoy ? convertirFechaADate(obtenerFechaLocal(new Date(), zona)) : null,
+      horaEntrada: datos.horaEntrada,
+      horaSalida: datos.horaSalida,
+      toleranciaMinutos: datos.toleranciaMinutos,
+      diasLaborales: datos.diasLaborales,
+    },
+  });
+  return armarRespuestaHorario(obra.id, usuario.empresaId);
+}
+
+// 5. Funciones privadas
+async function armarRespuestaHorario(obraId: string, empresaId: string) {
+  const zona = await obtenerZonaHorariaEmpresa(empresaId);
+  const [general, hoy] = await Promise.all([
+    obtenerHorarioGeneral(obraId),
+    obtenerHorarioEfectivo(obraId, obtenerFechaLocal(new Date(), zona), zona),
+  ]);
+  return {
+    general: general && {
+      horaEntrada: general.horaEntrada,
+      horaSalida: general.horaSalida,
+      toleranciaMinutos: general.toleranciaMinutos,
+      diasLaborales: general.diasLaborales,
+      actualizadoEn: general.creadoEn.toISOString(),
+      actualizadoPor: general.creadoPor.nombre,
+    },
+    hoy: hoy && {
+      fecha: hoy.fecha,
+      horaEntrada: hoy.horaEntrada,
+      horaSalida: hoy.horaSalida,
+      toleranciaMinutos: hoy.toleranciaMinutos,
+      esDiaLaborable: hoy.esDiaLaborable,
+      esExcepcion: hoy.esExcepcion,
+    },
+    zonaHoraria: zona,
+  };
 }
