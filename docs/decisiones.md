@@ -23,6 +23,10 @@ preguntar. Las nuevas decisiones se agregan al final con fecha.
 | D-14 | 23/11/2026 | La asistencia por QR funciona **sin conexión**: el supervisor escanea, el registro se guarda en su teléfono y se envía al recuperar la señal, igual que las evidencias (RNF-07). El servidor lo vuelve a validar al recibirlo. |
 | D-15 | 23/11/2026 | Zona horaria por empresa, `America/Tijuana` por defecto. Más adelante se podrá cambiar a la hora de CDMX (`America/Mexico_City`). |
 | D-16 | 23/11/2026 | El aviso "Tienes N falta(s) este mes" y el recordatorio de las 3 faltas injustificadas se muestran al trabajador solo si tiene al menos 1 falta en el mes. |
+| D-17 | 23/11/2026 | El QR de asistencia de cada trabajador es **siempre el mismo** (permanente): no se regenera en el MVP. |
+| D-18 | 23/11/2026 | El oficio del trabajador (por ejemplo, "Plomero") se captura en su **perfil**. Es opcional. Hay que agregar el campo al Figma de perfil. |
+| D-19 | 23/11/2026 | Se agregan al plan de pruebas CP21 (Registrar asistencia con QR) y CP22 (Fijar horario de obra), porque RF-19 y RF-27 ahora son Must. |
+| D-20 | 23/11/2026 | Hoy no se guarda la fecha en que un trabajador se asigna a una obra; las faltas calculadas cuentan desde el inicio de la obra o el alta del usuario. Se propondrá un modelo de asignación con fechas en un feature posterior. |
 
 ## Técnica
 

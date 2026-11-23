@@ -123,10 +123,11 @@ El trabajador ve su propio calendario mensual de asistencia. El supervisor y el 
 - **Trabajador en varias obras:** el QR es el mismo para todas sus obras. El registro queda en la obra que eligió el supervisor, y solo puede haber una entrada por día en cada obra.
 - **Cambio de horario a media jornada:** un horario nuevo no reclasifica registros ya guardados. Cada registro conserva el horario con el que se evaluó.
 - **Sin GPS:** si el teléfono del supervisor no tiene ubicación al escanear, el registro se guarda con "Sin ubicación GPS" (mismo criterio que las evidencias).
-- **QR copiado:** si alguien muestra la foto de un QR ajeno, el supervisor lo detecta porque la confirmación muestra la fotografía del dueño del QR y puede rechazar. Si el trabajador regenera su QR, el anterior deja de funcionar.
+- **QR copiado:** si alguien muestra la foto de un QR ajeno, el supervisor lo detecta porque la confirmación muestra la fotografía del dueño del QR y puede rechazar.
+- **QR fijo (D-17):** el QR de cada trabajador es siempre el mismo, en cualquier teléfono y en todas sus obras. No se regenera en el MVP.
 - **Sin conexión:** el supervisor puede escanear sin señal. Los registros quedan guardados en su teléfono y se envían al recuperar la conexión, igual que las evidencias (RNF-07). Ver FR-026 a FR-030.
 - **Conflicto al sincronizar:** si al enviar un registro hecho sin conexión el servidor ya tiene la entrada y la salida de ese trabajador, obra y día, se conserva lo que ya estaba. El registro sobrante se informa al supervisor y no se guarda.
-- **Asignación cambiada:** si al sincronizar el trabajador ya no está asignado a la obra, o su QR fue regenerado antes del escaneo, el registro se rechaza y se informa al supervisor.
+- **Asignación cambiada:** si al sincronizar el trabajador ya no está asignado a la obra, el registro se rechaza y se informa al supervisor.
 
 ## Requirements *(mandatory)*
 
@@ -134,7 +135,7 @@ El trabajador ve su propio calendario mensual de asistencia. El supervisor y el 
 
 **QR y registro (RF-19, RF-27)**
 
-- **FR-001**: El sistema DEBE dar a cada trabajador un código QR personal que lo identifique sin mostrar datos personales legibles y que no se pueda fabricar a partir de su nombre, correo o identificador.
+- **FR-001**: El sistema DEBE dar a cada trabajador un código QR personal y **permanente** (siempre el mismo, D-17), que lo identifique sin mostrar datos personales legibles y que no se pueda fabricar a partir de su nombre, correo o identificador.
 - **FR-002**: El trabajador DEBE poder ver su QR en "Mi asistencia" con el horario de hoy de su obra y el estado de la entrada y la salida ("Pendiente" o "Registrada").
 - **FR-003**: El supervisor DEBE elegir la obra antes de escanear, y solo puede elegir entre las obras que supervisa.
 - **FR-004**: Al escanear, el sistema DEBE validar que el QR sea vigente, que el trabajador sea de la misma empresa y que esté asignado a la obra elegida. Si alguna validación falla, no registra nada y muestra el motivo.
@@ -173,6 +174,7 @@ El trabajador ve su propio calendario mensual de asistencia. El supervisor y el 
 - **FR-024**: Las horas DEBEN registrarse con la hora del servidor cuando hay conexión, o con la hora del dispositivo en el momento del escaneo cuando no la hay (FR-028). Se muestran en la zona horaria de la empresa.
 - **FR-024a**: La zona horaria DEBE guardarse por empresa, con `America/Tijuana` por defecto, y DEBE poder cambiarse después (por ejemplo, a `America/Mexico_City`) sin modificar los registros ya guardados. En este feature no hay pantalla para cambiarla.
 - **FR-025**: Los mensajes de error DEBEN estar en español y no exponer datos internos.
+- **FR-025a**: El perfil del usuario DEBE permitir capturar y consultar un oficio opcional, de máximo 60 caracteres (D-18).
 
 **Sin conexión (RNF-07 aplicado a asistencia)**
 
@@ -185,7 +187,8 @@ El trabajador ve su propio calendario mensual de asistencia. El supervisor y el 
 ### Key Entities *(include if feature involves data)*
 
 - **Horario de obra**: pertenece a una obra. Tiene hora de entrada, hora de salida, tolerancia, días laborales y alcance: general o un solo día con su fecha. La obra tiene un horario general vigente y puede tener excepciones de un día.
-- **Credencial QR del trabajador**: identificador secreto y revocable de un trabajador, que se presenta como código QR. El trabajador tiene una vigente.
+- **Credencial QR del trabajador**: identificador secreto y permanente de un trabajador, que se presenta como código QR. Hay una por trabajador.
+- **Oficio del trabajador**: texto opcional (por ejemplo, "Plomero") que el trabajador captura en su perfil (D-18) y que se muestra en las pantallas de asistencia.
 - **Registro de asistencia (día)**: un trabajador en una obra en una fecha. Tiene la hora de entrada y la de salida (con la ubicación y el supervisor de cada una), el tipo de jornada, el motivo, el efecto en el pago, la anotación y el horario con que se evaluó. Hay uno por trabajador, obra y fecha.
 - **Historial de asistencia**: cada cambio a un registro de asistencia, con el campo, el valor anterior, el valor nuevo, el autor, la fecha y la hora.
 
@@ -210,4 +213,5 @@ El trabajador ve su propio calendario mensual de asistencia. El supervisor y el 
 - **Faltas justificadas e injustificadas:** una falta es injustificada si no tiene motivo y justificada si lo tiene. Esto solo afecta lo que se muestra; no genera alertas, porque RF-29 es *Won't have*.
 - **Símbolo de descuento (RF-56):** el equipo decidió (D-13) que los días con descuento muestren el símbolo **$** en el calendario. El Figma todavía no lo tiene y DEBE actualizarse en `SUP_CalendarioTrabajador`, `TRA-HIstorial asistencia` y sus detalles, con el mismo estilo.
 - **Fotografía del trabajador:** se usa la foto de perfil que ya existe. Si no tiene, se muestran sus iniciales.
+- **Oficio (D-18):** el trabajador lo captura en su perfil. Es opcional y, si no lo tiene, se muestra solo el nombre.
 - **Fuera de alcance:** las métricas de desempeño (RF-61, D-09) van en otro feature.
