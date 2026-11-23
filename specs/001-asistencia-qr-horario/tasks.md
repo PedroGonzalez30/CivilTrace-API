@@ -181,7 +181,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T026 [P] [US2] Crear `pruebas/integracion/horario.test.ts` con:
+- [x] T026 [P] [US2] Crear `pruebas/integracion/horario.test.ts` con:
   - `CP22-E1`: guardar el horario general y leerlo;
   - `CP22-E2`: "Solo hoy" crea una excepción y al día siguiente vuelve el general;
   - `CP22-E3`: salida ≤ entrada → 400; sin días → 400; tolerancia 12 → 400;
@@ -191,9 +191,9 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 ### Implementation for User Story 2
 
-- [ ] T027 [P] [US2] Agregar `esquemaGuardarHorario` a `src/esquemas/esquemasAsistencia.ts` según [data-model.md](./data-model.md) `HorarioObra.horaEntrada`, `HorarioObra.horaSalida`, `HorarioObra.toleranciaMinutos` y `HorarioObra.diasLaborales`, más `alcance` (`TODOS_LOS_DIAS` | `SOLO_HOY`), con los mensajes del contrato.
-- [ ] T028 [US2] Implementar `guardarHorario(usuario, obraId, datos)` en `src/servicios/servicioHorario.ts`. Solo inserta filas, nunca actualiza (R-06). `SOLO_HOY` crea `alcance = DIA` con la fecha local de hoy. `HorarioObra.creadoPorId` viene del token. Devuelve el mismo formato que el GET.
-- [ ] T029 [US2] Crear `src/rutas/rutasHorario.ts` con `GET /obras/:obraId/horario` (SUP-OBRA, DUENO o TRABAJADOR asignado) y `PUT /obras/:obraId/horario` (SUP-OBRA o DUENO). Registrar las rutas en `src/app.ts`.
+- [x] T027 [P] [US2] Agregar `esquemaGuardarHorario` a `src/esquemas/esquemasAsistencia.ts` según [data-model.md](./data-model.md) `HorarioObra.horaEntrada`, `HorarioObra.horaSalida`, `HorarioObra.toleranciaMinutos` y `HorarioObra.diasLaborales`, más `alcance` (`TODOS_LOS_DIAS` | `SOLO_HOY`), con los mensajes del contrato.
+- [x] T028 [US2] Implementar `guardarHorario(usuario, obraId, datos)` en `src/servicios/servicioHorario.ts`. Solo inserta filas, nunca actualiza (R-06). `SOLO_HOY` crea `alcance = DIA` con la fecha local de hoy. `HorarioObra.creadoPorId` viene del token. Devuelve el mismo formato que el GET.
+- [x] T029 [US2] Crear `src/rutas/rutasHorario.ts` con `GET /obras/:obraId/horario` (SUP-OBRA, DUENO o TRABAJADOR asignado) y `PUT /obras/:obraId/horario` (SUP-OBRA o DUENO). Registrar las rutas en `src/app.ts`.
 
 **Checkpoint**: US1 y US2 funcionan; la clasificación de retardo usa el horario guardado.
 
