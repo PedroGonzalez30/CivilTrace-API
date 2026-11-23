@@ -22,6 +22,7 @@ Cada punto sigue el formato Decisión / Razón / Alternativas. Ninguno cambia el
   - `generadoEn`.
 
   Sin conexión, la app calcula el SHA-256 del token escaneado y lo busca en el paquete. El token en claro nunca se descarga.
+
 - **Razón**: valida sin servidor y sin guardar secretos reutilizables en el teléfono. Si roban el teléfono, las huellas no sirven para fabricar un QR.
 - **Alternativas descartadas**:
   - Descargar los tokens en claro: quien tenga el teléfono podría copiarlos.
@@ -60,6 +61,7 @@ Cada punto sigue el formato Decisión / Razón / Alternativas. Ninguno cambia el
   - `DIA`: excepción con `fecha`; la más reciente para esa fecha gana sobre el general.
 
   Nunca se borra ni se sobrescribe: cada guardado crea una fila, y eso funciona como historial. Los días laborales se guardan como `Int[]` (0 = domingo … 6 = sábado), igual que `Date.getDay()`.
+
 - **Razón**: se conserva quién cambió el horario y cuándo, sin otra tabla de historial. Las consultas son simples.
 - **Alternativas descartadas**:
   - Columnas en `Obra`: pierden el historial y no permiten excepciones de un día.
@@ -105,7 +107,7 @@ Cada punto sigue el formato Decisión / Razón / Alternativas. Ninguno cambia el
 
 ## R-13. Claves del plan de pruebas (P-03)
 
-- **Hallazgo**: CP19 ("Registrar retardo y consultar calendario de asistencia") cubre RF-60, RF-58 y RF-56 del SRS V4.0. El plan de pruebas los llama RF-63, RF-61 y RF-59. RF-19 y RF-27 eran *Should* y no tienen caso de prueba. Al subirlos a *Must* (P-04) necesitan uno.
+- **Hallazgo**: CP19 ("Registrar retardo y consultar calendario de asistencia") cubre RF-60, RF-58 y RF-56 del SRS V4.0. El plan de pruebas los llama RF-63, RF-61 y RF-59. RF-19 y RF-27 eran _Should_ y no tienen caso de prueba. Al subirlos a _Must_ (P-04) necesitan uno.
 - **Decisión**: las pruebas usan:
   - `CP19-E1/E2/E3` para retardo, calendario y descuento;
   - las claves **propuestas** `CP21-E1/E2/E3` (Registrar asistencia con QR) y `CP22-E1/E2/E3` (Fijar horario de obra), para agregarlas al plan de pruebas;

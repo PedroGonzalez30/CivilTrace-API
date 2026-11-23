@@ -10,21 +10,21 @@
 
 **Autorización:**
 
-| Abreviatura | Quién puede |
-|---|---|
-| **SUP-OBRA** | El rol `SUPERVISOR` y `Obra.supervisorId === user.id`. |
-| **DUENO** | El rol `DUENO`, con la obra o el trabajador en su empresa. |
-| **TRA-PROPIO** | El rol `TRABAJADOR`, con `trabajadorId === user.id`. |
+| Abreviatura    | Quién puede                                                |
+| -------------- | ---------------------------------------------------------- |
+| **SUP-OBRA**   | El rol `SUPERVISOR` y `Obra.supervisorId === user.id`.     |
+| **DUENO**      | El rol `DUENO`, con la obra o el trabajador en su empresa. |
+| **TRA-PROPIO** | El rol `TRABAJADOR`, con `trabajadorId === user.id`.       |
 
 **Códigos de error:**
 
-| Código | Cuándo |
-|---|---|
-| 400 | Datos inválidos |
-| 401 | Sin sesión |
-| 403 | Sin permiso, o un recurso de otra empresa. Nunca se revela si existe |
-| 404 | El recurso no existe en la empresa |
-| 409 | Hay un conflicto |
+| Código | Cuándo                                                               |
+| ------ | -------------------------------------------------------------------- |
+| 400    | Datos inválidos                                                      |
+| 401    | Sin sesión                                                           |
+| 403    | Sin permiso, o un recurso de otra empresa. Nunca se revela si existe |
+| 404    | El recurso no existe en la empresa                                   |
+| 409    | Hay un conflicto                                                     |
 
 ---
 
@@ -135,11 +135,11 @@ Pantallas: `SUP_Asistencia_EscogerObra` (`96:2903`), `SUP_Asistencia_LeerQr` (`2
 
 - **422** si el QR es inválido. El cuerpo es `{ "mensaje", "motivo" }`, y `motivo` toma estos valores:
 
-  | Motivo | Mensaje |
-  |---|---|
-  | `QR_INVALIDO` | "El código no es de Civil Trace o ya no es válido". |
-  | `NO_ASIGNADO` | "El trabajador no está asignado a esta obra". |
-  | `ASISTENCIA_COMPLETA` | "La asistencia de hoy ya está completa". |
+  | Motivo                | Mensaje                                             |
+  | --------------------- | --------------------------------------------------- |
+  | `QR_INVALIDO`         | "El código no es de Civil Trace o ya no es válido". |
+  | `NO_ASIGNADO`         | "El trabajador no está asignado a esta obra".       |
+  | `ASISTENCIA_COMPLETA` | "La asistencia de hoy ya está completa".            |
 
   Un QR de otra empresa responde `QR_INVALIDO` y no revela datos.
 
@@ -202,8 +202,14 @@ Hay una sola tasa de peticiones para todos los endpoints de asistencia: 100 por 
 **Quién**: solo SUP-OBRA. Todos los campos son opcionales, pero debe venir al menos uno.
 
 ```json
-{ "tipoJornada": "MEDIA_JORNADA", "motivo": "CITA_MEDICA", "efectoPago": "MEDIO_DIA",
-  "anotacion": "Salió a las 12:00 por cita en el IMSS", "entradaEn": "...", "salidaEn": "..." }
+{
+  "tipoJornada": "MEDIA_JORNADA",
+  "motivo": "CITA_MEDICA",
+  "efectoPago": "MEDIO_DIA",
+  "anotacion": "Salió a las 12:00 por cita en el IMSS",
+  "entradaEn": "...",
+  "salidaEn": "..."
+}
 ```
 
 - **200** responde con el mismo cuerpo que el `GET`.

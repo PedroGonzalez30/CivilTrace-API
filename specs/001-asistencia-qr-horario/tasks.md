@@ -1,5 +1,5 @@
 ---
-description: "Lista de tareas del feature 001: asistencia con QR, horario por obra y calendario (API)"
+description: 'Lista de tareas del feature 001: asistencia con QR, horario por obra y calendario (API)'
 ---
 
 # Tasks: Asistencia con QR, horario por obra y calendario
@@ -32,13 +32,13 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 **Purpose**: la API todavía no tiene `lint` ni `test` (research R-12). Sin esto no se cumple la puerta de calidad.
 
-- [X] T001 Instalar Vitest y `@vitest/coverage-v8` como dependencias de desarrollo. Crear `vitest.config.ts` con el alias `@/` → `src/`, `include: ['pruebas/**/*.test.ts']`, la cobertura de `src/servicios/**` con umbral de líneas del 80 % y la ejecución en serie para las pruebas de integración. Agregar los scripts `test` y `test:cobertura` en `package.json`.
-- [X] T002 [P] Instalar ESLint 9 con `typescript-eslint` y `eslint-config-prettier`. Crear `eslint.config.js` con las reglas del ECCT que se pueden automatizar (`no-var`, `prefer-const`, `eqeqeq`, `curly`) e ignorar `src/generated/**`. Agregar el script `lint` en `package.json`. Corregir los errores que aparezcan en `src/` sin cambiar comportamiento.
-- [X] T003 [P] Crear una base de prueba separada: un servicio `postgres-pruebas` (o una base `civiltrace_pruebas`) en `docker-compose.yml` y la variable `DATABASE_URL_PRUEBAS` en `.env.example`. No poner secretos reales.
-- [X] T004 Crear `pruebas/configuracion/configuracionGlobal.ts`, que aplica las migraciones con `prisma migrate reset --force --skip-seed` sobre la base de prueba antes de la suite. Crear también `pruebas/configuracion/baseDatosPrueba.ts`, con la función `limpiarTablas()` (TRUNCATE en cascada de las tablas de negocio entre archivos de prueba).
-- [X] T005 [P] Crear `pruebas/configuracion/dobleAlmacenamiento.ts`, un doble del servicio de almacenamiento que guarda las imágenes en memoria (`guardarImagen`, `obtenerImagen`, `eliminarImagen`). Conectarlo con `vi.mock('@/servicios/servicioAlmacenamiento')` en el setup.
-- [X] T006 Crear `pruebas/configuracion/fabricas.ts` con los ayudantes `crearEmpresa()`, `crearUsuario({ rol, empresaId, oficio? })`, `crearObra({ empresaId, supervisorId, trabajadorIds })`, `iniciarSesion(app, usuario)` (devuelve el encabezado `Authorization`) y `construirAppPrueba()` (envuelve `construirApp()`). Debe incluir los datos de [quickstart.md](./quickstart.md): Todo Concreto, María Castro, Ana Sánchez, la obra Hospital y otra empresa.
-- [X] T007 Crear `pruebas/integracion/salud.test.ts`, una prueba humo de `GET /salud` con `app.inject()`, para comprobar que la infraestructura funciona. Verificar que `npm run typecheck && npm run lint && npm test` pasan.
+- [x] T001 Instalar Vitest y `@vitest/coverage-v8` como dependencias de desarrollo. Crear `vitest.config.ts` con el alias `@/` → `src/`, `include: ['pruebas/**/*.test.ts']`, la cobertura de `src/servicios/**` con umbral de líneas del 80 % y la ejecución en serie para las pruebas de integración. Agregar los scripts `test` y `test:cobertura` en `package.json`.
+- [x] T002 [P] Instalar ESLint 9 con `typescript-eslint` y `eslint-config-prettier`. Crear `eslint.config.js` con las reglas del ECCT que se pueden automatizar (`no-var`, `prefer-const`, `eqeqeq`, `curly`) e ignorar `src/generated/**`. Agregar el script `lint` en `package.json`. Corregir los errores que aparezcan en `src/` sin cambiar comportamiento.
+- [x] T003 [P] Crear una base de prueba separada: un servicio `postgres-pruebas` (o una base `civiltrace_pruebas`) en `docker-compose.yml` y la variable `DATABASE_URL_PRUEBAS` en `.env.example`. No poner secretos reales.
+- [x] T004 Crear `pruebas/configuracion/configuracionGlobal.ts`, que aplica las migraciones con `prisma migrate reset --force --skip-seed` sobre la base de prueba antes de la suite. Crear también `pruebas/configuracion/baseDatosPrueba.ts`, con la función `limpiarTablas()` (TRUNCATE en cascada de las tablas de negocio entre archivos de prueba).
+- [x] T005 [P] Crear `pruebas/configuracion/dobleAlmacenamiento.ts`, un doble del servicio de almacenamiento que guarda las imágenes en memoria (`guardarImagen`, `obtenerImagen`, `eliminarImagen`). Conectarlo con `vi.mock('@/servicios/servicioAlmacenamiento')` en el setup.
+- [x] T006 Crear `pruebas/configuracion/fabricas.ts` con los ayudantes `crearEmpresa()`, `crearUsuario({ rol, empresaId, oficio? })`, `crearObra({ empresaId, supervisorId, trabajadorIds })`, `iniciarSesion(app, usuario)` (devuelve el encabezado `Authorization`) y `construirAppPrueba()` (envuelve `construirApp()`). Debe incluir los datos de [quickstart.md](./quickstart.md): Todo Concreto, María Castro, Ana Sánchez, la obra Hospital y otra empresa.
+- [x] T007 Crear `pruebas/integracion/salud.test.ts`, una prueba humo de `GET /salud` con `app.inject()`, para comprobar que la infraestructura funciona. Verificar que `npm run typecheck && npm run lint && npm test` pasan.
 
 **Checkpoint**: la puerta de calidad funciona.
 
@@ -57,6 +57,7 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - las relaciones inversas en `Empresa`, `Obra` y `Usuario`.
 
   Generar la migración con `npx prisma migrate dev --name asistencia_qr_horario` y correr `npm run generar`.
+
 - [ ] T009 [P] Crear `src/constantes/asistencia.ts` con las constantes de la sección "Constantes de negocio" de [data-model.md](./data-model.md).
 - [ ] T010 [P] Escribir primero `pruebas/unidad/fechasLocales.test.ts`, que cubra:
   - la conversión instante → fecha y minutos locales en `America/Tijuana` y en `America/Mexico_City`;
@@ -72,6 +73,7 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - `esZonaHorariaValida(zona)`.
 
   Deben pasar las pruebas de T010.
+
 - [ ] T012 [P] Implementar `src/utilidades/permisosObra.ts`:
   - `obtenerObraDeEmpresa(obraId, empresaId)`: lanza 404 si la obra no existe en la empresa;
   - `exigirSupervisorDeObra(obra, usuario)`: 403;
@@ -79,6 +81,7 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - `estaAsignadoAObra(trabajadorId, obraId)`.
 
   Agregar su prueba unitaria o de integración en `pruebas/integracion/permisosObra.test.ts`, que incluya otra empresa → 403/404 sin revelar datos.
+
 - [ ] T013 Implementar en `src/servicios/servicioHorario.ts` las funciones de lectura que comparten las historias, según R-06 y [data-model.md](./data-model.md) `HorarioObra.alcance`, `HorarioObra.fecha` y `HorarioObra.diasLaborales`:
   - `obtenerHorarioGeneral(obraId)`;
   - `obtenerHorarioEfectivo(obraId, fecha)`, que devuelve `{ horaEntrada, horaSalida, toleranciaMinutos, esDiaLaborable, esExcepcion }` o `null`;
@@ -129,6 +132,7 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - `resolverCodigoQr(codigoQr)`: valida el prefijo y busca por `tokenHash`; si no hay credencial, devuelve `null`.
 
   Según [data-model.md](./data-model.md) `CredencialAsistencia.token`, `CredencialAsistencia.tokenHash` y `CredencialAsistencia.trabajadorId` (una por trabajador, D-17).
+
 - [ ] T021 [US1] Implementar en `src/servicios/servicioRegistroAsistencia.ts` la función pura `clasificarJornada({ entradaMinutos, salidaMinutos?, horario, tipoActual })`, según R-07 y [data-model.md](./data-model.md) `RegistroAsistencia.tipoJornada`. Deben pasar las pruebas de T014.
 - [ ] T022 [US1] Implementar en `src/servicios/servicioRegistroAsistencia.ts` la función `procesarLoteEscaneos(supervisor, escaneos)`:
   - procesa en orden, con una transacción por escaneo;
@@ -140,6 +144,7 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - devuelve un resultado por escaneo.
 
   Según [data-model.md](./data-model.md) `RegistroAsistencia.fecha`, `.entradaEn`, `.entradaLatitud`, `.entradaLongitud`, `.entradaSinConexion`, `.entradaIdLocal`, `.entradaRegistradaPorId`, los campos `salida*`, `.esDiaLaborable`, `.horarioEntrada`, `.horarioSalida` y `.toleranciaMinutos`.
+
 - [ ] T023 [US1] Implementar en `src/servicios/servicioRegistroAsistencia.ts`:
   - `obtenerVistaPrevia(supervisor, obraId, codigoQr)`, que no guarda nada y lanza `ErrorHttp` 422 con `motivo`;
   - `obtenerPaqueteSinConexion(supervisor, obraId)`, con `fotoUrl` como ruta de la API y solo `huellaCredencial`;
@@ -149,6 +154,7 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - `listarObrasSupervisadas(supervisor)`.
 
   `faltasMes` se obtiene con una función de conteo de faltas del mes en `src/servicios/servicioCalendarioAsistencia.ts` (crear el archivo con esa función exportada; el resto se completa en US4).
+
 - [ ] T024 [US1] Crear `src/rutas/rutasAsistencia.ts` con:
   - `GET /asistencia/mi-credencial` (TRABAJADOR);
   - `GET /asistencia/mi-dia` (TRABAJADOR);
@@ -160,6 +166,7 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - `GET /obras/:obraId/asistencia/trabajadores/:trabajadorId/foto`.
 
   El cuerpo del error 422 debe incluir `motivo`. Registrar las rutas en `src/app.ts`.
+
 - [ ] T025 [US1] Agregar el oficio al perfil (D-18, FR-025a): `oficio` opcional en `src/esquemas/esquemasPerfil.ts` (máximo 60 caracteres; una cadena vacía se guarda como `null`), y devolverlo en `GET /perfil` y aceptarlo en `PUT /perfil` en `src/servicios/servicioPerfil.ts`, según [data-model.md](./data-model.md) `Usuario.oficio`. Prueba `CP06-A1` en `pruebas/integracion/perfilOficio.test.ts`.
 
 **Checkpoint**: US1 funciona y las pruebas CP21 pasan.
@@ -217,6 +224,7 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - `editarDetalleDia(supervisor, obraId, trabajadorId, fecha, cambios)`, en una transacción que crea el registro si no existe (FR-018), exige la anotación cuando el tipo resultante no es `COMPLETA` (FR-016) y escribe un `CambioAsistencia` por cada campo que cambia.
 
   Según [data-model.md](./data-model.md) `CambioAsistencia.campo`, `CambioAsistencia.valorAnterior`, `CambioAsistencia.valorNuevo` y `CambioAsistencia.autorId`.
+
 - [ ] T033 [US3] Agregar a `src/rutas/rutasAsistencia.ts` los endpoints `GET` y `PATCH /obras/:obraId/asistencia/trabajadores/:trabajadorId/dias/:fecha`, con la autorización del contrato (el `PATCH` solo para SUP-OBRA).
 
 **Checkpoint**: US1 a US3 funcionan.
@@ -252,6 +260,7 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - aplica la autorización TRA-PROPIO, SUP-OBRA o DUENO.
 
   Reutilizar la función de conteo de faltas creada en T023.
+
 - [ ] T037 [US4] Agregar `GET /asistencia/trabajadores/:trabajadorId/calendario` a `src/rutas/rutasAsistencia.ts`.
 
 **Checkpoint**: las cuatro historias funcionan de forma independiente.
