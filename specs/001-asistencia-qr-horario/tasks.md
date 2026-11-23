@@ -50,7 +50,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 **⚠️ CRITICAL**: no se empieza ninguna historia antes de terminar esta fase.
 
-- [ ] T008 Modificar `prisma/schema.prisma` según [data-model.md](./data-model.md):
+- [X] T008 Modificar `prisma/schema.prisma` según [data-model.md](./data-model.md):
   - los enums `AlcanceHorario`, `TipoJornada`, `MotivoAsistencia` y `EfectoPago`;
   - los campos `Empresa.zonaHoraria` y `Usuario.oficio`;
   - los modelos `HorarioObra`, `CredencialAsistencia` (con `trabajadorId @unique`), `RegistroAsistencia` (con `@@unique([trabajadorId, obraId, fecha])` y `entradaIdLocal`/`salidaIdLocal` únicos) y `CambioAsistencia`, todos con `onDelete: Restrict` y los índices del modelo;
@@ -58,13 +58,13 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
   Generar la migración con `npx prisma migrate dev --name asistencia_qr_horario` y correr `npm run generar`.
 
-- [ ] T009 [P] Crear `src/constantes/asistencia.ts` con las constantes de la sección "Constantes de negocio" de [data-model.md](./data-model.md).
-- [ ] T010 [P] Escribir primero `pruebas/unidad/fechasLocales.test.ts`, que cubra:
+- [X] T009 [P] Crear `src/constantes/asistencia.ts` con las constantes de la sección "Constantes de negocio" de [data-model.md](./data-model.md).
+- [X] T010 [P] Escribir primero `pruebas/unidad/fechasLocales.test.ts`, que cubra:
   - la conversión instante → fecha y minutos locales en `America/Tijuana` y en `America/Mexico_City`;
   - el cambio de horario de verano de Tijuana;
   - `HH:MM` → minutos;
   - el día de la semana local.
-- [ ] T011 Implementar `src/utilidades/fechasLocales.ts` con `Intl.DateTimeFormat` (R-05):
+- [X] T011 Implementar `src/utilidades/fechasLocales.ts` con `Intl.DateTimeFormat` (R-05):
   - `obtenerFechaLocal(instante, zona)` → `YYYY-MM-DD`;
   - `obtenerMinutosLocales(instante, zona)`;
   - `convertirHoraAMinutos('HH:MM')`;
@@ -74,7 +74,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
   Deben pasar las pruebas de T010.
 
-- [ ] T012 [P] Implementar `src/utilidades/permisosObra.ts`:
+- [X] T012 [P] Implementar `src/utilidades/permisosObra.ts`:
   - `obtenerObraDeEmpresa(obraId, empresaId)`: lanza 404 si la obra no existe en la empresa;
   - `exigirSupervisorDeObra(obra, usuario)`: 403;
   - `exigirSupervisorODueno(obra, usuario)`;
@@ -82,7 +82,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
   Agregar su prueba unitaria o de integración en `pruebas/integracion/permisosObra.test.ts`, que incluya otra empresa → 403/404 sin revelar datos.
 
-- [ ] T013 Implementar en `src/servicios/servicioHorario.ts` las funciones de lectura que comparten las historias, según R-06 y [data-model.md](./data-model.md) `HorarioObra.alcance`, `HorarioObra.fecha` y `HorarioObra.diasLaborales`:
+- [X] T013 Implementar en `src/servicios/servicioHorario.ts` las funciones de lectura que comparten las historias, según R-06 y [data-model.md](./data-model.md) `HorarioObra.alcance`, `HorarioObra.fecha` y `HorarioObra.diasLaborales`:
   - `obtenerHorarioGeneral(obraId)`;
   - `obtenerHorarioEfectivo(obraId, fecha)`, que devuelve `{ horaEntrada, horaSalida, toleranciaMinutos, esDiaLaborable, esExcepcion }` o `null`;
   - `obtenerZonaHorariaEmpresa(empresaId)`.
