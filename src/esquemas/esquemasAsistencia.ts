@@ -1,0 +1,74 @@
+/**
+ * @archivo esquemasAsistencia.ts
+ * @proyecto Civil Trace
+ * @descripcion Esquemas Zod de entrada de asistencia y horario de obra
+ *   (contrato: specs/001-asistencia-qr-horario/contracts/asistencia-api.md).
+ * @autor Emilio Manuel Esquivel
+ * @fecha 23/11/2026
+ * @version 1.0.0
+ * @requerimientos RF-19 Registrar asistencia propia, RF-27 Registrar asistencia por el
+ *   supervisor, RNF-07 Captura sin conexión
+ * @historial 23/11/2026 - Emilio Manuel Esquivel - Creación (feature 001)
+ */
+
+// 1. Importaciones
+import { z } from 'zod';
+
+import { MAXIMO_ESCANEOS_POR_LOTE } from '@/constantes/asistencia';
+
+// 3. Constantes del módulo
+const LATITUD_MAXIMA = 90;
+const LONGITUD_MAXIMA = 180;
+const LONGITUD_MAXIMA_CODIGO_QR = 200;
+const PATRON_FECHA = /^\d{4}-\d{2}-\d{2}$/;
+
+// 4. Esquemas
+export const esquemaFecha = z
+  .string({ error: 'La fecha es inválida' })
+  .regex(PATRON_FECHA, { error: 'La fecha debe tener el formato AAAA-MM-DD' })
+  .refine((valor) => !Number.isNaN(new Date(`${valor}T00:00:00Z`).getTime()), {
+    error: 'La fecha es inválida',
+  });
+
+export const esquemaParametrosObra = z.object({
+  obraId: z.string({ error: 'La obra es inválida' }).min(1, { error: 'La obra es inválida' }),
+});
+
+export const esquemaParametrosTrabajador = esquemaParametrosObra.extend({
+  trabajadorId: z
+    .string({ error: 'El trabajador es inválido' })
+    .min(1, { error: 'El trabajador es inválido' }),
+});
+
+export const esquemaConsultaFecha = z.object({ fecha: esquemaFecha.optional() });
+
+export const esquemaVistaPrevia = z.object({
+  codigoQr: z
+    .string({ error: 'Escanea un código QR' })
+    .min(1, { error: 'Escanea un código QR' })
+    .max(LONGITUD_MAXIMA_CODIGO_QR, { error: 'El código no es de Civil Trace' }),
+});
+
+const esquemaEscaneo = esquemaVistaPrevia
+  .extend({
+    idLocal: z.uuid({ error: 'Cada escaneo necesita un identificador válido' }),
+    obraId: z.string({ error: 'La obra es inválida' }).min(1, { error: 'La obra es inválida' }),
+    capturadoEn: z.iso.datetime({ error: 'La hora del escaneo es inválida' }),
+    sinConexion: z.boolean({ error: 'Indica si el escaneo fue sin conexión' }),
+    latitud: z.number().min(-LATITUD_MAXIMA).max(LATITUD_MAXIMA).nullable().default(null),
+    longitud: z.number().min(-LONGITUD_MAXIMA).max(LONGITUD_MAXIMA).nullable().default(null),
+  })
+  .refine((escaneo) => (escaneo.latitud === null) === (escaneo.longitud === null), {
+    error: 'La ubicación debe tener latitud y longitud',
+  });
+
+export const esquemaLoteEscaneos = z.object({
+  escaneos: z
+    .array(esquemaEscaneo, { error: 'Envía al menos un escaneo' })
+    .min(1, { error: 'Envía al menos un escaneo' })
+    .max(MAXIMO_ESCANEOS_POR_LOTE, {
+      error: `Envía como máximo ${MAXIMO_ESCANEOS_POR_LOTE} escaneos por vez`,
+    }),
+});
+
+export type DatosEscaneo = z.output<typeof esquemaEscaneo>;

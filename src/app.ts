@@ -4,7 +4,9 @@
  * @descripcion Construye la aplicación Fastify con sus plugins de seguridad y sus rutas.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.1.0
+ * @version 1.2.0
+ * @historial 23/11/2026 - Emilio Manuel Esquivel - Rutas de asistencia y "motivo" en errores;
+ *   registros silenciados en pruebas (feature 001)
  */
 
 // 1. Importaciones
@@ -24,6 +26,8 @@ import { rutasObras } from '@/rutas/rutasObras';
 import { rutasActividades } from '@/rutas/rutasActividades';
 import { rutasPruebaAlmacenamiento } from '@/rutas/rutasPruebaAlmacenamiento';
 import { rutasPerfil } from '@/rutas/rutasPerfil';
+import { rutasAsistencia } from '@/rutas/rutasAsistencia';
+import { ErrorHttp } from '@/utilidades/errores';
 
 // 3. Constantes del módulo
 const LIMITE_TAMANO_PETICION_BYTES = 100 * 1024;
@@ -67,7 +71,10 @@ export async function construirApp() {
         .send({ mensaje: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo' });
     }
 
-    return respuesta.status(codigoEstado).send({ mensaje: error.message });
+    const motivo = error instanceof ErrorHttp ? error.motivo : undefined;
+    return respuesta
+      .status(codigoEstado)
+      .send(motivo ? { mensaje: error.message, motivo } : { mensaje: error.message });
   });
 
   await app.register(helmet);
@@ -86,5 +93,7 @@ export async function construirApp() {
   await app.register(rutasActividades, { prefix: '/obras' });
   await app.register(rutasPruebaAlmacenamiento, { prefix: '/almacenamiento-prueba' });
   await app.register(rutasPerfil, { prefix: '/perfil' });
+  // Sin prefijo: combina rutas /asistencia/* y /obras/:obraId/asistencia/*.
+  await app.register(rutasAsistencia);
   return app;
 }
