@@ -19,6 +19,10 @@ preguntar. Las nuevas decisiones se agregan al final con fecha.
 | D-10 | 20/11/2026 | Las fotos del trabajador nacen "Pendiente de revisión"; el supervisor las aprueba o rechaza con observación. Solo las aprobadas cuentan para terminar actividades, reportes, entregas y actas. Las que sube el supervisor nacen aprobadas. |
 | D-11 | 20/11/2026 | La lista de protección personal (EPP) queda fuera del alcance. |
 | D-12 | 20/11/2026 | Contraseñas con criterios generales de seguridad: las reglas que ya usa la API al cambiar contraseña (mínimo 8 caracteres, una minúscula, una mayúscula y un número; argon2). Hoy el registro solo exige 8 caracteres: hay que aplicar las mismas reglas en registro y cambio. |
+| D-13 | 23/11/2026 | RF-56: los días con descuento en el pago (medio día o sin pago) muestran el símbolo **$** en el calendario de asistencia, además de su color. Hay que agregarlo al Figma (`SUP_CalendarioTrabajador`, `TRA-HIstorial asistencia`). |
+| D-14 | 23/11/2026 | La asistencia por QR funciona **sin conexión**: el supervisor escanea, el registro se guarda en su teléfono y se envía al recuperar la señal, igual que las evidencias (RNF-07). El servidor lo vuelve a validar al recibirlo. |
+| D-15 | 23/11/2026 | Zona horaria por empresa, `America/Tijuana` por defecto. Más adelante se podrá cambiar a la hora de CDMX (`America/Mexico_City`). |
+| D-16 | 23/11/2026 | El aviso "Tienes N falta(s) este mes" y el recordatorio de las 3 faltas injustificadas se muestran al trabajador solo si tiene al menos 1 falta en el mes. |
 
 ## Técnica
 
