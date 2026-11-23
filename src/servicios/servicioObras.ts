@@ -113,7 +113,6 @@ async function validarTrabajadores(empresaId: string, ids: string[]): Promise<st
   return idsUnicos;
 }
 
-
 // 5. Funciones públicas
 /**
  * Lista las obras de una empresa, de la más reciente a la más antigua.

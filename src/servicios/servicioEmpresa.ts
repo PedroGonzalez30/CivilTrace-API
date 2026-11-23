@@ -170,10 +170,7 @@ export async function obtenerPersonalEmpresa(empresaId: string): Promise<Persona
  * @param idPersona - Id de la persona a sacar de la empresa.
  * @throws ErrorHttp 404 si no existe en esa empresa o no es supervisor/trabajador.
  */
-export async function eliminarPersonalEmpresa(
-  empresaId: string,
-  idPersona: string,
-): Promise<void> {
+export async function eliminarPersonalEmpresa(empresaId: string, idPersona: string): Promise<void> {
   await prisma.$transaction(async (transaccion) => {
     const persona = await transaccion.usuario.findFirst({
       where: { id: idPersona, empresaId, rol: { in: [Rol.SUPERVISOR, Rol.TRABAJADOR] } },

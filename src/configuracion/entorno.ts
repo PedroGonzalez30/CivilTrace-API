@@ -29,11 +29,7 @@ const esquemaEntorno = z.object({
   // Opcionales: sin ellas la API arranca, pero la subida de imágenes responde 503.
   AZURE_STORAGE_CUENTA: z.string().min(1).optional(),
   AZURE_STORAGE_CONTENEDOR: z.string().min(1).optional(),
-  TAMANO_MAX_EVIDENCIA_MB: z.coerce
-    .number()
-    .int()
-    .positive()
-    .default(TAMANO_MAXIMO_POR_DEFECTO_MB),
+  TAMANO_MAX_EVIDENCIA_MB: z.coerce.number().int().positive().default(TAMANO_MAXIMO_POR_DEFECTO_MB),
 });
 
 // 4. Función principal

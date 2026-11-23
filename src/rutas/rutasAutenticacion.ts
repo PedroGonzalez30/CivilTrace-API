@@ -87,19 +87,16 @@ export async function rutasAutenticacion(app: FastifyInstance): Promise<void> {
     usuario: await obtenerUsuarioActual(peticion.user.sub),
   }));
 
-    app.post('/unirse-empresa', limiteDe(MAXIMO_INTENTOS_LOGIN), async (peticion) => {
+  app.post('/unirse-empresa', limiteDe(MAXIMO_INTENTOS_LOGIN), async (peticion) => {
     const resultado = await unirseAEmpresa(validar(esquemaUnirseEmpresa, peticion.body));
     return armarRespuesta(resultado);
   });
 
-    app.post(
+  app.post(
     '/cambiar-contrasena',
     { preHandler: [verificarToken], ...limiteDe(MAXIMO_INTENTOS_LOGIN) },
     async (peticion, respuesta) => {
-      await cambiarContrasena(
-        peticion.user.sub,
-        validar(esquemaCambiarContrasena, peticion.body),
-      );
+      await cambiarContrasena(peticion.user.sub, validar(esquemaCambiarContrasena, peticion.body));
       return respuesta.status(CODIGO_SIN_CONTENIDO).send();
     },
   );
