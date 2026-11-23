@@ -4,6 +4,7 @@ API de Civil Trace: registra obras, actividades, evidencias fotográficas, asist
 aceptación del cliente. La usan la app móvil (dueño, supervisor, trabajador) y la página web del cliente.
 
 Antes de cualquier trabajo lee:
+
 - `.specify/memory/constitution.md` (principios obligatorios: estándar ECCT, pruebas, seguridad, Azure).
 - `docs/decisiones.md` (decisiones ya tomadas; no las vuelvas a preguntar).
 

@@ -20,23 +20,23 @@
 
 - `RF-61 Calcular retardos` y las métricas de desempeño (D-09) van en el feature de desempeño. Ese feature usará los registros que se crean aquí.
 - `RF-21 Notificar registro de salida pendiente`: no aparece en el Figma.
-- `RF-28 Registrar asistencia biométrica` y `RF-29 Notificar faltas acumuladas` son *Won't have*.
+- `RF-28 Registrar asistencia biométrica` y `RF-29 Notificar faltas acumuladas` son _Won't have_.
 
 **Pantallas del Figma** (archivo `EIXrnioyKFd9EoBY5PINOV`):
 
-| Pantalla | node-id | Rol |
-|---|---|---|
-| `SUP_Asistencia_EscogerObra` | `96:2903` | Supervisor |
-| `SUP_Asistencia_LeerQr (accesos nuevos)` | `2272:117` (sustituye a `96:2209`) | Supervisor |
-| `Sup_Asistencia_ConfirmarQR` | `96:2228` | Supervisor |
-| `SUP_HorarioObra` | `2272:170` | Supervisor |
-| `SUP_DetallesAsistencia` | `2272:250` | Supervisor |
-| `SUP_CalendarioTrabajador` | `2272:354` | Supervisor o dueño |
-| `SUP_CalendarioTrabajador_DetalleDia` | `2272:523` | Supervisor o dueño |
-| `TRA-Asistencia Dia` | `96:329` | Trabajador |
-| `TRA-HIstorial asistencia` | `96:389` | Trabajador |
+| Pantalla                                 | node-id                            | Rol                |
+| ---------------------------------------- | ---------------------------------- | ------------------ |
+| `SUP_Asistencia_EscogerObra`             | `96:2903`                          | Supervisor         |
+| `SUP_Asistencia_LeerQr (accesos nuevos)` | `2272:117` (sustituye a `96:2209`) | Supervisor         |
+| `Sup_Asistencia_ConfirmarQR`             | `96:2228`                          | Supervisor         |
+| `SUP_HorarioObra`                        | `2272:170`                         | Supervisor         |
+| `SUP_DetallesAsistencia`                 | `2272:250`                         | Supervisor         |
+| `SUP_CalendarioTrabajador`               | `2272:354`                         | Supervisor o dueño |
+| `SUP_CalendarioTrabajador_DetalleDia`    | `2272:523`                         | Supervisor o dueño |
+| `TRA-Asistencia Dia`                     | `96:329`                           | Trabajador         |
+| `TRA-HIstorial asistencia`               | `96:389`                           | Trabajador         |
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1: Registrar entrada y salida con QR (Priority: P1)
 
@@ -109,8 +109,8 @@ El trabajador ve su propio calendario mensual de asistencia. El supervisor y el 
 3. **Given** un día con descuento en el pago (medio día o sin pago), **When** el trabajador lo toca, **Then** ve el motivo del descuento (RF-56).
 4. **Given** un trabajador sin faltas ni descuentos en el mes, **When** abre su calendario, **Then** no ve alertas de faltas y la confirmación del supervisor dice "Sin faltas este mes".
 5. **Given** un trabajador con al menos 1 falta en el mes, **When** abre su calendario, **Then** ve "Tienes N falta(s) este mes" y el recordatorio "Recuerda que 3 faltas injustificadas pueden ser motivo de despido." Sin faltas en el mes no se muestra ni el aviso ni el recordatorio.
-7. **Given** un día con efecto en el pago "Medio día" o "Sin pago", **When** cualquier usuario con permiso abre el calendario, **Then** el día muestra el símbolo **$** además de su color (RF-56, decisión D-13).
-6. **Given** un dueño, **When** abre el calendario de un trabajador de otra empresa, **Then** el sistema lo impide.
+6. **Given** un día con efecto en el pago "Medio día" o "Sin pago", **When** cualquier usuario con permiso abre el calendario, **Then** el día muestra el símbolo **$** además de su color (RF-56, decisión D-13).
+7. **Given** un dueño, **When** abre el calendario de un trabajador de otra empresa, **Then** el sistema lo impide.
 
 ---
 
@@ -129,7 +129,7 @@ El trabajador ve su propio calendario mensual de asistencia. El supervisor y el 
 - **Conflicto al sincronizar:** si al enviar un registro hecho sin conexión el servidor ya tiene la entrada y la salida de ese trabajador, obra y día, se conserva lo que ya estaba. El registro sobrante se informa al supervisor y no se guarda.
 - **Asignación cambiada:** si al sincronizar el trabajador ya no está asignado a la obra, el registro se rechaza y se informa al supervisor.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -184,7 +184,7 @@ El trabajador ve su propio calendario mensual de asistencia. El supervisor y el 
 - **FR-029**: Al recuperar la conexión, los registros pendientes DEBEN enviarse en orden. El servidor los vuelve a validar con FR-004 y FR-007, y el supervisor ve cuáles se guardaron y cuáles se rechazaron y por qué.
 - **FR-030**: Los registros pendientes de envío no se pierden si se cierra la app o se reinicia el teléfono.
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **Horario de obra**: pertenece a una obra. Tiene hora de entrada, hora de salida, tolerancia, días laborales y alcance: general o un solo día con su fecha. La obra tiene un horario general vigente y puede tener excepciones de un día.
 - **Credencial QR del trabajador**: identificador secreto y permanente de un trabajador, que se presenta como código QR. Hay una por trabajador.
@@ -192,7 +192,7 @@ El trabajador ve su propio calendario mensual de asistencia. El supervisor y el 
 - **Registro de asistencia (día)**: un trabajador en una obra en una fecha. Tiene la hora de entrada y la de salida (con la ubicación y el supervisor de cada una), el tipo de jornada, el motivo, el efecto en el pago, la anotación y el horario con que se evaluó. Hay uno por trabajador, obra y fecha.
 - **Historial de asistencia**: cada cambio a un registro de asistencia, con el campo, el valor anterior, el valor nuevo, el autor, la fecha y la hora.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
@@ -210,7 +210,7 @@ El trabajador ve su propio calendario mensual de asistencia. El supervisor y el 
 - **Zona horaria:** una por empresa, con `America/Tijuana` por defecto. El cambio a `America/Mexico_City` queda para después (FR-024a).
 - **Hora sin conexión:** la hora del teléfono del supervisor se acepta como válida. Detectar relojes mal configurados queda fuera del MVP.
 - **Edición de detalles:** solo la hace el supervisor de la obra, como indica D-07. El dueño consulta el calendario y puede cambiar el horario (D-06), pero el Figma no le da la pantalla de detalles.
-- **Faltas justificadas e injustificadas:** una falta es injustificada si no tiene motivo y justificada si lo tiene. Esto solo afecta lo que se muestra; no genera alertas, porque RF-29 es *Won't have*.
+- **Faltas justificadas e injustificadas:** una falta es injustificada si no tiene motivo y justificada si lo tiene. Esto solo afecta lo que se muestra; no genera alertas, porque RF-29 es _Won't have_.
 - **Símbolo de descuento (RF-56):** el equipo decidió (D-13) que los días con descuento muestren el símbolo **$** en el calendario. El Figma todavía no lo tiene y DEBE actualizarse en `SUP_CalendarioTrabajador`, `TRA-HIstorial asistencia` y sus detalles, con el mismo estilo.
 - **Fotografía del trabajador:** se usa la foto de perfil que ya existe. Si no tiene, se muestran sus iniciales.
 - **Oficio (D-18):** el trabajador lo captura en su perfil. Es opcional y, si no lo tiene, se muestra solo el nombre.
