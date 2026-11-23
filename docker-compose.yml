@@ -13,5 +13,20 @@ services:
     volumes:
       - datos_postgres:/var/lib/postgresql/data
 
+  # Base solo para pruebas automáticas: vive en memoria (tmpfs) para que sea rápida y se
+  # borre al apagar el contenedor; las pruebas la reinician con las migraciones.
+  baseDatosPruebas:
+    image: postgres:17
+    container_name: civiltrace-bd-pruebas
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: civiltrace_pruebas
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT_PRUEBAS:-5434}:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+
 volumes:
   datos_postgres:

@@ -130,4 +130,3 @@ Se inserta en la misma transacción que la actualización del registro. No hay a
 | `MAXIMO_MINUTOS_EN_FUTURO` | `5` |
 | `LONGITUD_MAXIMA_ANOTACION` | `500` |
 | `PREFIJO_QR` | `'ct1.'` |
-| `DURACION_URL_FOTO_MINUTOS` | `60` |

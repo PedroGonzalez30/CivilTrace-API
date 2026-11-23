@@ -110,9 +110,13 @@ Pantallas: `SUP_Asistencia_EscogerObra` (`96:2903`), `SUP_Asistencia_LeerQr` (`2
 200 { "generadoEn": "...", "zonaHoraria": "America/Tijuana",
   "horario": { "general": {...} | null, "excepcionHoy": {...} | null },
   "trabajadores": [ { "id": "...", "nombre": "Emilio Manuel Esquivel Quiñonez",
-      "oficio": "Plomero" | null, "fotoUrl": "https://...sas" | null,
+      "oficio": "Plomero" | null, "fotoUrl": "/obras/:obraId/asistencia/trabajadores/:id/foto" | null,
       "huellaCredencial": "<sha256 hex>" | null, "faltasMes": 0 } ] }
 ```
+
+### `GET /obras/:obraId/asistencia/trabajadores/:trabajadorId/foto`
+
+**Quién**: SUP-OBRA o DUENO, con el trabajador asignado a la obra. Devuelve los bytes de la foto de perfil con su `Content-Type` y `Cache-Control: private, no-cache`. Responde **404** si el trabajador no tiene foto.
 
 ### `POST /obras/:obraId/asistencia/vista-previa`
 

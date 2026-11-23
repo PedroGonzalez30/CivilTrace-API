@@ -33,10 +33,18 @@ const CODIGO_ERROR_SERVIDOR = 500;
 const CODIGO_DEMASIADAS_PETICIONES = 429;
 
 // 4. Función principal
+// En pruebas los registros solo ensucian la salida de Vitest.
+function obtenerNivelRegistro(): string {
+  if (entorno.NODE_ENV === 'test') {
+    return 'silent';
+  }
+  return entorno.NODE_ENV === 'production' ? 'info' : 'debug';
+}
+
 export async function construirApp() {
   const app = Fastify({
     logger: {
-      level: entorno.NODE_ENV === 'production' ? 'info' : 'debug',
+      level: obtenerNivelRegistro(),
       redact: ['req.headers.authorization'],
     },
     bodyLimit: LIMITE_TAMANO_PETICION_BYTES,

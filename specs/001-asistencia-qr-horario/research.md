@@ -16,7 +16,7 @@ Cada punto sigue el formato Decisión / Razón / Alternativas. Ninguno cambia el
 ## R-02. Validación sin conexión (D-14, FR-026 a FR-030)
 
 - **Decisión**: el endpoint `GET /obras/:obraId/asistencia/paquete-sin-conexion` entrega a la app del supervisor:
-  - los trabajadores asignados con su id, nombre, oficio, una URL temporal de su foto (60 min) y la **huella SHA-256** de su credencial vigente;
+  - los trabajadores asignados con su id, nombre, oficio, la ruta de la API para su foto y la **huella SHA-256** de su credencial vigente;
   - el horario general y la excepción de hoy;
   - la zona horaria y las faltas del mes;
   - `generadoEn`.
@@ -95,7 +95,8 @@ Cada punto sigue el formato Decisión / Razón / Alternativas. Ninguno cambia el
 
 ## R-11. Fotografía del trabajador
 
-- **Decisión**: se usa `Usuario.fotoBlob`, que ya existe, servida con una URL SAS de lectura de 60 minutos con el servicio de almacenamiento actual (principio IV.4). Si no hay foto, la app muestra las iniciales.
+- **Decisión**: se usa `Usuario.fotoBlob`, que ya existe, servida **a través de la API** con `GET /obras/:obraId/asistencia/trabajadores/:trabajadorId/foto` (SUP-OBRA o DUENO), igual que `GET /perfil/foto` (principio IV.4). La app la descarga con conexión y la guarda para usarla sin conexión. Si no hay foto, la app muestra las iniciales.
+- **Ajuste (23/11/2026, implementación)**: se descartó la URL SAS porque la API no tiene código para generar enlaces temporales, y servirla por la API reutiliza `obtenerImagen`.
 
 ## R-12. Infraestructura de pruebas y lint
 
