@@ -1,23 +1,3 @@
-<!--
-Sync Impact Report
-- Versión: (plantilla sin llenar) → 1.0.0 (adopción inicial)
-- Principios definidos:
-  - I. Alcance: el Figma manda
-  - II. Estándar de codificación (ECCT v1.0) — no negociable
-  - III. Pruebas primero, ligadas al plan de pruebas
-  - IV. Seguridad y datos
-  - V. Azure y portabilidad al cliente
-  - VI. Forma de trabajar
-- Secciones agregadas: Restricciones técnicas (stack), Puertas de calidad, Gobierno
-- Secciones eliminadas: ninguna
-- Plantillas: no se modifican (las leen los comandos en tiempo de ejecución)
-- Pendientes:
-  - TODO(DECISIONES): `docs/decisiones.md` no existe todavía; los principios I.3 y VI.4 lo
-    exigen. Crearlo en el módulo 00.
-  - `npm run lint` y `npm test` aún no existen (ver CLAUDE.md); son requisito de las puertas
-    de calidad.
--->
-
 # Constitución del proyecto Civil Trace
 
 Equipo 2+2 (UABC FIAD, grupo 972). Estos principios son obligatorios para toda especificación,
