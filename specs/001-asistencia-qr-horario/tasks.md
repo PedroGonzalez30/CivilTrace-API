@@ -32,13 +32,13 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 **Purpose**: la API todavía no tiene `lint` ni `test` (research R-12). Sin esto no se cumple la puerta de calidad.
 
-- [ ] T001 Instalar Vitest y `@vitest/coverage-v8` como dependencias de desarrollo. Crear `vitest.config.ts` con el alias `@/` → `src/`, `include: ['pruebas/**/*.test.ts']`, la cobertura de `src/servicios/**` con umbral de líneas del 80 % y la ejecución en serie para las pruebas de integración. Agregar los scripts `test` y `test:cobertura` en `package.json`.
-- [ ] T002 [P] Instalar ESLint 9 con `typescript-eslint` y `eslint-config-prettier`. Crear `eslint.config.js` con las reglas del ECCT que se pueden automatizar (`no-var`, `prefer-const`, `eqeqeq`, `curly`) e ignorar `src/generated/**`. Agregar el script `lint` en `package.json`. Corregir los errores que aparezcan en `src/` sin cambiar comportamiento.
-- [ ] T003 [P] Crear una base de prueba separada: un servicio `postgres-pruebas` (o una base `civiltrace_pruebas`) en `docker-compose.yml` y la variable `DATABASE_URL_PRUEBAS` en `.env.example`. No poner secretos reales.
-- [ ] T004 Crear `pruebas/configuracion/configuracionGlobal.ts`, que aplica las migraciones con `prisma migrate reset --force --skip-seed` sobre la base de prueba antes de la suite. Crear también `pruebas/configuracion/baseDatosPrueba.ts`, con la función `limpiarTablas()` (TRUNCATE en cascada de las tablas de negocio entre archivos de prueba).
-- [ ] T005 [P] Crear `pruebas/configuracion/dobleAlmacenamiento.ts`, un doble del servicio de almacenamiento cuya URL de lectura devuelve `https://almacenamiento.prueba/<blob>?sas=1`. Conectarlo con `vi.mock('@/servicios/servicioAlmacenamiento')` en el setup.
-- [ ] T006 Crear `pruebas/configuracion/fabricas.ts` con los ayudantes `crearEmpresa()`, `crearUsuario({ rol, empresaId, oficio? })`, `crearObra({ empresaId, supervisorId, trabajadorIds })`, `iniciarSesion(app, usuario)` (devuelve el encabezado `Authorization`) y `construirAppPrueba()` (envuelve `construirApp()`). Debe incluir los datos de [quickstart.md](./quickstart.md): Todo Concreto, María Castro, Ana Sánchez, la obra Hospital y otra empresa.
-- [ ] T007 Crear `pruebas/integracion/salud.test.ts`, una prueba humo de `GET /salud` con `app.inject()`, para comprobar que la infraestructura funciona. Verificar que `npm run typecheck && npm run lint && npm test` pasan.
+- [X] T001 Instalar Vitest y `@vitest/coverage-v8` como dependencias de desarrollo. Crear `vitest.config.ts` con el alias `@/` → `src/`, `include: ['pruebas/**/*.test.ts']`, la cobertura de `src/servicios/**` con umbral de líneas del 80 % y la ejecución en serie para las pruebas de integración. Agregar los scripts `test` y `test:cobertura` en `package.json`.
+- [X] T002 [P] Instalar ESLint 9 con `typescript-eslint` y `eslint-config-prettier`. Crear `eslint.config.js` con las reglas del ECCT que se pueden automatizar (`no-var`, `prefer-const`, `eqeqeq`, `curly`) e ignorar `src/generated/**`. Agregar el script `lint` en `package.json`. Corregir los errores que aparezcan en `src/` sin cambiar comportamiento.
+- [X] T003 [P] Crear una base de prueba separada: un servicio `postgres-pruebas` (o una base `civiltrace_pruebas`) en `docker-compose.yml` y la variable `DATABASE_URL_PRUEBAS` en `.env.example`. No poner secretos reales.
+- [X] T004 Crear `pruebas/configuracion/configuracionGlobal.ts`, que aplica las migraciones con `prisma migrate reset --force --skip-seed` sobre la base de prueba antes de la suite. Crear también `pruebas/configuracion/baseDatosPrueba.ts`, con la función `limpiarTablas()` (TRUNCATE en cascada de las tablas de negocio entre archivos de prueba).
+- [X] T005 [P] Crear `pruebas/configuracion/dobleAlmacenamiento.ts`, un doble del servicio de almacenamiento que guarda las imágenes en memoria (`guardarImagen`, `obtenerImagen`, `eliminarImagen`). Conectarlo con `vi.mock('@/servicios/servicioAlmacenamiento')` en el setup.
+- [X] T006 Crear `pruebas/configuracion/fabricas.ts` con los ayudantes `crearEmpresa()`, `crearUsuario({ rol, empresaId, oficio? })`, `crearObra({ empresaId, supervisorId, trabajadorIds })`, `iniciarSesion(app, usuario)` (devuelve el encabezado `Authorization`) y `construirAppPrueba()` (envuelve `construirApp()`). Debe incluir los datos de [quickstart.md](./quickstart.md): Todo Concreto, María Castro, Ana Sánchez, la obra Hospital y otra empresa.
+- [X] T007 Crear `pruebas/integracion/salud.test.ts`, una prueba humo de `GET /salud` con `app.inject()`, para comprobar que la infraestructura funciona. Verificar que `npm run typecheck && npm run lint && npm test` pasan.
 
 **Checkpoint**: la puerta de calidad funciona.
 
@@ -114,7 +114,7 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - supervisor de otra obra → `NO_ES_SUPERVISOR`;
   - lote de 101 → 400.
 - [ ] T017 [P] [US1] Crear `pruebas/integracion/vistaPreviaYPaquete.test.ts` con:
-  - `POST /obras/:obraId/asistencia/vista-previa`, que devuelve el tipo `ENTRADA`/`SALIDA`, el nombre, el oficio, `fotoUrl` del doble y `faltasMes`, y responde 422 con cada `motivo`;
+  - `POST /obras/:obraId/asistencia/vista-previa`, que devuelve el tipo `ENTRADA`/`SALIDA`, el nombre, el oficio, `fotoUrl` como ruta de la API; `GET .../foto` devuelve la imagen del doble y `faltasMes`, y responde 422 con cada `motivo`;
   - `GET /obras/:obraId/asistencia/paquete-sin-conexion`, que incluye `huellaCredencial` = SHA-256 del token y **nunca** el token en claro;
   - `GET /asistencia/mis-obras`, que solo devuelve las obras supervisadas.
 - [ ] T018 [P] [US1] Crear `pruebas/integracion/resumenDia.test.ts` con:
@@ -142,7 +142,8 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   Según [data-model.md](./data-model.md) `RegistroAsistencia.fecha`, `.entradaEn`, `.entradaLatitud`, `.entradaLongitud`, `.entradaSinConexion`, `.entradaIdLocal`, `.entradaRegistradaPorId`, los campos `salida*`, `.esDiaLaborable`, `.horarioEntrada`, `.horarioSalida` y `.toleranciaMinutos`.
 - [ ] T023 [US1] Implementar en `src/servicios/servicioRegistroAsistencia.ts`:
   - `obtenerVistaPrevia(supervisor, obraId, codigoQr)`, que no guarda nada y lanza `ErrorHttp` 422 con `motivo`;
-  - `obtenerPaqueteSinConexion(supervisor, obraId)`, con la URL de foto de `DURACION_URL_FOTO_MINUTOS` y solo `huellaCredencial`;
+  - `obtenerPaqueteSinConexion(supervisor, obraId)`, con `fotoUrl` como ruta de la API y solo `huellaCredencial`;
+  - `obtenerFotoTrabajador(usuario, obraId, trabajadorId)`, que reutiliza `obtenerImagen`;
   - `obtenerResumenDia(usuario, obraId, fecha?)`;
   - `obtenerMiDia(trabajador)`;
   - `listarObrasSupervisadas(supervisor)`.
@@ -155,7 +156,8 @@ description: "Lista de tareas del feature 001: asistencia con QR, horario por ob
   - `POST /asistencia/registros` (SUPERVISOR);
   - `GET /obras/:obraId/asistencia/paquete-sin-conexion`;
   - `POST /obras/:obraId/asistencia/vista-previa`;
-  - `GET /obras/:obraId/asistencia`.
+  - `GET /obras/:obraId/asistencia`;
+  - `GET /obras/:obraId/asistencia/trabajadores/:trabajadorId/foto`.
 
   El cuerpo del error 422 debe incluir `motivo`. Registrar las rutas en `src/app.ts`.
 - [ ] T025 [US1] Agregar el oficio al perfil (D-18, FR-025a): `oficio` opcional en `src/esquemas/esquemasPerfil.ts` (máximo 60 caracteres; una cadena vacía se guarda como `null`), y devolverlo en `GET /perfil` y aceptarlo en `PUT /perfil` en `src/servicios/servicioPerfil.ts`, según [data-model.md](./data-model.md) `Usuario.oficio`. Prueba `CP06-A1` en `pruebas/integracion/perfilOficio.test.ts`.

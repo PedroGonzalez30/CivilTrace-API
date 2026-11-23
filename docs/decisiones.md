@@ -38,6 +38,9 @@ preguntar. Las nuevas decisiones se agregan al final con fecha.
 | T-04 | 20/11/2026 | Infraestructura con Terraform en `CivilTrace-API/infra`. Lo existente se importa sin recrearse; lo nuevo se agrega en las mismas regiones. Al entregar al cliente se crea todo de nuevo en **México Central**. |
 | T-05 | 20/11/2026 | Recursos existentes (no recrear): grupo `rg-civiltrace` (West US); `plan-civiltrace` B1 y `civiltrace-api` (West US); `civiltrace-bd3` PostgreSQL 17 Standard_B1ms (Canada Central); `civiltracestorage` Standard_LRS (West US); identidades `oidc-msi-9d1d` y `oidc-msi-a92e` (West US). Variables de la API: `AZURE_STORAGE_CONTENEDOR`, `AZURE_STORAGE_CUENTA`, `DATABASE_URL`, `JWT_SECRETO`, `NODE_ENV`. |
 | T-06 | 20/11/2026 | Pendiente: la API (West US) y la base (Canada Central) están en regiones distintas, lo que agrega latencia. Se mantiene así en el MVP; en el entorno del cliente van juntas. |
+| T-07 | 23/11/2026 | ESLint de la API vive aislado en `herramientas/lint/` (se instala con el `postinstall` y corre con `npm run lint`). Razón: la API usa TypeScript 7, que ya no trae la API de JavaScript que necesita `typescript-eslint`; ahí `typescript` apunta a `@typescript/typescript6` solo para el lint. La compilación sigue con TypeScript 7. |
+| T-08 | 23/11/2026 | Las pruebas usan una base PostgreSQL aparte (`baseDatosPruebas` en `docker-compose`, puerto 5434, en memoria). Se preparan con `prisma migrate deploy` y se vacían con TRUNCATE entre archivos; no se usa `migrate reset`. |
+| T-09 | 23/11/2026 | La foto del trabajador en asistencia se sirve **a través de la API** (`GET /obras/:obraId/asistencia/trabajadores/:id/foto`), igual que `GET /perfil/foto`, en lugar de URL SAS. |
 
 ## Pendientes de confirmar
 

@@ -11,7 +11,11 @@
     "verificar-formato": "prettier --check .",
     "start": "node --import tsx src/servidor.ts",
     "generar": "prisma generate",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate && npm install --prefix herramientas/lint --no-audit --no-fund",
+    "lint": "node herramientas/lint/node_modules/eslint/bin/eslint.js --config herramientas/lint/eslint.config.js src pruebas",
+    "lint:instalar": "npm install --prefix herramientas/lint",
+    "test": "vitest run",
+    "test:cobertura": "vitest run --coverage"
   },
   "repository": {
     "type": "git",
@@ -24,8 +28,10 @@
   "devDependencies": {
     "@types/node": "^24.19.2",
     "@types/pg": "^8.23.1",
+    "@vitest/coverage-v8": "^5.1.1",
     "prettier": "^3.10.1",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
   },
   "dependencies": {
     "@azure/identity": "^4.14.1",
@@ -42,5 +48,11 @@
     "prisma": "^7.10.1",
     "tsx": "^4.23.15",
     "zod": "^4.6.7"
+  },
+  "allowScripts": {
+    "@prisma/engines@7.10.1": true,
+    "argon2@0.45.2": true,
+    "esbuild@0.28.2": true,
+    "prisma@7.10.1": true
   }
 }

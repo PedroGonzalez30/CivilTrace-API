@@ -1,0 +1,15 @@
+{
+  "name": "civiltrace-api-lint",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ESLint aislado: TypeScript 7 no trae la API de JavaScript que necesita typescript-eslint, así que aquí 'typescript' apunta al paquete de compatibilidad 6.0 de Microsoft (decisión T-07).",
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "eslint": "^9.39.0",
+    "eslint-config-prettier": "^10.1.0",
+    "globals": "^16.5.0",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "typescript-eslint": "^8.74.0"
+  }
+}
