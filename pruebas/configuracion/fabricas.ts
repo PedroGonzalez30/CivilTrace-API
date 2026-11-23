@@ -29,6 +29,19 @@ interface DatosUsuarioPrueba {
   creadoEn?: Date;
 }
 
+interface DatosHorarioPrueba {
+  obraId: string;
+  empresaId: string;
+  creadoPorId: string;
+  horaEntrada?: string;
+  horaSalida?: string;
+  toleranciaMinutos?: number;
+  diasLaborales?: number[];
+  alcance?: 'GENERAL' | 'DIA';
+  fecha?: string;
+  creadoEn?: Date;
+}
+
 interface DatosObraPrueba {
   empresaId: string;
   supervisorId: string | null;
@@ -43,6 +56,10 @@ interface DatosObraPrueba {
 const HASH_CONTRASENA_PRUEBA = '$argon2id$v=19$m=65536,t=3,p=4$cHJ1ZWJh$cHJ1ZWJhcHJ1ZWJh';
 const FECHA_INICIO_OBRA_POR_DEFECTO = '2026-01-01';
 const FECHA_FINAL_OBRA_POR_DEFECTO = '2028-12-31';
+// Alta fija de los usuarios: las faltas calculadas cuentan desde aquí (D-20), así las pruebas
+// no dependen de la fecha real en que se ejecutan.
+export const FECHA_ALTA_USUARIOS = new Date('2026-01-01T08:00:00Z');
+export const LUNES_A_SABADO = [1, 2, 3, 4, 5, 6];
 
 // 4. Funciones
 /** Construye la app de Fastify lista para usar con app.inject(). */
@@ -73,7 +90,7 @@ export async function crearUsuario(datos: DatosUsuarioPrueba) {
       rol: datos.rol,
       empresaId: datos.empresaId,
       ...(datos.oficio !== undefined ? { oficio: datos.oficio } : {}),
-      ...(datos.creadoEn ? { creadoEn: datos.creadoEn } : {}),
+      creadoEn: datos.creadoEn ?? FECHA_ALTA_USUARIOS,
     },
   });
 }
@@ -90,6 +107,24 @@ export async function crearObra(datos: DatosObraPrueba) {
       empresaId: datos.empresaId,
       supervisorId: datos.supervisorId,
       trabajadores: { connect: (datos.trabajadorIds ?? []).map((id) => ({ id })) },
+    },
+  });
+}
+
+/** Guarda un horario de obra (por defecto 08:00–16:00, 15 min, lunes a sábado, general). */
+export async function crearHorario(datos: DatosHorarioPrueba) {
+  return prisma.horarioObra.create({
+    data: {
+      obraId: datos.obraId,
+      empresaId: datos.empresaId,
+      creadoPorId: datos.creadoPorId,
+      alcance: datos.alcance ?? 'GENERAL',
+      fecha: datos.fecha ? new Date(`${datos.fecha}T00:00:00Z`) : null,
+      horaEntrada: datos.horaEntrada ?? '08:00',
+      horaSalida: datos.horaSalida ?? '16:00',
+      toleranciaMinutos: datos.toleranciaMinutos ?? 15,
+      diasLaborales: datos.diasLaborales ?? LUNES_A_SABADO,
+      creadoEn: datos.creadoEn ?? FECHA_ALTA_USUARIOS,
     },
   });
 }

@@ -50,7 +50,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 **⚠️ CRITICAL**: no se empieza ninguna historia antes de terminar esta fase.
 
-- [X] T008 Modificar `prisma/schema.prisma` según [data-model.md](./data-model.md):
+- [x] T008 Modificar `prisma/schema.prisma` según [data-model.md](./data-model.md):
   - los enums `AlcanceHorario`, `TipoJornada`, `MotivoAsistencia` y `EfectoPago`;
   - los campos `Empresa.zonaHoraria` y `Usuario.oficio`;
   - los modelos `HorarioObra`, `CredencialAsistencia` (con `trabajadorId @unique`), `RegistroAsistencia` (con `@@unique([trabajadorId, obraId, fecha])` y `entradaIdLocal`/`salidaIdLocal` únicos) y `CambioAsistencia`, todos con `onDelete: Restrict` y los índices del modelo;
@@ -58,13 +58,13 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
   Generar la migración con `npx prisma migrate dev --name asistencia_qr_horario` y correr `npm run generar`.
 
-- [X] T009 [P] Crear `src/constantes/asistencia.ts` con las constantes de la sección "Constantes de negocio" de [data-model.md](./data-model.md).
-- [X] T010 [P] Escribir primero `pruebas/unidad/fechasLocales.test.ts`, que cubra:
+- [x] T009 [P] Crear `src/constantes/asistencia.ts` con las constantes de la sección "Constantes de negocio" de [data-model.md](./data-model.md).
+- [x] T010 [P] Escribir primero `pruebas/unidad/fechasLocales.test.ts`, que cubra:
   - la conversión instante → fecha y minutos locales en `America/Tijuana` y en `America/Mexico_City`;
   - el cambio de horario de verano de Tijuana;
   - `HH:MM` → minutos;
   - el día de la semana local.
-- [X] T011 Implementar `src/utilidades/fechasLocales.ts` con `Intl.DateTimeFormat` (R-05):
+- [x] T011 Implementar `src/utilidades/fechasLocales.ts` con `Intl.DateTimeFormat` (R-05):
   - `obtenerFechaLocal(instante, zona)` → `YYYY-MM-DD`;
   - `obtenerMinutosLocales(instante, zona)`;
   - `convertirHoraAMinutos('HH:MM')`;
@@ -74,7 +74,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
   Deben pasar las pruebas de T010.
 
-- [X] T012 [P] Implementar `src/utilidades/permisosObra.ts`:
+- [x] T012 [P] Implementar `src/utilidades/permisosObra.ts`:
   - `obtenerObraDeEmpresa(obraId, empresaId)`: lanza 404 si la obra no existe en la empresa;
   - `exigirSupervisorDeObra(obra, usuario)`: 403;
   - `exigirSupervisorODueno(obra, usuario)`;
@@ -82,7 +82,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
   Agregar su prueba unitaria o de integración en `pruebas/integracion/permisosObra.test.ts`, que incluya otra empresa → 403/404 sin revelar datos.
 
-- [X] T013 Implementar en `src/servicios/servicioHorario.ts` las funciones de lectura que comparten las historias, según R-06 y [data-model.md](./data-model.md) `HorarioObra.alcance`, `HorarioObra.fecha` y `HorarioObra.diasLaborales`:
+- [x] T013 Implementar en `src/servicios/servicioHorario.ts` las funciones de lectura que comparten las historias, según R-06 y [data-model.md](./data-model.md) `HorarioObra.alcance`, `HorarioObra.fecha` y `HorarioObra.diasLaborales`:
   - `obtenerHorarioGeneral(obraId)`;
   - `obtenerHorarioEfectivo(obraId, fecha)`, que devuelve `{ horaEntrada, horaSalida, toleranciaMinutos, esDiaLaborable, esExcepcion }` o `null`;
   - `obtenerZonaHorariaEmpresa(empresaId)`.
@@ -99,15 +99,15 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 ### Tests for User Story 1 ⚠️ (escribir primero y comprobar que fallan)
 
-- [ ] T014 [P] [US1] Crear `pruebas/unidad/clasificacionAsistencia.test.ts` con:
+- [x] T014 [P] [US1] Crear `pruebas/unidad/clasificacionAsistencia.test.ts` con:
   - `CP19-A4`: entrada 08:15 exactas con tolerancia de 15 → `COMPLETA`; 08:16 → `RETARDO`;
   - salida antes de `horarioSalida` con `COMPLETA` → `SALIDA_TEMPRANA`;
   - salida temprana con `RETARDO` → sigue `RETARDO`;
   - día no laborable → `COMPLETA`.
-- [ ] T015 [P] [US1] Crear `pruebas/integracion/credencialAsistencia.test.ts` con:
+- [x] T015 [P] [US1] Crear `pruebas/integracion/credencialAsistencia.test.ts` con:
   - `CP21-A4`: dos llamadas a `GET /asistencia/mi-credencial` devuelven el mismo `codigoQr` con prefijo `ct1.`;
   - un supervisor o dueño que la pide recibe 403.
-- [ ] T016 [P] [US1] Crear `pruebas/integracion/registroAsistencia.test.ts` con:
+- [x] T016 [P] [US1] Crear `pruebas/integracion/registroAsistencia.test.ts` con:
   - `CP21-E1`: entrada `GUARDADO` con ubicación y autora;
   - `CP21-E2`: salida y `SALIDA_TEMPRANA`;
   - `CP21-E3`: QR de otra empresa → `QR_INVALIDO` sin datos; trabajador no asignado → `NO_ASIGNADO`;
@@ -116,25 +116,25 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
   - `CP21-A3`: lote `sinConexion` con `capturadoEn` 08:01 → entrada 08:01 y `entradaSinConexion = true`; `capturadoEn` con más de 7 días o más de 5 min en el futuro → `FECHA_FUERA_DE_RANGO`;
   - supervisor de otra obra → `NO_ES_SUPERVISOR`;
   - lote de 101 → 400.
-- [ ] T017 [P] [US1] Crear `pruebas/integracion/vistaPreviaYPaquete.test.ts` con:
+- [x] T017 [P] [US1] Crear `pruebas/integracion/vistaPreviaYPaquete.test.ts` con:
   - `POST /obras/:obraId/asistencia/vista-previa`, que devuelve el tipo `ENTRADA`/`SALIDA`, el nombre, el oficio, `fotoUrl` como ruta de la API; `GET .../foto` devuelve la imagen del doble y `faltasMes`, y responde 422 con cada `motivo`;
   - `GET /obras/:obraId/asistencia/paquete-sin-conexion`, que incluye `huellaCredencial` = SHA-256 del token y **nunca** el token en claro;
   - `GET /asistencia/mis-obras`, que solo devuelve las obras supervisadas.
-- [ ] T018 [P] [US1] Crear `pruebas/integracion/resumenDia.test.ts` con:
+- [x] T018 [P] [US1] Crear `pruebas/integracion/resumenDia.test.ts` con:
   - `GET /obras/:obraId/asistencia?fecha=`, con `estadoEntrada` `FINALIZADO`/`PENDIENTE` según la hora de entrada más la tolerancia, y la lista de trabajadores con su hora de entrada;
   - `GET /asistencia/mi-dia`, con el estado por obra.
 
 ### Implementation for User Story 1
 
-- [ ] T019 [P] [US1] Crear `src/esquemas/esquemasAsistencia.ts` con los esquemas zod `esquemaVistaPrevia`, `esquemaLoteEscaneos` (de 1 a `MAXIMO_ESCANEOS_POR_LOTE` escaneos, `idLocal` UUID, latitud de -90 a 90 y longitud de -180 a 180 o null) y `esquemaConsultaFecha`, según [contracts/asistencia-api.md](./contracts/asistencia-api.md).
-- [ ] T020 [P] [US1] Implementar `src/servicios/servicioCredencialAsistencia.ts`:
+- [x] T019 [P] [US1] Crear `src/esquemas/esquemasAsistencia.ts` con los esquemas zod `esquemaVistaPrevia`, `esquemaLoteEscaneos` (de 1 a `MAXIMO_ESCANEOS_POR_LOTE` escaneos, `idLocal` UUID, latitud de -90 a 90 y longitud de -180 a 180 o null) y `esquemaConsultaFecha`, según [contracts/asistencia-api.md](./contracts/asistencia-api.md).
+- [x] T020 [P] [US1] Implementar `src/servicios/servicioCredencialAsistencia.ts`:
   - `obtenerOCrearCredencial(trabajadorId, empresaId)`: `randomBytes(32)` en base64url, `tokenHash` en SHA-256 hex y prefijo `PREFIJO_QR`;
   - `resolverCodigoQr(codigoQr)`: valida el prefijo y busca por `tokenHash`; si no hay credencial, devuelve `null`.
 
   Según [data-model.md](./data-model.md) `CredencialAsistencia.token`, `CredencialAsistencia.tokenHash` y `CredencialAsistencia.trabajadorId` (una por trabajador, D-17).
 
-- [ ] T021 [US1] Implementar en `src/servicios/servicioRegistroAsistencia.ts` la función pura `clasificarJornada({ entradaMinutos, salidaMinutos?, horario, tipoActual })`, según R-07 y [data-model.md](./data-model.md) `RegistroAsistencia.tipoJornada`. Deben pasar las pruebas de T014.
-- [ ] T022 [US1] Implementar en `src/servicios/servicioRegistroAsistencia.ts` la función `procesarLoteEscaneos(supervisor, escaneos)`:
+- [x] T021 [US1] Implementar en `src/servicios/servicioRegistroAsistencia.ts` la función pura `clasificarJornada({ entradaMinutos, salidaMinutos?, horario, tipoActual })`, según R-07 y [data-model.md](./data-model.md) `RegistroAsistencia.tipoJornada`. Deben pasar las pruebas de T014.
+- [x] T022 [US1] Implementar en `src/servicios/servicioRegistroAsistencia.ts` la función `procesarLoteEscaneos(supervisor, escaneos)`:
   - procesa en orden, con una transacción por escaneo;
   - valida la credencial, la empresa, la asignación y que el usuario sea supervisor de la obra;
   - calcula la hora según R-04: servidor si `sinConexion = false`; `capturadoEn` dentro de `MAXIMO_DIAS_REGISTRO_SIN_CONEXION` y `MAXIMO_MINUTOS_EN_FUTURO` si es `true`;
@@ -145,7 +145,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
   Según [data-model.md](./data-model.md) `RegistroAsistencia.fecha`, `.entradaEn`, `.entradaLatitud`, `.entradaLongitud`, `.entradaSinConexion`, `.entradaIdLocal`, `.entradaRegistradaPorId`, los campos `salida*`, `.esDiaLaborable`, `.horarioEntrada`, `.horarioSalida` y `.toleranciaMinutos`.
 
-- [ ] T023 [US1] Implementar en `src/servicios/servicioRegistroAsistencia.ts`:
+- [x] T023 [US1] Implementar en `src/servicios/servicioRegistroAsistencia.ts`:
   - `obtenerVistaPrevia(supervisor, obraId, codigoQr)`, que no guarda nada y lanza `ErrorHttp` 422 con `motivo`;
   - `obtenerPaqueteSinConexion(supervisor, obraId)`, con `fotoUrl` como ruta de la API y solo `huellaCredencial`;
   - `obtenerFotoTrabajador(usuario, obraId, trabajadorId)`, que reutiliza `obtenerImagen`;
@@ -155,7 +155,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
   `faltasMes` se obtiene con una función de conteo de faltas del mes en `src/servicios/servicioCalendarioAsistencia.ts` (crear el archivo con esa función exportada; el resto se completa en US4).
 
-- [ ] T024 [US1] Crear `src/rutas/rutasAsistencia.ts` con:
+- [x] T024 [US1] Crear `src/rutas/rutasAsistencia.ts` con:
   - `GET /asistencia/mi-credencial` (TRABAJADOR);
   - `GET /asistencia/mi-dia` (TRABAJADOR);
   - `GET /asistencia/mis-obras` (SUPERVISOR);
@@ -167,7 +167,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
   El cuerpo del error 422 debe incluir `motivo`. Registrar las rutas en `src/app.ts`.
 
-- [ ] T025 [US1] Agregar el oficio al perfil (D-18, FR-025a): `oficio` opcional en `src/esquemas/esquemasPerfil.ts` (máximo 60 caracteres; una cadena vacía se guarda como `null`), y devolverlo en `GET /perfil` y aceptarlo en `PUT /perfil` en `src/servicios/servicioPerfil.ts`, según [data-model.md](./data-model.md) `Usuario.oficio`. Prueba `CP06-A1` en `pruebas/integracion/perfilOficio.test.ts`.
+- [x] T025 [US1] Agregar el oficio al perfil (D-18, FR-025a): `oficio` opcional en `src/esquemas/esquemasPerfil.ts` (máximo 60 caracteres; una cadena vacía se guarda como `null`), y devolverlo en `GET /perfil` y aceptarlo en `PUT /perfil` en `src/servicios/servicioPerfil.ts`, según [data-model.md](./data-model.md) `Usuario.oficio`. Prueba `CP06-A1` en `pruebas/integracion/perfilOficio.test.ts`.
 
 **Checkpoint**: US1 funciona y las pruebas CP21 pasan.
 

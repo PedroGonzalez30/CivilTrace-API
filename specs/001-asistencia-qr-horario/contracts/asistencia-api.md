@@ -118,6 +118,8 @@ Pantallas: `SUP_Asistencia_EscogerObra` (`96:2903`), `SUP_Asistencia_LeerQr` (`2
 
 **Quién**: SUP-OBRA o DUENO, con el trabajador asignado a la obra. Devuelve los bytes de la foto de perfil con su `Content-Type` y `Cache-Control: private, no-cache`. Responde **404** si el trabajador no tiene foto.
 
+`huellaCredencial` es el SHA-256 (hex, minúsculas) del texto del QR **después** del prefijo `ct1.`. Sin conexión, la app calcula esa huella del código escaneado y la busca en `trabajadores`. Si la ubicación no está disponible, `latitud` y `longitud` van ambas en `null`.
+
 ### `POST /obras/:obraId/asistencia/vista-previa`
 
 **Quién**: SUP-OBRA. Valida un QR **con conexión** y muestra la confirmación sin guardar nada (FR-004, FR-005).
