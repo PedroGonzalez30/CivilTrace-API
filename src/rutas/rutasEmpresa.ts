@@ -1,10 +1,12 @@
 /**
  * @archivo rutasEmpresa.ts
  * @proyecto Civil Trace
- * @descripcion Rutas /empresa: datos de la empresa del usuario (solo dueño).
+ * @descripcion Rutas /empresa: datos de la empresa del usuario (casi todas solo dueño).
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 16/11/2026
- * @version 1.0.0
+ * @version 1.1.0
+ * @historial 24/11/2026 - Emilio Manuel Esquivel - Logotipo para toda la empresa (D-25) y código
+ *   de trabajadores para el supervisor (D-23), feature 002
  */
 
 // 1. Importaciones
@@ -77,18 +79,23 @@ export async function rutasEmpresa(app: FastifyInstance): Promise<void> {
     },
   );
 
+  // Todos los roles lo ven en el encabezado de la app (D-25); solo el de su propia empresa.
+  app.get('/logo', { preHandler: [verificarToken] }, async (peticion, respuesta) => {
+    const { datos, tipo } = await obtenerLogoEmpresa(peticion.user.empresaId);
+    return respuesta.header('Cache-Control', 'private, no-cache').type(tipo).send(datos);
+  });
+
+  // El supervisor invita trabajadores, pero nunca ve el código de supervisores (D-23).
   app.get(
-    '/logo',
-    { preHandler: [verificarToken, exigirRol(Rol.DUENO)] },
-    async (peticion, respuesta) => {
-      const { datos, tipo } = await obtenerLogoEmpresa(peticion.user.empresaId);
-      return respuesta.header('Cache-Control', 'private, no-cache').type(tipo).send(datos);
+    '/codigos',
+    { preHandler: [verificarToken, exigirRol(Rol.DUENO, Rol.SUPERVISOR)] },
+    async (peticion) => {
+      const codigos = await obtenerCodigosEmpresa(peticion.user.empresaId);
+      return {
+        codigos: peticion.user.rol === Rol.DUENO ? codigos : { trabajadores: codigos.trabajadores },
+      };
     },
   );
-
-  app.get('/codigos', { preHandler: [verificarToken, exigirRol(Rol.DUENO)] }, async (peticion) => ({
-    codigos: await obtenerCodigosEmpresa(peticion.user.empresaId),
-  }));
 
   app.get(
     '/personal',
