@@ -239,7 +239,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T034 [P] [US4] Crear `pruebas/integracion/calendarioAsistencia.test.ts` con:
+- [x] T034 [P] [US4] Crear `pruebas/integracion/calendarioAsistencia.test.ts` con:
   - `CP19-E2`: el día 5 de diciembre de 2026 con descuento → `conDescuento = true` y el detalle con el motivo;
   - `CP19-A1`: un trabajador que pide el calendario de otro → 403;
   - `CP19-A2`: un día laborable pasado sin registro → `ROJO`, con `esFaltaCalculada = true`;
@@ -251,8 +251,8 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 ### Implementation for User Story 4
 
-- [ ] T035 [P] [US4] Agregar `esquemaConsultaCalendario` a `src/esquemas/esquemasAsistencia.ts`, con `mes` en formato `YYYY-MM` y `obraId` opcional.
-- [ ] T036 [US4] Completar `src/servicios/servicioCalendarioAsistencia.ts` con `obtenerCalendario(usuario, trabajadorId, mes, obraId?)`:
+- [x] T035 [P] [US4] Agregar `esquemaConsultaCalendario` a `src/esquemas/esquemasAsistencia.ts`, con `mes` en formato `YYYY-MM` y `obraId` opcional.
+- [x] T036 [US4] Completar `src/servicios/servicioCalendarioAsistencia.ts` con `obtenerCalendario(usuario, trabajadorId, mes, obraId?)`:
   - recorre los días del mes en la zona de la empresa, hasta ayer como máximo para las faltas;
   - toma los registros del mes en una sola consulta y los horarios efectivos por día;
   - calcula las faltas (R-08, D-20), el color y `conDescuento`, según [data-model.md](./data-model.md) `RegistroAsistencia.efectoPago` y la tabla "Color en el calendario";
@@ -261,7 +261,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
   Reutilizar la función de conteo de faltas creada en T023.
 
-- [ ] T037 [US4] Agregar `GET /asistencia/trabajadores/:trabajadorId/calendario` a `src/rutas/rutasAsistencia.ts`.
+- [x] T037 [US4] Agregar `GET /asistencia/trabajadores/:trabajadorId/calendario` a `src/rutas/rutasAsistencia.ts`.
 
 **Checkpoint**: las cuatro historias funcionan de forma independiente.
 

@@ -13,8 +13,14 @@
 
 // 1. Importaciones
 import { prisma } from '@/baseDatos/clientePrisma';
-import { EfectoPago, TipoJornada } from '@/generated/prisma/enums';
-import { obtenerFilasHorario, resolverHorarioEfectivo } from '@/servicios/servicioHorario';
+import { EfectoPago, Rol, TipoJornada } from '@/generated/prisma/enums';
+import {
+  obtenerFilasHorario,
+  obtenerZonaHorariaEmpresa,
+  resolverHorarioEfectivo,
+} from '@/servicios/servicioHorario';
+import type { DatosTokenAcceso } from '@/tipos/fastifyJwt';
+import { ErrorHttp } from '@/utilidades/errores';
 import {
   convertirFechaADate,
   formatearFecha,
@@ -59,6 +65,9 @@ const COLOR_POR_TIPO: Record<TipoJornada, ColorDia> = {
 };
 const EFECTOS_CON_DESCUENTO: EfectoPago[] = [EfectoPago.MEDIO_DIA, EfectoPago.SIN_PAGO];
 const LARGO_MES = 7;
+const CODIGO_PROHIBIDO = 403;
+const CODIGO_NO_ENCONTRADO = 404;
+const MENSAJE_SIN_PERMISO = 'No tienes permiso para ver este calendario';
 
 // 4. Funciones
 /** Indica si un efecto en el pago es un descuento (muestra el símbolo $, D-13). */
@@ -169,6 +178,71 @@ export async function contarFaltasDelMes(
     hoy,
   });
   return dias.filter((dia) => dia.tipoJornada === TipoJornada.FALTA).length;
+}
+
+/**
+ * Calendario de un mes para un trabajador (RF-58). El trabajador solo ve el suyo; el supervisor,
+ * el de los trabajadores en sus obras (solo esas obras); el dueño, el de cualquiera de su
+ * empresa. Un trabajador de otra empresa se trata como inexistente.
+ *
+ * @param usuario - Datos del token.
+ * @param trabajadorId - Trabajador consultado.
+ * @param mes - Mes YYYY-MM.
+ * @param obraId - Opcional: limita a una obra.
+ * @throws ErrorHttp 404 si el trabajador no es de la empresa; 403 sin permiso.
+ */
+export async function obtenerCalendario(
+  usuario: DatosTokenAcceso,
+  trabajadorId: string,
+  mes: string,
+  obraId?: string,
+) {
+  const trabajador = await prisma.usuario.findFirst({
+    where: { id: trabajadorId, empresaId: usuario.empresaId, rol: Rol.TRABAJADOR },
+    select: { id: true, nombre: true, oficio: true, creadoEn: true },
+  });
+  if (!trabajador) {
+    throw new ErrorHttp(CODIGO_NO_ENCONTRADO, 'El trabajador no existe');
+  }
+
+  let obras = await obtenerObrasDelTrabajador(trabajador.id, usuario.empresaId);
+  if (usuario.rol === Rol.TRABAJADOR && usuario.sub !== trabajador.id) {
+    throw new ErrorHttp(CODIGO_PROHIBIDO, MENSAJE_SIN_PERMISO);
+  }
+  if (usuario.rol === Rol.SUPERVISOR) {
+    obras = obras.filter((obra) => obra.supervisorId === usuario.sub);
+    if (obras.length === 0) {
+      throw new ErrorHttp(CODIGO_PROHIBIDO, MENSAJE_SIN_PERMISO);
+    }
+  }
+  if (obraId) {
+    obras = obras.filter((obra) => obra.id === obraId);
+    if (obras.length === 0) {
+      throw new ErrorHttp(CODIGO_PROHIBIDO, MENSAJE_SIN_PERMISO);
+    }
+  }
+
+  const zona = await obtenerZonaHorariaEmpresa(usuario.empresaId);
+  const dias = await calcularDiasAsistencia({
+    trabajador,
+    obras,
+    mes,
+    zona,
+    hoy: obtenerFechaLocal(new Date(), zona),
+  });
+  const contar = (tipo: TipoJornada) => dias.filter((dia) => dia.tipoJornada === tipo).length;
+
+  return {
+    mes,
+    trabajador: { id: trabajador.id, nombre: trabajador.nombre, oficio: trabajador.oficio },
+    resumen: {
+      faltas: contar(TipoJornada.FALTA),
+      mediasJornadas: contar(TipoJornada.MEDIA_JORNADA),
+      retardos: contar(TipoJornada.RETARDO),
+      salidasTempranas: contar(TipoJornada.SALIDA_TEMPRANA),
+    },
+    dias,
+  };
 }
 
 function maximo(a: string, b: string): string {
