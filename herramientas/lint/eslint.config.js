@@ -24,6 +24,8 @@ export default tseslint.config(
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  // Prettier va antes de las reglas del ECCT: si va después, apaga 'curly'.
+  prettier,
   {
     files: ['**/*.ts'],
     languageOptions: { globals: globals.node },
@@ -36,5 +38,4 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
-  prettier,
 );
