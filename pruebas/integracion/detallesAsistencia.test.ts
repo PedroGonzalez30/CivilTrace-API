@@ -167,6 +167,7 @@ describe('Detalles de asistencia', () => {
         campo: 'entradaEn',
         valorAnterior: '2026-11-20T16:25:00.000Z',
         valorNuevo: '2026-11-20T16:00:00.000Z',
+        motivo: 'Olvidó registrarse; llegó a las 8:00',
         autor: 'María Castro',
         fecha: '2026-11-20T23:00:00.000Z',
       }),

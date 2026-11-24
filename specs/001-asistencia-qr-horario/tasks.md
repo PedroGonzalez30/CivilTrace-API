@@ -269,17 +269,17 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T038 [P] Correr `npm run test:cobertura` y completar las pruebas hasta tener 80 % o más de líneas en `src/servicios/servicioHorario.ts`, `servicioCredencialAsistencia.ts`, `servicioRegistroAsistencia.ts`, `servicioDetallesAsistencia.ts` y `servicioCalendarioAsistencia.ts`.
-- [ ] T039 [P] Rendimiento (plan, Performance Goals):
+- [x] T038 [P] Correr `npm run test:cobertura` y completar las pruebas hasta tener 80 % o más de líneas en `src/servicios/servicioHorario.ts`, `servicioCredencialAsistencia.ts`, `servicioRegistroAsistencia.ts`, `servicioDetallesAsistencia.ts` y `servicioCalendarioAsistencia.ts`.
+- [x] T039 [P] Rendimiento (plan, Performance Goals):
   - un lote de 100 escaneos en menos de 5 s y un calendario mensual en menos de 1 s contra la base local;
   - medirlo en `pruebas/integracion/rendimientoAsistencia.test.ts`;
   - si no se cumple, agrupar las lecturas (precargar credenciales, asignaciones y horarios del lote).
-- [ ] T040 [P] Seguridad:
+- [x] T040 [P] Seguridad:
   - comprobar que ningún endpoint devuelve `CredencialAsistencia.token`, salvo `GET /asistencia/mi-credencial` al propio trabajador;
   - comprobar que los logs no imprimen `codigoQr` (agregar `redact` si hace falta en `src/app.ts`);
   - comprobar que no existe ninguna ruta `DELETE` de asistencia.
-- [ ] T041 Recorrer [quickstart.md](./quickstart.md) completo contra la API local. Revisar cada endpoint contra las pantallas del Figma por `node-id` (la tabla de la spec), incluida la insignia $ del calendario (`2272:354`, `96:389`).
-- [ ] T042 Actualizar `CLAUDE.md`: quitar la nota "`npm run lint` y `npm test` se agregan en el módulo 00" y documentar `npm run test:cobertura`. Agregar en `docs/decisiones.md` las decisiones técnicas que surjan durante la implementación.
+- [x] T041 Recorrer [quickstart.md](./quickstart.md) completo contra la API local. Revisar cada endpoint contra las pantallas del Figma por `node-id` (la tabla de la spec), incluida la insignia $ del calendario (`2272:354`, `96:389`).
+- [x] T042 Actualizar `CLAUDE.md`: quitar la nota "`npm run lint` y `npm test` se agregan en el módulo 00" y documentar `npm run test:cobertura`. Agregar en `docs/decisiones.md` las decisiones técnicas que surjan durante la implementación.
 - [ ] T043 Correr `npm run typecheck && npm run lint && npm test` y `npm run verificar-formato`. Abrir un PR de `001-asistencia-qr-horario` a `main` para que lo revise otro integrante (VI.1).
 
 ---

@@ -29,21 +29,33 @@ src/
   utilidades/, constantes/, tipos/, baseDatos/
 prisma/                     schema.prisma y migraciones
 infra/                      Terraform (se crea en el módulo 00)
-pruebas/                    Pruebas (se crea en el módulo 00)
+pruebas/                    Pruebas Vitest (unidad, integración y configuración)
+herramientas/lint/          ESLint aislado (decisión T-07)
+specs/                      Especificaciones de Spec Kit por feature
 ```
 
 ## Comandos
 
 ```bash
-docker compose up -d                       # PostgreSQL local
-npm install
-npx prisma migrate dev --name <nombre>     # nueva migración (nombre descriptivo en español)
+docker compose up -d                       # PostgreSQL local (desarrollo) y de pruebas (puerto 5434, en memoria)
+npm install                                # también instala ESLint en herramientas/lint (postinstall)
+npx prisma migrate dev --name <nombre> --config prisma7.config.ts   # nueva migración (nombre en español)
+npx prisma generate --config prisma7.config.ts                       # después de cambiar el esquema
 npm run dev                                # API local con recarga
 npm run typecheck && npm run lint && npm test   # obligatorio antes de terminar una tarea
-npm run formatear
+npm run test:cobertura                     # cobertura; 80 % de líneas por servicio con pruebas
+npm run formatear                          # Prettier (verificar con npm run verificar-formato)
 ```
 
-`npm run lint` y `npm test` se agregan en el módulo 00. Si no existen todavía, ese es el primer trabajo.
+- **Pruebas**: Vitest en `pruebas/` (`unidad/`, `integracion/`, `configuracion/`). Usan
+  `DATABASE_URL_PRUEBAS` (ver `.env.example`), nunca la base de desarrollo; se preparan con
+  `prisma migrate deploy` y se vacían con `limpiarTablas()`. No uses `prisma migrate reset`.
+  Fábricas de datos en `pruebas/configuracion/fabricas.ts`; el almacenamiento es un doble en memoria.
+- **Lint**: ESLint vive en `herramientas/lint/` porque TypeScript 7 no trae la API de JavaScript que
+  usa `typescript-eslint` (decisión T-07).
+- **Cobertura pendiente**: los servicios anteriores al módulo 00 (autenticación, obras, empresa,
+  actividades, reportes, almacenamiento) aún no tienen pruebas; al agregarlas, súmalos a los umbrales
+  de `vitest.config.ts`.
 
 ## Reglas
 

@@ -49,7 +49,13 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/servicios/**'],
-      thresholds: { lines: UMBRAL_COBERTURA_LINEAS },
+      // El 80 % se exige por archivo a los servicios que ya tienen pruebas. Los servicios
+      // anteriores al módulo 00 (autenticación, obras, empresa, actividades, reportes,
+      // almacenamiento) se agregan aquí conforme reciban sus pruebas.
+      thresholds: {
+        'src/servicios/servicio*Asistencia.ts': { lines: UMBRAL_COBERTURA_LINEAS },
+        'src/servicios/servicioHorario.ts': { lines: UMBRAL_COBERTURA_LINEAS },
+      },
       reporter: ['text', 'html'],
     },
   },
