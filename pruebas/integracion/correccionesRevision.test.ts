@@ -44,7 +44,7 @@ describe('Correcciones de la revisión (feature 002)', () => {
     await app.close();
   });
 
-  it('CP02-A10 el supervisor recibe solo el código de trabajadores', async () => {
+  it('CP04-A10 el supervisor recibe solo el código de trabajadores', async () => {
     const respuesta = await app.inject({
       method: 'GET',
       url: '/empresa/codigos',
@@ -56,7 +56,7 @@ describe('Correcciones de la revisión (feature 002)', () => {
     });
   });
 
-  it('CP02-A11 el dueño sigue recibiendo los dos códigos y el trabajador no tiene acceso', async () => {
+  it('CP04-A11 el dueño sigue recibiendo los dos códigos y el trabajador no tiene acceso', async () => {
     const dueno = await app.inject({
       method: 'GET',
       url: '/empresa/codigos',
@@ -74,7 +74,7 @@ describe('Correcciones de la revisión (feature 002)', () => {
     expect(trabajador.statusCode).toBe(403);
   });
 
-  it('CP02-A12 el supervisor no puede regenerar códigos', async () => {
+  it('CP04-A12 el supervisor no puede regenerar códigos', async () => {
     const respuesta = await app.inject({
       method: 'POST',
       url: '/empresa/codigos/trabajadores/regenerar',
@@ -83,7 +83,7 @@ describe('Correcciones de la revisión (feature 002)', () => {
     expect(respuesta.statusCode).toBe(403);
   });
 
-  it('CP03-A10 supervisor y trabajador ven el logotipo de su empresa', async () => {
+  it('CP05-A10 supervisor y trabajador ven el logotipo de su empresa', async () => {
     const sinLogo = await app.inject({
       method: 'GET',
       url: '/empresa/logo',
@@ -110,7 +110,7 @@ describe('Correcciones de la revisión (feature 002)', () => {
     }
   });
 
-  it('CP04-A10 crear una obra sin supervisor se rechaza con un mensaje claro', async () => {
+  it('CP08-A10 crear una obra sin supervisor se rechaza con un mensaje claro', async () => {
     const respuesta = await app.inject({
       method: 'POST',
       url: '/obras',
@@ -121,7 +121,7 @@ describe('Correcciones de la revisión (feature 002)', () => {
     expect(respuesta.json().mensaje).toBe('Selecciona un supervisor para la obra');
   });
 
-  it('CP04-A11 con supervisor de la empresa la obra se crea', async () => {
+  it('CP08-A11 con supervisor de la empresa la obra se crea', async () => {
     const respuesta = await app.inject({
       method: 'POST',
       url: '/obras',

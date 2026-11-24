@@ -20,8 +20,8 @@ una segunda prueba); no se cambian.
 
 - `pruebas/unidad/clasificacionAsistencia.test.ts`: CP19-A12 (15:59 = retardo; 16:00 y 20:00 =
   falta) y CP19-A13 (una falta sigue siendo falta al salir).
-- `pruebas/integracion/correccionesRevision.test.ts`: CP02-A10 a CP02-A12 (códigos por rol),
-  CP03-A10 (logotipo para supervisor y trabajador) y CP04-A10 a CP04-A11 (supervisor obligatorio).
+- `pruebas/integracion/correccionesRevision.test.ts`: CP04-A10 a CP04-A12 (códigos por rol),
+  CP05-A10 (logotipo para supervisor y trabajador) y CP08-A10 a CP08-A11 (supervisor obligatorio).
 
 ## Tareas
 
