@@ -17,9 +17,11 @@ import { z } from 'zod';
 import {
   DIA_SEMANA_MAXIMO,
   DIA_SEMANA_MINIMO,
+  LONGITUD_MAXIMA_ANOTACION,
   MAXIMO_ESCANEOS_POR_LOTE,
   TOLERANCIAS_PERMITIDAS,
 } from '@/constantes/asistencia';
+import { EfectoPago, MotivoAsistencia, TipoJornada } from '@/generated/prisma/enums';
 
 // 3. Constantes del módulo
 const LATITUD_MAXIMA = 90;
@@ -108,3 +110,26 @@ export const esquemaGuardarHorario = z
   });
 
 export type DatosGuardarHorario = z.output<typeof esquemaGuardarHorario>;
+
+export const esquemaParametrosDia = esquemaParametrosTrabajador.extend({ fecha: esquemaFecha });
+
+export const esquemaEditarDetalles = z
+  .object({
+    tipoJornada: z.enum(TipoJornada, { error: 'El tipo de jornada es inválido' }).optional(),
+    motivo: z.enum(MotivoAsistencia, { error: 'El motivo es inválido' }).nullable().optional(),
+    efectoPago: z.enum(EfectoPago, { error: 'El efecto en el pago es inválido' }).optional(),
+    anotacion: z
+      .string({ error: 'La observación es inválida' })
+      .trim()
+      .max(LONGITUD_MAXIMA_ANOTACION, { error: 'La observación es demasiado larga' })
+      .transform((valor) => (valor === '' ? null : valor))
+      .nullable()
+      .optional(),
+    entradaEn: z.iso.datetime({ error: 'La hora de entrada es inválida' }).nullable().optional(),
+    salidaEn: z.iso.datetime({ error: 'La hora de salida es inválida' }).nullable().optional(),
+  })
+  .refine((cambios) => Object.values(cambios).some((valor) => valor !== undefined), {
+    error: 'No hay cambios que guardar',
+  });
+
+export type DatosEditarDetalles = z.output<typeof esquemaEditarDetalles>;
