@@ -8,7 +8,7 @@
  * @fecha 23/11/2026
  * @version 1.0.0
  * @requerimientos RF-19 Registrar asistencia propia, RF-27 Registrar asistencia por el
- *   supervisor, RNF-07 Captura sin conexión (D-14)
+ *   supervisor, RF-60 Registrar retardo o salida anticipada, RNF-07 Captura sin conexión (D-14)
  * @historial 23/11/2026 - Emilio Manuel Esquivel - Creación (feature 001)
  */
 
@@ -17,7 +17,9 @@ import type { FastifyInstance } from 'fastify';
 
 import {
   esquemaConsultaFecha,
+  esquemaEditarDetalles,
   esquemaLoteEscaneos,
+  esquemaParametrosDia,
   esquemaParametrosObra,
   esquemaParametrosTrabajador,
   esquemaVistaPrevia,
@@ -32,6 +34,7 @@ import {
   obtenerResumenDia,
 } from '@/servicios/servicioConsultaAsistencia';
 import { obtenerOCrearCredencial } from '@/servicios/servicioCredencialAsistencia';
+import { editarDetalleDia, obtenerDetalleDia } from '@/servicios/servicioDetallesAsistencia';
 import { obtenerVistaPrevia, procesarLoteEscaneos } from '@/servicios/servicioRegistroAsistencia';
 import { ErrorHttp } from '@/utilidades/errores';
 import { validar } from '@/utilidades/validar';
@@ -106,6 +109,25 @@ export async function rutasAsistencia(app: FastifyInstance): Promise<void> {
       const { obraId, trabajadorId } = validar(esquemaParametrosTrabajador, peticion.params);
       const { datos, tipo } = await obtenerFotoTrabajador(peticion.user, obraId, trabajadorId);
       return respuesta.header('Cache-Control', 'private, no-cache').type(tipo).send(datos);
+    },
+  );
+
+  app.get(
+    '/obras/:obraId/asistencia/trabajadores/:trabajadorId/dias/:fecha',
+    { preHandler: [verificarToken] },
+    async (peticion) => {
+      const { obraId, trabajadorId, fecha } = validar(esquemaParametrosDia, peticion.params);
+      return obtenerDetalleDia(peticion.user, obraId, trabajadorId, fecha);
+    },
+  );
+
+  app.patch(
+    '/obras/:obraId/asistencia/trabajadores/:trabajadorId/dias/:fecha',
+    { preHandler: [verificarToken] },
+    async (peticion) => {
+      const { obraId, trabajadorId, fecha } = validar(esquemaParametrosDia, peticion.params);
+      const cambios = validar(esquemaEditarDetalles, peticion.body ?? {});
+      return editarDetalleDia(peticion.user, obraId, trabajadorId, fecha, cambios);
     },
   );
 }

@@ -207,7 +207,7 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T030 [P] [US3] Crear `pruebas/integracion/detallesAsistencia.test.ts` con:
+- [x] T030 [P] [US3] Crear `pruebas/integracion/detallesAsistencia.test.ts` con:
   - `CP19-E1`: retardo con la anotación "Llegó 25 minutos tarde" y `MEDIO_DIA` se guarda y aparece en el detalle;
   - `CP19-E3`: `RETARDO` sin anotación → 400 "La observación es obligatoria" y no cambia nada (ni registro ni historial);
   - `CP19-A3`: entrada 08:20 → 08:00 crea un `CambioAsistencia` con `valorAnterior`, autor y fecha;
@@ -218,14 +218,14 @@ description: 'Lista de tareas del feature 001: asistencia con QR, horario por ob
 
 ### Implementation for User Story 3
 
-- [ ] T031 [P] [US3] Agregar `esquemaEditarDetalles` a `src/esquemas/esquemasAsistencia.ts`, según [data-model.md](./data-model.md) `RegistroAsistencia.tipoJornada`, `RegistroAsistencia.motivo`, `RegistroAsistencia.efectoPago`, `RegistroAsistencia.anotacion`, `RegistroAsistencia.entradaEn` y `RegistroAsistencia.salidaEn`. Debe venir al menos un campo y la salida debe ser posterior a la entrada. La regla de anotación obligatoria se valida en el servicio, porque depende del tipo resultante.
-- [ ] T032 [US3] Implementar `src/servicios/servicioDetallesAsistencia.ts`:
+- [x] T031 [P] [US3] Agregar `esquemaEditarDetalles` a `src/esquemas/esquemasAsistencia.ts`, según [data-model.md](./data-model.md) `RegistroAsistencia.tipoJornada`, `RegistroAsistencia.motivo`, `RegistroAsistencia.efectoPago`, `RegistroAsistencia.anotacion`, `RegistroAsistencia.entradaEn` y `RegistroAsistencia.salidaEn`. Debe venir al menos un campo y la salida debe ser posterior a la entrada. La regla de anotación obligatoria se valida en el servicio, porque depende del tipo resultante.
+- [x] T032 [US3] Implementar `src/servicios/servicioDetallesAsistencia.ts`:
   - `obtenerDetalleDia(usuario, obraId, trabajadorId, fecha)`, con el historial ordenado, `registradoPor`, `conDescuento` y `esFaltaCalculada`; reutiliza la falta calculada de `servicioCalendarioAsistencia`;
   - `editarDetalleDia(supervisor, obraId, trabajadorId, fecha, cambios)`, en una transacción que crea el registro si no existe (FR-018), exige la anotación cuando el tipo resultante no es `COMPLETA` (FR-016) y escribe un `CambioAsistencia` por cada campo que cambia.
 
   Según [data-model.md](./data-model.md) `CambioAsistencia.campo`, `CambioAsistencia.valorAnterior`, `CambioAsistencia.valorNuevo` y `CambioAsistencia.autorId`.
 
-- [ ] T033 [US3] Agregar a `src/rutas/rutasAsistencia.ts` los endpoints `GET` y `PATCH /obras/:obraId/asistencia/trabajadores/:trabajadorId/dias/:fecha`, con la autorización del contrato (el `PATCH` solo para SUP-OBRA).
+- [x] T033 [US3] Agregar a `src/rutas/rutasAsistencia.ts` los endpoints `GET` y `PATCH /obras/:obraId/asistencia/trabajadores/:trabajadorId/dias/:fecha`, con la autorización del contrato (el `PATCH` solo para SUP-OBRA).
 
 **Checkpoint**: US1 a US3 funcionan.
 
