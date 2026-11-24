@@ -96,4 +96,4 @@ asignadas), CP10 (registrar actividad), CP11 (consultar actividades), CP12 (capt
 - [x] T004 Servicio y rutas.
 - [x] T005 Reportes solo con aprobadas (R7).
 - [x] T006 Suite, tipos, lint, Prettier y cobertura en verde.
-- [ ] T007 Decisiones y PR.
+- [x] T007 Decisiones (P-06 a P-09) y PR.

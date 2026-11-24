@@ -56,9 +56,12 @@ preguntar. Las nuevas decisiones se agregan al final con fecha.
 
 ## Pendientes de confirmar
 
-| #   | Tema               |
-| --- | ------------------ |
-| —   | Ninguno por ahora. |
+| #    | Tema                                                                                                                                                                                                                                      |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P-06 | "Pendientes" con casillas en `TRA-VERACTIVIDAD` (Paredes, Piso, Regadera): no hay dónde capturarlos al agregar la actividad. Por defecto (feature 003) **no se implementan**; la instrucción es la descripción.                           |
+| P-07 | El "Avance diario" del trabajador también nace pendiente de revisión (D-10 habla de "las fotos del trabajador"). Por defecto (feature 003) **sí**.                                                                                        |
+| P-08 | El responsable de una actividad: la app del supervisor ofrece solo los trabajadores asignados a la obra; la API acepta cualquier trabajador o supervisor de la empresa (como antes). Confirmar si basta.                                  |
+| P-09 | Migración `20261124092118_actividades_evidencias` por aplicar en Azure (solo agrega columnas): `npx prisma migrate deploy --config prisma7.config.ts` con la `DATABASE_URL` de producción, **antes** de desplegar la API del feature 003. |
 
 ## Resueltas
 
