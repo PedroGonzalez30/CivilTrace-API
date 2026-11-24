@@ -7,11 +7,64 @@ on:
   push:
     branches:
       - 'main'
+  # Los PR solo corren la puerta de calidad; nunca despliegan (constitución VI.1).
+  pull_request:
+    branches:
+      - 'main'
   workflow_dispatch:
 
 jobs:
+  # Puerta de calidad (constitución, "Puertas de calidad"): tipos, lint, formato y pruebas con
+  # una base PostgreSQL de servicio. Si falla, no se despliega.
+  calidad:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: civiltrace
+          POSTGRES_PASSWORD: pruebas
+          POSTGRES_DB: civiltrace_pruebas
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U civiltrace"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://civiltrace:pruebas@localhost:5434/civiltrace_pruebas?schema=public
+      DATABASE_URL_PRUEBAS: postgresql://civiltrace:pruebas@localhost:5434/civiltrace_pruebas?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
+        with:
+          node-version: '24.x'
+
+      # Secreto de un solo uso para firmar tokens en las pruebas; nunca se guarda.
+      - name: Generar secreto JWT de pruebas
+        run: echo "JWT_SECRETO=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: Instalar dependencias (incluye las de desarrollo)
+        run: npm ci
+
+      - name: Tipos, lint, formato y pruebas
+        run: |
+          npm run typecheck
+          npm run lint
+          npm run verificar-formato
+          npm run test:cobertura
+
   build:
     runs-on: ubuntu-latest
+    needs: calidad
+    if: github.event_name != 'pull_request'
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -23,11 +76,11 @@ jobs:
         with:
           node-version: '24.x'
 
-      - name: npm install, build, and test
+      # Las pruebas ya corrieron en "calidad"; aquí solo van dependencias de producción.
+      - name: npm install and build
         run: |
           npm ci --omit=dev
           npm run build --if-present
-          npm run test --if-present
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -38,6 +91,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    if: github.event_name != 'pull_request'
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
@@ -47,7 +101,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -62,4 +116,3 @@ jobs:
           app-name: 'civiltrace-api'
           slot-name: 'Production'
           package: .
-          

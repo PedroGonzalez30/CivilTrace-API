@@ -24,59 +24,102 @@ enum EstadoAvance {
   RECHAZADO
 }
 
+// Asistencia (feature 001): RF-19, RF-27, RF-56, RF-58, RF-60.
+enum AlcanceHorario {
+  GENERAL
+  DIA
+}
+
+enum TipoJornada {
+  COMPLETA
+  RETARDO
+  MEDIA_JORNADA
+  SALIDA_TEMPRANA
+  FALTA
+}
+
+enum MotivoAsistencia {
+  CITA_MEDICA
+  ENFERMEDAD
+  PERMISO_PERSONAL
+  ASUNTO_FAMILIAR
+  OTRO
+}
+
+enum EfectoPago {
+  PAGO_COMPLETO
+  MEDIO_DIA
+  SIN_PAGO
+}
+
 model Empresa {
-  id                 String            @id @default(cuid())
-  nombre             String
-  codigoTrabajadores String            @unique
-  codigoSupervisores String            @unique
-  creadaEn           DateTime          @default(now())
-  usuarios           Usuario[]
-  obras              Obra[]
-  actividades        Actividad[]
-  avancesActividad   AvanceActividad[]
-  correo             String?
-  descripcion        String?
-  direccion          String?
-  logoBlob           String?
+  id                     String                 @id @default(cuid())
+  nombre                 String
+  codigoTrabajadores     String                 @unique
+  codigoSupervisores     String                 @unique
+  creadaEn               DateTime               @default(now())
+  usuarios               Usuario[]
+  obras                  Obra[]
+  actividades            Actividad[]
+  avancesActividad       AvanceActividad[]
+  correo                 String?
+  descripcion            String?
+  direccion              String?
+  logoBlob               String?
+  // Zona IANA para fechas y horas locales (D-15); se puede cambiar sin migrar datos.
+  zonaHoraria            String                 @default("America/Tijuana")
+  horariosObra           HorarioObra[]
+  credencialesAsistencia CredencialAsistencia[]
+  registrosAsistencia    RegistroAsistencia[]
 }
 
 model Usuario {
-  id                   String            @id @default(cuid())
+  id                   String                @id @default(cuid())
   nombre               String
-  correo               String            @unique
+  correo               String                @unique
   contrasenaHash       String
   rol                  Rol
   empresaId            String?
-  empresa              Empresa?          @relation(fields: [empresaId], references: [id], onDelete: Restrict)
-  obrasSupervisadas    Obra[]            @relation("SupervisorDeObra")
-  actividadesAsignadas Actividad[]       @relation("ResponsableDeActividad")
-  avancesRegistrados   AvanceActividad[] @relation("AvancesRegistrados")
+  empresa              Empresa?              @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  obrasSupervisadas    Obra[]                @relation("SupervisorDeObra")
+  actividadesAsignadas Actividad[]           @relation("ResponsableDeActividad")
+  avancesRegistrados   AvanceActividad[]     @relation("AvancesRegistrados")
   tokensRefresco       TokenRefresco[]
-  creadoEn             DateTime          @default(now())
-  obrasAsignadas       Obra[]            @relation("TrabajadoresDeObra")
+  creadoEn             DateTime              @default(now())
+  obrasAsignadas       Obra[]                @relation("TrabajadoresDeObra")
   telefono             String?
   fotoBlob             String?
+  // Oficio del trabajador (D-18), se captura en el perfil.
+  oficio               String?
+  horariosCreados      HorarioObra[]         @relation("HorarioCreadoPor")
+  credencialAsistencia CredencialAsistencia?
+  registrosAsistencia  RegistroAsistencia[]  @relation("AsistenciaDelTrabajador")
+  entradasRegistradas  RegistroAsistencia[]  @relation("EntradaRegistradaPor")
+  salidasRegistradas   RegistroAsistencia[]  @relation("SalidaRegistradaPor")
+  cambiosAsistencia    CambioAsistencia[]
 
   @@index([empresaId])
 }
 
 model Obra {
-  id            String      @id @default(cuid())
-  nombre        String
-  resumen       String      @default("")
-  descripcion   String      @default("")
-  direccion     String
-  fechaInicio   DateTime    @db.Date
-  fechaFinal    DateTime    @db.Date
-  cliente       String?
-  empresaId     String
-  empresa       Empresa     @relation(fields: [empresaId], references: [id])
-  supervisorId  String?
-  supervisor    Usuario?    @relation("SupervisorDeObra", fields: [supervisorId], references: [id], onDelete: SetNull)
-  creadaEn      DateTime    @default(now())
-  correoCliente String?
-  trabajadores  Usuario[]   @relation("TrabajadoresDeObra")
-  actividades   Actividad[]
+  id                  String               @id @default(cuid())
+  nombre              String
+  resumen             String               @default("")
+  descripcion         String               @default("")
+  direccion           String
+  fechaInicio         DateTime             @db.Date
+  fechaFinal          DateTime             @db.Date
+  cliente             String?
+  empresaId           String
+  empresa             Empresa              @relation(fields: [empresaId], references: [id])
+  supervisorId        String?
+  supervisor          Usuario?             @relation("SupervisorDeObra", fields: [supervisorId], references: [id], onDelete: SetNull)
+  creadaEn            DateTime             @default(now())
+  correoCliente       String?
+  trabajadores        Usuario[]            @relation("TrabajadoresDeObra")
+  actividades         Actividad[]
+  horarios            HorarioObra[]
+  registrosAsistencia RegistroAsistencia[]
 
   @@index([empresaId])
   @@index([supervisorId])
@@ -86,7 +129,7 @@ model Actividad {
   id             String            @id @default(cuid())
   nombre         String
   fechaEntrega   DateTime          @db.Date
-  fechaTerminada DateTime?        @db.Date
+  fechaTerminada DateTime?         @db.Date
   estado         EstadoActividad   @default(ACTIVA)
   obraId         String
   obra           Obra              @relation(fields: [obraId], references: [id], onDelete: Cascade)
@@ -132,4 +175,99 @@ model TokenRefresco {
 
   @@index([usuarioId])
   @@index([familiaId])
+}
+
+// Horario de la obra (D-06). Nunca se actualiza ni se borra: cada guardado es una fila nueva,
+// así queda el historial. GENERAL vigente = el más reciente; DIA = excepción "solo hoy".
+model HorarioObra {
+  id                String         @id @default(cuid())
+  obraId            String
+  obra              Obra           @relation(fields: [obraId], references: [id], onDelete: Restrict)
+  empresaId         String
+  empresa           Empresa        @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  alcance           AlcanceHorario
+  fecha             DateTime?      @db.Date
+  horaEntrada       String
+  horaSalida        String
+  toleranciaMinutos Int
+  diasLaborales     Int[]
+  creadoPorId       String
+  creadoPor         Usuario        @relation("HorarioCreadoPor", fields: [creadoPorId], references: [id], onDelete: Restrict)
+  creadoEn          DateTime       @default(now())
+
+  @@index([obraId, alcance, fecha, creadoEn])
+  @@index([empresaId])
+}
+
+// Credencial QR permanente del trabajador (D-17). El token va en el QR; la huella SHA-256 es
+// lo único que recibe la app del supervisor para validar sin conexión.
+model CredencialAsistencia {
+  id           String   @id @default(cuid())
+  trabajadorId String   @unique
+  trabajador   Usuario  @relation(fields: [trabajadorId], references: [id], onDelete: Restrict)
+  empresaId    String
+  empresa      Empresa  @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  token        String   @unique
+  tokenHash    String   @unique
+  creadaEn     DateTime @default(now())
+
+  @@index([empresaId])
+}
+
+// Un registro por trabajador, obra y fecha local. Es evidencia: nunca se borra (IV.6).
+model RegistroAsistencia {
+  id                     String             @id @default(cuid())
+  empresaId              String
+  empresa                Empresa            @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  obraId                 String
+  obra                   Obra               @relation(fields: [obraId], references: [id], onDelete: Restrict)
+  trabajadorId           String
+  trabajador             Usuario            @relation("AsistenciaDelTrabajador", fields: [trabajadorId], references: [id], onDelete: Restrict)
+  fecha                  DateTime           @db.Date
+  entradaEn              DateTime?          @db.Timestamptz(3)
+  entradaLatitud         Decimal?           @db.Decimal(9, 6)
+  entradaLongitud        Decimal?           @db.Decimal(9, 6)
+  entradaSinConexion     Boolean            @default(false)
+  entradaIdLocal         String?            @unique
+  entradaRegistradaPorId String?
+  entradaRegistradaPor   Usuario?           @relation("EntradaRegistradaPor", fields: [entradaRegistradaPorId], references: [id], onDelete: Restrict)
+  salidaEn               DateTime?          @db.Timestamptz(3)
+  salidaLatitud          Decimal?           @db.Decimal(9, 6)
+  salidaLongitud         Decimal?           @db.Decimal(9, 6)
+  salidaSinConexion      Boolean            @default(false)
+  salidaIdLocal          String?            @unique
+  salidaRegistradaPorId  String?
+  salidaRegistradaPor    Usuario?           @relation("SalidaRegistradaPor", fields: [salidaRegistradaPorId], references: [id], onDelete: Restrict)
+  tipoJornada            TipoJornada        @default(COMPLETA)
+  motivo                 MotivoAsistencia?
+  efectoPago             EfectoPago         @default(PAGO_COMPLETO)
+  anotacion              String?
+  esDiaLaborable         Boolean
+  horarioEntrada         String?
+  horarioSalida          String?
+  toleranciaMinutos      Int?
+  creadoEn               DateTime           @default(now())
+  actualizadoEn          DateTime           @updatedAt
+  cambios                CambioAsistencia[]
+
+  @@unique([trabajadorId, obraId, fecha])
+  @@index([empresaId])
+  @@index([obraId, fecha])
+  @@index([trabajadorId, fecha])
+}
+
+// Historial por campo de los cambios a un registro de asistencia (FR-017). Solo se inserta.
+model CambioAsistencia {
+  id            String             @id @default(cuid())
+  registroId    String
+  registro      RegistroAsistencia @relation(fields: [registroId], references: [id], onDelete: Restrict)
+  campo         String
+  valorAnterior String?
+  valorNuevo    String?
+  motivo        String?
+  autorId       String
+  autor         Usuario            @relation(fields: [autorId], references: [id], onDelete: Restrict)
+  creadoEn      DateTime           @default(now())
+
+  @@index([registroId])
 }

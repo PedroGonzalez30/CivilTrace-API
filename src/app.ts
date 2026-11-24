@@ -4,7 +4,9 @@
  * @descripcion Construye la aplicación Fastify con sus plugins de seguridad y sus rutas.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.1.0
+ * @version 1.2.0
+ * @historial 23/11/2026 - Emilio Manuel Esquivel - Rutas de asistencia y "motivo" en errores;
+ *   registros silenciados en pruebas (feature 001)
  */
 
 // 1. Importaciones
@@ -24,6 +26,9 @@ import { rutasObras } from '@/rutas/rutasObras';
 import { rutasActividades } from '@/rutas/rutasActividades';
 import { rutasPruebaAlmacenamiento } from '@/rutas/rutasPruebaAlmacenamiento';
 import { rutasPerfil } from '@/rutas/rutasPerfil';
+import { rutasAsistencia } from '@/rutas/rutasAsistencia';
+import { rutasHorario } from '@/rutas/rutasHorario';
+import { ErrorHttp } from '@/utilidades/errores';
 
 // 3. Constantes del módulo
 const LIMITE_TAMANO_PETICION_BYTES = 100 * 1024;
@@ -33,10 +38,18 @@ const CODIGO_ERROR_SERVIDOR = 500;
 const CODIGO_DEMASIADAS_PETICIONES = 429;
 
 // 4. Función principal
+// En pruebas los registros solo ensucian la salida de Vitest.
+function obtenerNivelRegistro(): string {
+  if (entorno.NODE_ENV === 'test') {
+    return 'silent';
+  }
+  return entorno.NODE_ENV === 'production' ? 'info' : 'debug';
+}
+
 export async function construirApp() {
   const app = Fastify({
     logger: {
-      level: entorno.NODE_ENV === 'production' ? 'info' : 'debug',
+      level: obtenerNivelRegistro(),
       redact: ['req.headers.authorization'],
     },
     bodyLimit: LIMITE_TAMANO_PETICION_BYTES,
@@ -48,7 +61,9 @@ export async function construirApp() {
 
     if (codigoEstado >= CODIGO_ERROR_SERVIDOR) {
       peticion.log.error(error);
-      return respuesta.status(CODIGO_ERROR_SERVIDOR).send({ mensaje: 'Error interno del servidor' });
+      return respuesta
+        .status(CODIGO_ERROR_SERVIDOR)
+        .send({ mensaje: 'Error interno del servidor' });
     }
 
     if (codigoEstado === CODIGO_DEMASIADAS_PETICIONES) {
@@ -57,7 +72,10 @@ export async function construirApp() {
         .send({ mensaje: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo' });
     }
 
-    return respuesta.status(codigoEstado).send({ mensaje: error.message });
+    const motivo = error instanceof ErrorHttp ? error.motivo : undefined;
+    return respuesta
+      .status(codigoEstado)
+      .send(motivo ? { mensaje: error.message, motivo } : { mensaje: error.message });
   });
 
   await app.register(helmet);
@@ -76,5 +94,8 @@ export async function construirApp() {
   await app.register(rutasActividades, { prefix: '/obras' });
   await app.register(rutasPruebaAlmacenamiento, { prefix: '/almacenamiento-prueba' });
   await app.register(rutasPerfil, { prefix: '/perfil' });
+  // Sin prefijo: combina rutas /asistencia/* y /obras/:obraId/asistencia/*.
+  await app.register(rutasAsistencia);
+  await app.register(rutasHorario, { prefix: '/obras' });
   return app;
 }

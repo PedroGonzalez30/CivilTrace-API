@@ -52,22 +52,16 @@ export async function rutasEmpresa(app: FastifyInstance): Promise<void> {
     (_peticion, cuerpo, terminar) => terminar(null, cuerpo),
   );
 
-  app.get(
-    '/datos',
-    { preHandler: [verificarToken, exigirRol(Rol.DUENO)] },
-    async (peticion) => ({ datos: await obtenerDatosEmpresa(peticion.user.empresaId) }),
-  );
+  app.get('/datos', { preHandler: [verificarToken, exigirRol(Rol.DUENO)] }, async (peticion) => ({
+    datos: await obtenerDatosEmpresa(peticion.user.empresaId),
+  }));
 
-  app.put(
-    '/datos',
-    { preHandler: [verificarToken, exigirRol(Rol.DUENO)] },
-    async (peticion) => ({
-      datos: await actualizarDatosEmpresa(
-        peticion.user.empresaId,
-        validar(esquemaActualizarEmpresa, peticion.body),
-      ),
-    }),
-  );
+  app.put('/datos', { preHandler: [verificarToken, exigirRol(Rol.DUENO)] }, async (peticion) => ({
+    datos: await actualizarDatosEmpresa(
+      peticion.user.empresaId,
+      validar(esquemaActualizarEmpresa, peticion.body),
+    ),
+  }));
 
   app.post(
     '/logo',
@@ -92,13 +86,9 @@ export async function rutasEmpresa(app: FastifyInstance): Promise<void> {
     },
   );
 
-  app.get(
-    '/codigos',
-    { preHandler: [verificarToken, exigirRol(Rol.DUENO)] },
-    async (peticion) => ({
-      codigos: await obtenerCodigosEmpresa(peticion.user.empresaId),
-    }),
-  );
+  app.get('/codigos', { preHandler: [verificarToken, exigirRol(Rol.DUENO)] }, async (peticion) => ({
+    codigos: await obtenerCodigosEmpresa(peticion.user.empresaId),
+  }));
 
   app.get(
     '/personal',

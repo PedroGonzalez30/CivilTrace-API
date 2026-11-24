@@ -44,8 +44,14 @@ const LIMITE_CUERPO_BYTES = entorno.TAMANO_MAX_EVIDENCIA_MB * BYTES_POR_MEGABYTE
 const CABECERA_COMENTARIO = 'x-comentario-avance';
 
 const esquemaQueryReporte = z.object({
-  fechaInicio: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  fechaFin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  fechaInicio: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  fechaFin: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 });
 
 // 4. Función principal
@@ -56,24 +62,16 @@ export async function rutasActividades(app: FastifyInstance): Promise<void> {
     (_peticion, cuerpo, terminar) => terminar(null, cuerpo),
   );
 
-  app.get(
-    '/:idObra/reporte',
-    { preHandler: [verificarToken] },
-    async (peticion) => {
-      const { idObra } = validar(esquemaParametrosObra, peticion.params);
-      const { fechaInicio, fechaFin } = validar(esquemaQueryReporte, peticion.query);
-      return await obtenerReporteObra(peticion.user.empresaId, idObra, fechaInicio, fechaFin);
-    },
-  );
+  app.get('/:idObra/reporte', { preHandler: [verificarToken] }, async (peticion) => {
+    const { idObra } = validar(esquemaParametrosObra, peticion.params);
+    const { fechaInicio, fechaFin } = validar(esquemaQueryReporte, peticion.query);
+    return await obtenerReporteObra(peticion.user.empresaId, idObra, fechaInicio, fechaFin);
+  });
 
-  app.get(
-    '/:idObra/actividades',
-    { preHandler: [verificarToken] },
-    async (peticion) => {
-      const { idObra } = validar(esquemaParametrosObra, peticion.params);
-      return { actividades: await listarActividadesObra(peticion.user.empresaId, idObra) };
-    },
-  );
+  app.get('/:idObra/actividades', { preHandler: [verificarToken] }, async (peticion) => {
+    const { idObra } = validar(esquemaParametrosObra, peticion.params);
+    return { actividades: await listarActividadesObra(peticion.user.empresaId, idObra) };
+  });
 
   app.get(
     '/:idObra/actividades/:idActividad',
