@@ -196,6 +196,7 @@ Hay una sola tasa de peticiones para todos los endpoints de asistencia: 100 por 
   "conDescuento": true, "anotacion": "...",
   "registradoPor": "Mario Castro", "registradoEn": "...",
   "cambios": [ { "campo": "entradaEn", "valorAnterior": "...", "valorNuevo": "...",
+                 "motivo": "Olvidó registrarse",
                  "autor": "Mario Castro", "fecha": "..." } ] }
 ```
 

@@ -269,6 +269,7 @@ async function armarDetalle(
       campo: cambio.campo,
       valorAnterior: cambio.valorAnterior,
       valorNuevo: cambio.valorNuevo,
+      motivo: cambio.motivo,
       autor: cambio.autor.nombre,
       fecha: cambio.creadoEn.toISOString(),
     })),
