@@ -8,7 +8,8 @@
  * @fecha 23/11/2026
  * @version 1.0.0
  * @requerimientos RF-19 Registrar asistencia propia, RF-27 Registrar asistencia por el
- *   supervisor, RF-60 Registrar retardo o salida anticipada, RNF-07 Captura sin conexión (D-14)
+ *   supervisor, RF-56 Mostrar días con descuento, RF-58 Mostrar calendario de asistencia,
+ *   RF-60 Registrar retardo o salida anticipada, RNF-07 Captura sin conexión (D-14)
  * @historial 23/11/2026 - Emilio Manuel Esquivel - Creación (feature 001)
  */
 
@@ -16,9 +17,11 @@
 import type { FastifyInstance } from 'fastify';
 
 import {
+  esquemaConsultaCalendario,
   esquemaConsultaFecha,
   esquemaEditarDetalles,
   esquemaLoteEscaneos,
+  esquemaParametrosCalendario,
   esquemaParametrosDia,
   esquemaParametrosObra,
   esquemaParametrosTrabajador,
@@ -26,6 +29,7 @@ import {
 } from '@/esquemas/esquemasAsistencia';
 import { Rol } from '@/generated/prisma/enums';
 import { exigirRol, verificarToken } from '@/middleware/autenticacion';
+import { obtenerCalendario } from '@/servicios/servicioCalendarioAsistencia';
 import {
   listarObrasSupervisadas,
   obtenerFotoTrabajador,
@@ -128,6 +132,16 @@ export async function rutasAsistencia(app: FastifyInstance): Promise<void> {
       const { obraId, trabajadorId, fecha } = validar(esquemaParametrosDia, peticion.params);
       const cambios = validar(esquemaEditarDetalles, peticion.body ?? {});
       return editarDetalleDia(peticion.user, obraId, trabajadorId, fecha, cambios);
+    },
+  );
+
+  app.get(
+    '/asistencia/trabajadores/:trabajadorId/calendario',
+    { preHandler: [verificarToken] },
+    async (peticion) => {
+      const { trabajadorId } = validar(esquemaParametrosCalendario, peticion.params);
+      const { mes, obraId } = validar(esquemaConsultaCalendario, peticion.query);
+      return obtenerCalendario(peticion.user, trabajadorId, mes, obraId);
     },
   );
 }

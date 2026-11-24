@@ -133,3 +133,16 @@ export const esquemaEditarDetalles = z
   });
 
 export type DatosEditarDetalles = z.output<typeof esquemaEditarDetalles>;
+
+export const esquemaParametrosCalendario = z.object({
+  trabajadorId: z
+    .string({ error: 'El trabajador es inválido' })
+    .min(1, { error: 'El trabajador es inválido' }),
+});
+
+export const esquemaConsultaCalendario = z.object({
+  mes: z
+    .string({ error: 'Indica el mes' })
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error: 'El mes debe tener el formato AAAA-MM' }),
+  obraId: z.string().min(1, { error: 'La obra es inválida' }).optional(),
+});
