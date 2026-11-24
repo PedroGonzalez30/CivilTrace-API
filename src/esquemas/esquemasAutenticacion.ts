@@ -10,10 +10,7 @@
 // 1. Importaciones
 import { z } from 'zod';
 
-import {
-  LONGITUD_MAXIMA_CONTRASENA,
-  LONGITUD_MINIMA_CONTRASENA,
-} from '@/constantes/autenticacion';
+import { LONGITUD_MAXIMA_CONTRASENA, LONGITUD_MINIMA_CONTRASENA } from '@/constantes/autenticacion';
 import { Rol } from '@/generated/prisma/enums';
 
 // 3. Constantes del módulo
@@ -51,7 +48,9 @@ export const esquemaRegistro = z.object(
     nombre: z
       .string({ error: 'El nombre es requerido' })
       .trim()
-      .min(LONGITUD_MINIMA_NOMBRE, { error: `Mínimo ${LONGITUD_MINIMA_NOMBRE} caracteres en el nombre` })
+      .min(LONGITUD_MINIMA_NOMBRE, {
+        error: `Mínimo ${LONGITUD_MINIMA_NOMBRE} caracteres en el nombre`,
+      })
       .max(LONGITUD_MAXIMA_NOMBRE, { error: 'El nombre es demasiado largo' }),
     correo,
     contrasena: contrasenaNueva,
@@ -113,4 +112,3 @@ export type DatosRegistro = z.output<typeof esquemaRegistro>;
 export type DatosLogin = z.output<typeof esquemaLogin>;
 export type DatosUnirseEmpresa = z.output<typeof esquemaUnirseEmpresa>;
 export type DatosCambioContrasena = z.output<typeof esquemaCambiarContrasena>;
-

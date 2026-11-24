@@ -14,13 +14,17 @@ import * as argon2 from 'argon2';
 
 import { prisma } from '@/baseDatos/clientePrisma';
 import { DURACION_TOKEN_REFRESCO_MS } from '@/constantes/autenticacion';
-import type { DatosLogin, DatosRegistro, DatosUnirseEmpresa ,  DatosCambioContrasena,} from '@/esquemas/esquemasAutenticacion'; 
+import type {
+  DatosLogin,
+  DatosRegistro,
+  DatosUnirseEmpresa,
+  DatosCambioContrasena,
+} from '@/esquemas/esquemasAutenticacion';
 import { Prisma } from '@/generated/prisma/client';
 import { Rol } from '@/generated/prisma/enums';
 import { generarCodigoAcceso } from '@/utilidades/codigosAcceso';
 import { ErrorHttp } from '@/utilidades/errores';
 import { calcularHashToken, generarTokenRefresco } from '@/utilidades/tokens';
-
 
 // 2. Tipos e interfaces
 export interface UsuarioPublico {
@@ -153,7 +157,9 @@ async function crearUsuarioYEmpresa(
   const codigo = datos.empresa.toUpperCase();
   const empresa = await prisma.empresa.findUnique({
     where:
-      datos.rol === Rol.SUPERVISOR ? { codigoSupervisores: codigo } : { codigoTrabajadores: codigo },
+      datos.rol === Rol.SUPERVISOR
+        ? { codigoSupervisores: codigo }
+        : { codigoTrabajadores: codigo },
     select: { id: true, nombre: true },
   });
   if (!empresa) {

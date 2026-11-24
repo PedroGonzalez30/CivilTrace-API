@@ -54,7 +54,10 @@ function obtenerContenedor(): ContainerClient {
 }
 
 function obtenerExtension(tipo: TipoImagen): string {
-  const subtipo = tipo.slice('image/'.length).replace(/[^a-z0-9]/gi, '').toLowerCase();
+  const subtipo = tipo
+    .slice('image/'.length)
+    .replace(/[^a-z0-9]/gi, '')
+    .toLowerCase();
   return subtipo === 'jpeg' ? 'jpg' : subtipo || 'img';
 }
 
@@ -120,9 +123,7 @@ export function esTipoImagen(valor: string): valor is TipoImagen {
  * @returns Los bytes y el tipo de la imagen.
  * @throws ErrorHttp 502 si Azure falla o la imagen no existe.
  */
-export async function obtenerImagen(
-  nombreBlob: string,
-): Promise<{ datos: Buffer; tipo: string }> {
+export async function obtenerImagen(nombreBlob: string): Promise<{ datos: Buffer; tipo: string }> {
   const cliente = obtenerContenedor().getBlockBlobClient(nombreBlob);
   try {
     const datos = await cliente.downloadToBuffer();

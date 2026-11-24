@@ -4,7 +4,8 @@
  * @descripcion Lógica del perfil del usuario: consultar, actualizar y manejar la foto.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.0.0
+ * @version 1.1.0
+ * @historial 23/11/2026 - Emilio Manuel Esquivel - Oficio en el perfil (D-18, feature 001)
  */
 
 // 1. Importaciones
@@ -24,6 +25,7 @@ export interface PerfilPublico {
   nombre: string;
   correo: string;
   telefono: string | null;
+  oficio: string | null;
   tieneFoto: boolean;
 }
 
@@ -31,6 +33,7 @@ interface FilaPerfil {
   nombre: string;
   correo: string;
   telefono: string | null;
+  oficio: string | null;
   fotoBlob: string | null;
 }
 
@@ -40,7 +43,13 @@ const CODIGO_NO_ENCONTRADO = 404;
 const CODIGO_CONFLICTO = 409;
 const CODIGO_PRISMA_VIOLACION_UNICA = 'P2002';
 const CARPETA_PERFILES = 'perfiles';
-const SELECCION_PERFIL = { nombre: true, correo: true, telefono: true, fotoBlob: true } as const;
+const SELECCION_PERFIL = {
+  nombre: true,
+  correo: true,
+  telefono: true,
+  oficio: true,
+  fotoBlob: true,
+} as const;
 
 // 4. Funciones privadas
 function aPerfil(fila: FilaPerfil): PerfilPublico {
@@ -48,6 +57,7 @@ function aPerfil(fila: FilaPerfil): PerfilPublico {
     nombre: fila.nombre,
     correo: fila.correo,
     telefono: fila.telefono,
+    oficio: fila.oficio,
     tieneFoto: fila.fotoBlob !== null,
   };
 }
@@ -88,7 +98,12 @@ export async function actualizarPerfil(
   try {
     const fila = await prisma.usuario.update({
       where: { id: usuarioId },
-      data: { nombre: datos.nombre, correo: datos.correo, telefono: datos.telefono },
+      data: {
+        nombre: datos.nombre,
+        correo: datos.correo,
+        telefono: datos.telefono,
+        ...(datos.oficio !== undefined ? { oficio: datos.oficio } : {}),
+      },
       select: SELECCION_PERFIL,
     });
     return aPerfil(fila);

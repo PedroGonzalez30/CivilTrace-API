@@ -44,7 +44,6 @@ interface ObraConSupervisor {
 // 3. Constantes del módulo
 const CODIGO_PETICION_INVALIDA = 400;
 const LARGO_FECHA_ISO = 10;
-const MAXIMO_COINCIDENCIAS_SUPERVISOR = 2;
 const LONGITUD_MAXIMA_RESUMEN = 100;
 
 // Solo se leen estos campos: así nunca se filtra por error un dato interno.
@@ -75,31 +74,6 @@ function convertirObra(obra: ObraConSupervisor): ObraRespuesta {
     correoCliente: obra.correoCliente,
     supervisor: obra.supervisor?.nombre ?? null,
   };
-}
-
-// La búsqueda incluye empresaId para que nunca se asigne un supervisor de otra empresa.
-async function buscarIdSupervisor(
-  empresaId: string,
-  nombre: string | undefined,
-): Promise<string | null> {
-  if (!nombre) {
-    return null;
-  }
-
-  const coincidencias = await prisma.usuario.findMany({
-    where: { empresaId, rol: Rol.SUPERVISOR, nombre: { equals: nombre, mode: 'insensitive' } },
-    select: { id: true },
-    take: MAXIMO_COINCIDENCIAS_SUPERVISOR,
-  });
-
-  const [primera, segunda] = coincidencias;
-  if (!primera) {
-    throw new ErrorHttp(CODIGO_PETICION_INVALIDA, 'No hay un supervisor con ese nombre en tu empresa');
-  }
-  if (segunda) {
-    throw new ErrorHttp(CODIGO_PETICION_INVALIDA, 'Hay varios supervisores con ese nombre');
-  }
-  return primera.id;
 }
 
 function crearResumen(descripcion: string): string {
@@ -138,7 +112,6 @@ async function validarTrabajadores(empresaId: string, ids: string[]): Promise<st
   }
   return idsUnicos;
 }
-
 
 // 5. Funciones públicas
 /**
