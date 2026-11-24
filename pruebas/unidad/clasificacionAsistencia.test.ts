@@ -66,6 +66,25 @@ describe('clasificarJornada', () => {
     ).toBe('RETARDO');
   });
 
+  it('CP19-A12 una entrada desde la hora de salida es falta, no retardo (D-22)', () => {
+    expect(clasificarJornada({ entradaMinutos: minutos(15, 59), horario: HORARIO })).toBe(
+      'RETARDO',
+    );
+    expect(clasificarJornada({ entradaMinutos: minutos(16, 0), horario: HORARIO })).toBe('FALTA');
+    expect(clasificarJornada({ entradaMinutos: minutos(20, 0), horario: HORARIO })).toBe('FALTA');
+  });
+
+  it('CP19-A13 una falta sigue siendo falta al registrar la salida (D-22)', () => {
+    expect(
+      clasificarJornada({
+        entradaMinutos: minutos(20, 0),
+        salidaMinutos: minutos(21, 0),
+        horario: HORARIO,
+        tipoActual: 'FALTA',
+      }),
+    ).toBe('FALTA');
+  });
+
   it('CP21-A15 sin horario o en día no laborable no se clasifica', () => {
     expect(clasificarJornada({ entradaMinutos: minutos(10, 0), horario: null })).toBe('COMPLETA');
     expect(
