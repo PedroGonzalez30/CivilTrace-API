@@ -55,6 +55,7 @@ export default defineConfig({
       thresholds: {
         'src/servicios/servicio*Asistencia.ts': { lines: UMBRAL_COBERTURA_LINEAS },
         'src/servicios/servicioHorario.ts': { lines: UMBRAL_COBERTURA_LINEAS },
+        'src/servicios/servicioActividades.ts': { lines: UMBRAL_COBERTURA_LINEAS },
       },
       reporter: ['text', 'html'],
     },
