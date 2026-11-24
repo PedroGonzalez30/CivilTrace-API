@@ -24,6 +24,12 @@ enum EstadoAvance {
   RECHAZADO
 }
 
+// Feature 003: el trabajador marca si la foto es un avance del día o la entrega final.
+enum TipoAvance {
+  DIARIO
+  TERMINADO
+}
+
 // Asistencia (feature 001): RF-19, RF-27, RF-56, RF-58, RF-60.
 enum AlcanceHorario {
   GENERAL
@@ -86,6 +92,7 @@ model Usuario {
   avancesRegistrados   AvanceActividad[]     @relation("AvancesRegistrados")
   tokensRefresco       TokenRefresco[]
   creadoEn             DateTime              @default(now())
+  avancesRevisados     AvanceActividad[]     @relation("AvancesRevisados")
   obrasAsignadas       Obra[]                @relation("TrabajadoresDeObra")
   telefono             String?
   fotoBlob             String?
@@ -128,6 +135,9 @@ model Obra {
 model Actividad {
   id             String            @id @default(cuid())
   nombre         String
+  // Instrucción para el responsable y fecha de inicio (feature 003, Sup_Agregar1ActividadObra).
+  descripcion    String            @default("")
+  fechaInicio    DateTime?         @db.Date
   fechaEntrega   DateTime          @db.Date
   fechaTerminada DateTime?         @db.Date
   estado         EstadoActividad   @default(ACTIVA)
@@ -158,6 +168,12 @@ model AvanceActividad {
   empresa         Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   registradoPorId String?
   registradoPor   Usuario?     @relation("AvancesRegistrados", fields: [registradoPorId], references: [id], onDelete: SetNull)
+  // Revisión del supervisor (D-10, feature 003): quién, cuándo y por qué.
+  tipo            TipoAvance   @default(DIARIO)
+  observacion     String?
+  revisadoPorId   String?
+  revisadoPor     Usuario?     @relation("AvancesRevisados", fields: [revisadoPorId], references: [id], onDelete: SetNull)
+  revisadoEn      DateTime?
 
   @@index([empresaId])
   @@index([actividadId])

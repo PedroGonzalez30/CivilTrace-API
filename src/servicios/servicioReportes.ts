@@ -5,7 +5,8 @@
  *              y vista previa, filtrado por empresaId y rango de fechas opcional.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.0.0
+ * @version 1.1.0
+ * @historial 24/11/2026 - Emilio Manuel Esquivel - Solo evidencias aprobadas (D-10, feature 003)
  */
 
 import { prisma } from '@/baseDatos/clientePrisma';
@@ -90,7 +91,11 @@ export async function obtenerReporteObra(
       responsable: { select: { nombre: true } },
       obra: { select: { supervisor: { select: { nombre: true } } } },
       avances: {
-        where: Object.keys(filtroFecha).length > 0 ? { fechaRegistro: filtroFecha } : undefined,
+        // Solo cuentan las evidencias aprobadas (D-10, feature 003 R7).
+        where: {
+          estado: EstadoAvance.APROBADO,
+          ...(Object.keys(filtroFecha).length > 0 ? { fechaRegistro: filtroFecha } : {}),
+        },
         select: {
           id: true,
           comentario: true,
