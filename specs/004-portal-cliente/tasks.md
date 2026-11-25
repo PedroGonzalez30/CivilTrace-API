@@ -49,7 +49,7 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 - [x] T011 [P] Crear `pruebas/configuracion/dobleCorreo.ts` (correos en memoria, `obtenerUltimoCorreo(para)`, `simularFallo()`) y registrarlo en la configuración de Vitest junto al doble de almacenamiento
 - [x] T012 [P] Crear `src/middleware/tokenPortal.ts` con `verificarTokenPortal`: lee `X-Token-Portal`, busca por `EnlacePortal.tokenHash` y deja `obraId` y `empresaId` en la petición; 404 con el mensaje del contrato si no existe (R-09)
 - [x] T013 Registrar en `src/app.ts` `@fastify/cors` solo para `URL_PORTAL`, el prefijo `/portal` con límite de 30 peticiones por minuto por IP y las rutas nuevas (vacías por ahora) de `src/rutas/rutasPortal.ts` y `src/rutas/rutasEntregas.ts`
-- [ ] T014 [P] Agregar a `pruebas/configuracion/fabricas.ts` fábricas de obra con enlace, avances aprobados en un rango y entregas en cada estado
+- [x] T014 [P] Agregar a `pruebas/configuracion/fabricas.ts` fábricas de obra con enlace, avances aprobados en un rango y entregas en cada estado
 - [x] T015 [P] Crear `portal:src/conexion/clientePortal.ts`: `fetch` con `X-Token-Portal` tomado del fragmento `#/o/<token>`, errores en español, descarga de imágenes y PDF como `blob:`; pruebas en `portal:pruebas/clientePortal.test.ts`
 
 **Checkpoint**: migración aplicada en la base de pruebas; tipos, lint y pruebas en verde.
