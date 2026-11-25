@@ -4,7 +4,9 @@
  * @descripcion Lógica de consulta y creación de obras, siempre filtrada por empresa.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 16/11/2026
- * @version 1.0.0
+ * @version 1.1.0
+ * @historial 25/11/2026 - Emilio Manuel Esquivel - Asignar trabajadores a una obra existente
+ *   (feature 006, RF-68 Asignar trabajadores a una obra)
  * @requerimientos RF-44 Mostrar obras
  */
 
@@ -12,7 +14,9 @@
 import { prisma } from '@/baseDatos/clientePrisma';
 import { Rol } from '@/generated/prisma/enums';
 import type { DatosCrearObra } from '@/esquemas/esquemasObra';
+import type { DatosTokenAcceso } from '@/tipos/fastifyJwt';
 import { ErrorHttp } from '@/utilidades/errores';
+import { exigirSupervisorODueno, obtenerObraDeEmpresa } from '@/utilidades/permisosObra';
 
 // 2. Tipos e interfaces
 export interface ObraRespuesta {
@@ -159,4 +163,81 @@ export async function crearObra(empresaId: string, datos: DatosCrearObra): Promi
     select: SELECCION_OBRA,
   });
   return convertirObra(obra);
+}
+
+// Feature 006 (RF-68 Asignar trabajadores a una obra, SRS v5.0).
+export interface PersonaObra {
+  id: string;
+  nombre: string;
+  oficio: string | null;
+}
+
+export interface TrabajadoresDeObra {
+  asignados: PersonaObra[];
+  disponibles: PersonaObra[];
+}
+
+async function consultarTrabajadoresDeObra(
+  empresaId: string,
+  obraId: string,
+): Promise<TrabajadoresDeObra> {
+  const trabajadores = await prisma.usuario.findMany({
+    where: { empresaId, rol: Rol.TRABAJADOR },
+    select: {
+      id: true,
+      nombre: true,
+      oficio: true,
+      obrasAsignadas: { where: { id: obraId }, select: { id: true } },
+    },
+    orderBy: { nombre: 'asc' },
+  });
+  const convertir = ({ id, nombre, oficio }: PersonaObra): PersonaObra => ({ id, nombre, oficio });
+  return {
+    asignados: trabajadores.filter((t) => t.obrasAsignadas.length > 0).map(convertir),
+    disponibles: trabajadores.filter((t) => t.obrasAsignadas.length === 0).map(convertir),
+  };
+}
+
+/**
+ * Trabajadores de la empresa asignados y disponibles para una obra (RF-68).
+ *
+ * @param usuario - Supervisor de la obra o dueño.
+ * @param obraId - Obra de la empresa.
+ * @throws ErrorHttp 404 si la obra no es de la empresa; 403 sin permiso.
+ */
+export async function listarTrabajadoresDeObra(
+  usuario: DatosTokenAcceso,
+  obraId: string,
+): Promise<TrabajadoresDeObra> {
+  const obra = await obtenerObraDeEmpresa(obraId, usuario.empresaId);
+  exigirSupervisorODueno(obra, usuario);
+  return consultarTrabajadoresDeObra(usuario.empresaId, obra.id);
+}
+
+/**
+ * Asigna trabajadores de la empresa a una obra ya creada (RF-68). Los que ya estaban asignados no
+ * se duplican y se informan en `yaAsignados`.
+ *
+ * @param usuario - Supervisor de la obra o dueño.
+ * @param obraId - Obra de la empresa.
+ * @param trabajadoresIds - Trabajadores a asignar.
+ * @throws ErrorHttp 404, 403, o 400 si un trabajador no es de la empresa.
+ */
+export async function asignarTrabajadoresAObra(
+  usuario: DatosTokenAcceso,
+  obraId: string,
+  trabajadoresIds: string[],
+): Promise<TrabajadoresDeObra & { yaAsignados: string[] }> {
+  const obra = await obtenerObraDeEmpresa(obraId, usuario.empresaId);
+  exigirSupervisorODueno(obra, usuario);
+  const ids = await validarTrabajadores(usuario.empresaId, trabajadoresIds);
+  const antes = await consultarTrabajadoresDeObra(usuario.empresaId, obra.id);
+  const idsAsignados = new Set(antes.asignados.map((trabajador) => trabajador.id));
+  const yaAsignados = ids.filter((id) => idsAsignados.has(id));
+
+  await prisma.obra.update({
+    where: { id: obra.id },
+    data: { trabajadores: { connect: ids.map((id) => ({ id })) } },
+  });
+  return { ...(await consultarTrabajadoresDeObra(usuario.empresaId, obra.id)), yaAsignados };
 }
