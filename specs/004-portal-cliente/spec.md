@@ -14,18 +14,18 @@
 
 **Requerimientos del SRS v5.0 que atiende**:
 
-| RF                                                       | Prioridad | Resumen                                                                                                        |
-| -------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------- |
-| `RF-65 Enviar enlace del portal al cliente`              | Must      | Al registrar la obra, el cliente recibe por correo un enlace **único y permanente** al portal de su obra.      |
-| `RF-66 Consultar avances en el portal del cliente`       | Must      | Actividades de la obra con su estado y solo las fotos aceptadas con fecha, hora y ubicación, por fecha.        |
-| `RF-67 Consultar entregas en el portal del cliente`      | Must      | Sección Entregas: cada entrega con su estado; en las Enviadas, Aceptar o Registrar observaciones.              |
-| `RF-13 Enviar entrega al cliente`                        | Must      | El supervisor selecciona actividades **Verificadas** y envía; la entrega se publica y el cliente recibe aviso. |
-| `RF-14 Registrar aceptación de entrega`                  | Must      | Nombre + código de un solo uso + firma; guarda nombre, firma, fecha y hora.                                    |
-| `RF-60 Firmar aceptación de entrega`                     | Must      | Recuadro de firma; no se confirma sin firma; la firma se guarda como imagen.                                   |
-| `RF-15 Registrar observaciones del cliente`              | Should    | Texto no vacío; la entrega pasa a Con observaciones y el supervisor las ve.                                    |
-| `RF-16 Generar acta de entrega-recepción`                | Must      | PDF para una entrega Aceptada, a solicitud del dueño o el supervisor ("Generar acta").                         |
-| `RF-71 Descargar documentos de una entrega en el portal` | Must      | El cliente descarga el reporte de la entrega y, si está Aceptada, el acta.                                     |
-| `RF-17 Bloquear entrega aceptada`                        | Must      | Nadie modifica ni elimina actividades o evidencias de una entrega Aceptada.                                    |
+| RF                                                       | Prioridad | Resumen                                                                                                   |
+| -------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| `RF-65 Enviar enlace del portal al cliente`              | Must      | Al registrar la obra, el cliente recibe por correo un enlace **único y permanente** al portal de su obra. |
+| `RF-66 Consultar avances en el portal del cliente`       | Must      | Actividades de la obra con su estado y solo las fotos aceptadas con fecha, hora y ubicación, por fecha.   |
+| `RF-67 Consultar entregas en el portal del cliente`      | Must      | Sección Entregas: cada entrega con su estado; en las Enviadas, Aceptar o Registrar observaciones.         |
+| `RF-13 Enviar entrega al cliente`                        | Must      | El supervisor elige un **rango de fechas**; la entrega lleva solo lo aprobado del rango (D-29).           |
+| `RF-14 Registrar aceptación de entrega`                  | Must      | Nombre + código de un solo uso + firma; guarda nombre, firma, fecha y hora.                               |
+| `RF-60 Firmar aceptación de entrega`                     | Must      | Recuadro de firma; no se confirma sin firma; la firma se guarda como imagen.                              |
+| `RF-15 Registrar observaciones del cliente`              | Should    | Texto no vacío; la entrega pasa a Con observaciones y el supervisor las ve.                               |
+| `RF-16 Generar acta de entrega-recepción`                | Must      | PDF para una entrega Aceptada, a solicitud del dueño o el supervisor ("Generar acta").                    |
+| `RF-71 Descargar documentos de una entrega en el portal` | Must      | El cliente descarga el reporte de la entrega y, si está Aceptada, el acta.                                |
+| `RF-17 Bloquear entrega aceptada`                        | Must      | Nadie modifica ni elimina actividades o evidencias de una entrega Aceptada.                               |
 
 **Fuera de este feature** (features posteriores):
 
@@ -92,21 +92,21 @@ En el portal, el cliente ve las actividades de su obra con su estado y, en cada 
 
 ---
 
-### Historia 3 - El supervisor envía una entrega al cliente (Priority: P1)
+### Historia 3 - El supervisor envía una entrega al cliente por rango de fechas (Priority: P1)
 
-En la vista previa del reporte de la obra, el supervisor (o el dueño, como en el Figma) toca "Enviar al cliente". La entrega incluye las actividades **Verificadas** que eligió; queda publicada en el portal con estado Enviada y el cliente recibe un aviso por correo con el enlace de su obra. La app muestra "Se envió al cliente".
+En la vista previa del reporte de la obra, el supervisor (o el dueño, como en el Figma) elige un **rango de fechas** con el filtro y toca "Enviar al cliente". La entrega incluye las actividades del rango con **solo sus fotos aprobadas** (las pendientes y rechazadas no van); no hay selección manual de actividades (D-29). Queda publicada en el portal con estado Enviada y el cliente recibe un aviso por correo con el enlace de su obra. La app muestra "Se envió al cliente".
 
 **Why this priority**: RF-13 (Must). Sin entregas no hay nada que aceptar.
 
-**Independent Test**: enviar una entrega con 2 actividades Verificadas; comprobar que aparece en el portal como Enviada con sus fotos aceptadas y que el doble de correo recibió el aviso.
+**Independent Test**: enviar una entrega de un rango con 2 actividades con fotos aprobadas y 1 foto pendiente; comprobar que aparece en el portal como Enviada con sus fotos aceptadas y que el doble de correo recibió el aviso.
 
 **Acceptance Scenarios**:
 
-1. **Given** una obra con actividades Verificadas, **When** el supervisor selecciona una o más y envía, **Then** la entrega aparece en el portal con estado Enviada, con el resumen de cada actividad y sus fotos aceptadas, y el cliente recibe un correo con el enlace del portal.
-2. **Given** una selección que incluye actividades no Verificadas, **When** intenta enviar, **Then** el sistema lo impide e indica cuáles faltan.
+1. **Given** una obra con fotos aprobadas en el rango elegido, **When** el supervisor envía, **Then** la entrega aparece en el portal con estado Enviada, con cada actividad del rango y solo sus fotos aprobadas, y el cliente recibe un correo con el enlace del portal.
+2. **Given** un rango sin fotos aprobadas, **When** intenta enviar, **Then** el sistema no crea la entrega e indica que no hay avances aprobados en ese rango.
 3. **Given** una obra sin correo del cliente, **When** intenta enviar, **Then** el sistema lo impide e indica que falta el correo.
 4. **Given** un supervisor no asignado a la obra o un trabajador, **When** intenta enviar, **Then** la API lo rechaza (403).
-5. **Given** una actividad que ya forma parte de una entrega Enviada o Aceptada, **When** se intenta incluir en otra entrega, **Then** el sistema lo impide (P-15).
+5. **Given** un rango que se encima con el de una entrega Enviada o Aceptada, **When** se envía, **Then** la entrega nueva solo lleva las fotos aprobadas que no se habían enviado; si no queda ninguna, el sistema lo indica (P-15).
 
 ---
 
@@ -189,8 +189,8 @@ Para una entrega Aceptada, el supervisor o el dueño toca "Generar acta" y obtie
 
 **Entregas**
 
-- **FR-008**: El supervisor asignado a la obra y el dueño DEBEN poder enviar una entrega seleccionando una o más actividades Verificadas (RF-13).
-- **FR-009**: El sistema DEBE rechazar la entrega si incluye actividades no Verificadas (indicando cuáles) o si la obra no tiene correo del cliente.
+- **FR-008**: El supervisor asignado a la obra y el dueño DEBEN poder enviar una entrega eligiendo un rango de fechas; la entrega incluye las actividades del rango con solo sus fotos aprobadas (RF-13, D-29).
+- **FR-009**: El sistema DEBE rechazar la entrega si el rango no tiene fotos aprobadas o si la obra no tiene correo del cliente.
 - **FR-010**: Al enviar, el sistema DEBE guardar una copia fija de las actividades y fotos aceptadas incluidas, publicar la entrega en el portal y avisar al cliente por correo.
 
 **Aceptación y observaciones**
@@ -230,7 +230,7 @@ Para una entrega Aceptada, el supervisor o el dueño toca "Generar acta" y obtie
 
 - El acta y el reporte de la entrega los genera la **API** (no la app): el portal y la app deben descargar el mismo archivo. La biblioteca de PDF se decide en `plan.md`.
 - El dueño también puede enviar entregas porque el Figma tiene "Enviar al cliente" en sus pantallas, aunque RF-13 menciona solo al supervisor.
-- La selección de actividades se hace en la vista previa del reporte: ahí aparecen las Verificadas del rango filtrado, todas marcadas, y el supervisor puede desmarcar. Es un ajuste menor al Figma (P-14).
+- La entrega se arma con el filtro de fechas del reporte que ya existe (Figma `ReporteFiltro`); no hace falta diseñar una selección de actividades (D-29).
 - El correo sale de un dominio administrado por Azure (T-03); en la entrega final puede usarse el dominio del cliente.
 - El portal se publica en Azure Static Web Apps nivel Free (T-02); la API agrega su dirección a CORS.
 - Las pruebas no usan Azure real: correo y almacenamiento con dobles (constitución III.5).
@@ -242,5 +242,5 @@ Las respuestas por defecto permiten avanzar; se registran en `docs/decisiones.md
 1. **P-10**: el plan de pruebas (CP15–CP17) sigue la V4.0. Hay que mapear sus claves al v5.0 o agregar casos para el portal. ¿Quién lo hace?
 2. **P-11**: ¿registrar observaciones también exige el código del correo? Por defecto **no** (ni el SRS ni el Figma lo piden).
 3. **P-12**: si cambia el correo del cliente, el enlace permanente se reenvía al correo nuevo. Por defecto **sí**.
-4. **P-14**: falta diseñar en el Figma la vista de Avances del portal y la selección de actividades al enviar. Por defecto se arman con los componentes existentes.
-5. **P-15**: una actividad solo puede estar en una entrega Enviada o Aceptada a la vez; si la entrega queda Con observaciones, sus actividades se pueden volver a enviar. Por defecto **sí**.
+4. **P-14**: falta diseñar en el Figma la vista de Avances del portal. Por defecto se arman con los componentes existentes.
+5. **P-15**: una foto aprobada solo va en una entrega Enviada o Aceptada; si la entrega queda Con observaciones, sus fotos se pueden volver a enviar. Por defecto **sí**.
