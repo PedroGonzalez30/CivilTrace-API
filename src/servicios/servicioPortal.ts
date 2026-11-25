@@ -125,7 +125,7 @@ export async function listarAvancesPortal(acceso: AccesoPortal): Promise<Activid
 }
 
 /**
- * Descarga una foto aprobada de la obra del enlace.
+ * Descarga una foto aprobada de la obra del enlace o una que va en alguna de sus entregas.
  *
  * @param acceso - Obra y empresa del enlace.
  * @param avanceId - Id del avance.
@@ -140,8 +140,9 @@ export async function obtenerFotoPortal(
     where: {
       id: avanceId,
       empresaId: acceso.empresaId,
-      estado: EstadoAvance.APROBADO,
       actividad: { obraId: acceso.obraId },
+      // Una foto enviada en una entrega se sigue viendo en ella aunque después cambie (R-06).
+      OR: [{ estado: EstadoAvance.APROBADO }, { entregas: { some: {} } }],
     },
     select: { fotoBlob: true },
   });
