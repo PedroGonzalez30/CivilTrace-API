@@ -130,8 +130,8 @@ describe('Acta, descargas y bloqueo de entregas (RF-16, RF-17, RF-71)', () => {
 
   it('CP17-E6 el supervisor genera el acta con obra, actividades y aceptación del cliente', async () => {
     const respuesta = await app.inject({
-      method: 'POST',
-      url: `${rutaApp(entregaAceptada)}/acta`,
+      method: 'GET',
+      url: `${rutaApp(entregaAceptada)}/acta.pdf`,
       headers: iniciarSesion(app, escenario.maria),
     });
 
@@ -148,8 +148,8 @@ describe('Acta, descargas y bloqueo de entregas (RF-16, RF-17, RF-71)', () => {
 
   it('CP17-E7 una entrega que no está aceptada no tiene acta', async () => {
     const respuesta = await app.inject({
-      method: 'POST',
-      url: `${rutaApp(entregaEnviada)}/acta`,
+      method: 'GET',
+      url: `${rutaApp(entregaEnviada)}/acta.pdf`,
       headers: iniciarSesion(app, escenario.dueno),
     });
 
@@ -162,8 +162,8 @@ describe('Acta, descargas y bloqueo de entregas (RF-16, RF-17, RF-71)', () => {
 
   it('CP17-E8 el cliente descarga el mismo reporte y la misma acta que la app', async () => {
     const actaApp = await app.inject({
-      method: 'POST',
-      url: `${rutaApp(entregaAceptada)}/acta`,
+      method: 'GET',
+      url: `${rutaApp(entregaAceptada)}/acta.pdf`,
       headers: iniciarSesion(app, escenario.dueno),
     });
     const reporteApp = await app.inject({
