@@ -334,4 +334,17 @@ describe('Aceptar una entrega desde el portal (RF-14, RF-60)', () => {
     expect(reenvio.statusCode).toBe(201);
     expect(reenvio.json().fotos).toBe(1);
   });
+
+  it('CP17-A5 comprobar el código antes de firmar no lo gasta y cuenta los intentos', async () => {
+    const entregaId = await crearEntregaEnviada();
+    const codigo = await pedirCodigo(entregaId);
+    const incorrecto = codigo === '000000' ? '111111' : '000000';
+    const comprobar = (valor: string) =>
+      portal('POST', `/portal/entregas/${entregaId}/codigo/comprobar`, { codigo: valor });
+
+    const fallo = await comprobar(incorrecto);
+    expect(fallo.json()).toMatchObject({ motivo: 'CODIGO_INCORRECTO' });
+    expect((await comprobar(codigo)).json()).toEqual({ valido: true });
+    expect((await aceptar(entregaId, codigo)).statusCode).toBe(200);
+  });
 });

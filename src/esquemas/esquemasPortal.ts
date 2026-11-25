@@ -58,6 +58,18 @@ const esquemaFirma = z
   .string({ error: 'Dibuja tu firma para continuar' })
   .max(LONGITUD_MAXIMA_FIRMA_BASE64 * 2, { error: 'Dibuja tu firma para continuar' });
 
+const esquemaCodigo = z
+  .string({ error: 'Escribe el código que llegó a tu correo' })
+  .trim()
+  .regex(new RegExp(`^[0-9]{${DIGITOS_CODIGO}}$`), {
+    error: `El código tiene ${DIGITOS_CODIGO} dígitos`,
+  });
+
+export const esquemaComprobarCodigo = z.object(
+  { codigo: esquemaCodigo },
+  { error: MENSAJE_DATOS_INVALIDOS },
+);
+
 export const esquemaAceptarEntrega = z.object(
   {
     codigo: z

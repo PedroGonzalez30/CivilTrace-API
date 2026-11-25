@@ -226,6 +226,23 @@ export async function pedirCodigoAceptacion(
 }
 
 /**
+ * Comprueba el código antes de pasar a la firma ("✓ Código verificado" en el Figma). No lo
+ * gasta: se vuelve a comprobar al aceptar. Los intentos fallidos sí cuentan.
+ *
+ * @throws ErrorHttp 404, 409 (`ENTREGA_RESPONDIDA`), 400 (`CODIGO_VENCIDO`, `CODIGO_INCORRECTO`).
+ */
+export async function comprobarCodigoAceptacion(
+  acceso: AccesoPortal,
+  entregaId: string,
+  codigo: string,
+): Promise<{ valido: true }> {
+  const entrega = await obtenerEntregaDeObra(acceso, entregaId);
+  exigirEnviada(entrega.estado);
+  await verificarCodigo(entregaId, codigo);
+  return { valido: true };
+}
+
+/**
  * Acepta una entrega con nombre, código y firma (RF-14, RF-60).
  *
  * @returns El detalle actualizado.

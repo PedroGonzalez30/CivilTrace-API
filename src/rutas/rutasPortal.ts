@@ -23,6 +23,7 @@ import {
 } from '@/constantes/portal';
 import {
   esquemaAceptarEntrega,
+  esquemaComprobarCodigo,
   esquemaObservacionesEntrega,
   esquemaParametrosEntregaPortal,
   esquemaParametrosFotoPortal,
@@ -37,6 +38,7 @@ import { obtenerActaPdf, obtenerReportePdf } from '@/servicios/servicioDocumento
 import { listarEntregasPortal } from '@/servicios/servicioEntregas';
 import {
   aceptarEntrega,
+  comprobarCodigoAceptacion,
   obtenerDetalleEntrega,
   obtenerFirmaEntrega,
   pedirCodigoAceptacion,
@@ -111,6 +113,12 @@ export async function rutasPortal(app: FastifyInstance): Promise<void> {
     const { idEntrega } = validar(esquemaParametrosEntregaPortal, peticion.params);
     const codigo = await pedirCodigoAceptacion(obtenerAccesoPortal(peticion), idEntrega);
     return respuesta.status(CODIGO_ACEPTADO).send(codigo);
+  });
+
+  app.post('/entregas/:idEntrega/codigo/comprobar', OPCIONES_CODIGO, async (peticion) => {
+    const { idEntrega } = validar(esquemaParametrosEntregaPortal, peticion.params);
+    const { codigo } = validar(esquemaComprobarCodigo, peticion.body);
+    return comprobarCodigoAceptacion(obtenerAccesoPortal(peticion), idEntrega, codigo);
   });
 
   app.post('/entregas/:idEntrega/aceptar', OPCIONES_FIRMA, async (peticion) => {
