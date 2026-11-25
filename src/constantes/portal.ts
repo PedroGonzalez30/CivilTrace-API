@@ -31,8 +31,11 @@ export const LONGITUD_MINIMA_NOMBRE_CLIENTE = 3;
 export const LONGITUD_MAXIMA_NOMBRE_CLIENTE = 120;
 export const LONGITUD_MAXIMA_OBSERVACIONES = 2000;
 
-/** Límites de peticiones de las rutas públicas del portal (research R-09). */
-export const MAXIMO_PETICIONES_PORTAL_POR_MINUTO = 30;
+/**
+ * Límites de peticiones de las rutas públicas del portal (research R-09). Cada foto es una
+ * petición, así que una entrega grande necesita margen; los códigos se cuentan por entrega.
+ */
+export const MAXIMO_PETICIONES_PORTAL_POR_MINUTO = 120;
 export const MAXIMO_CODIGOS_POR_MINUTO = 5;
 
 /** Encabezado con el que el portal manda el token de su enlace. */
