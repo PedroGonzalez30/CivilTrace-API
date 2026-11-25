@@ -64,6 +64,10 @@ export default defineConfig({
         'src/servicios/servicio*Asistencia.ts': { lines: UMBRAL_COBERTURA_LINEAS },
         'src/servicios/servicioHorario.ts': { lines: UMBRAL_COBERTURA_LINEAS },
         'src/servicios/servicioActividades.ts': { lines: UMBRAL_COBERTURA_LINEAS },
+        // Feature 004. servicioCorreo queda fuera, como servicioAlmacenamiento: es el adaptador de
+        // Azure y en las pruebas siempre se sustituye con su doble (constitución III.5).
+        'src/servicios/servicio{EnlacePortal,Entregas,CodigoEntrega,Portal,Pdf,RespuestaCliente,DocumentosEntrega}.ts':
+          { lines: UMBRAL_COBERTURA_LINEAS },
       },
       reporter: ['text', 'html'],
     },

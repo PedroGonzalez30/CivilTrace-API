@@ -8,7 +8,8 @@
  * @version 1.0.0
  * @requerimientos RF-65 Enviar enlace del portal al cliente, RF-66 Consultar avances en el portal
  *   del cliente, RF-67 Consultar entregas en el portal del cliente, RF-14 Registrar aceptación de
- *   entrega, RF-60 Firmar aceptación de entrega, RF-15 Registrar observaciones del cliente
+ *   entrega, RF-60 Firmar aceptación de entrega, RF-15 Registrar observaciones del cliente,
+ *   RF-71 Descargar documentos de una entrega en el portal
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Creación (feature 004)
  */
 
@@ -32,6 +33,7 @@ import {
   obtenerFotoPortal,
   obtenerObraPortal,
 } from '@/servicios/servicioPortal';
+import { obtenerActaPdf, obtenerReportePdf } from '@/servicios/servicioDocumentosEntrega';
 import { listarEntregasPortal } from '@/servicios/servicioEntregas';
 import {
   aceptarEntrega,
@@ -50,6 +52,7 @@ export const OPCIONES_RUTA_PORTAL = {
 };
 
 const CODIGO_ACEPTADO = 202;
+const TIPO_PDF = 'application/pdf';
 
 // Por IP y entrega: frena a quien intente mandar muchos correos al cliente de una entrega.
 const OPCIONES_CODIGO = {
@@ -120,5 +123,17 @@ export async function rutasPortal(app: FastifyInstance): Promise<void> {
     const { idEntrega } = validar(esquemaParametrosEntregaPortal, peticion.params);
     const datos = validar(esquemaObservacionesEntrega, peticion.body);
     return registrarObservaciones(obtenerAccesoPortal(peticion), idEntrega, datos);
+  });
+
+  app.get('/entregas/:idEntrega/reporte.pdf', OPCIONES_RUTA_PORTAL, async (peticion, respuesta) => {
+    const { idEntrega } = validar(esquemaParametrosEntregaPortal, peticion.params);
+    const pdf = await obtenerReportePdf(obtenerAccesoPortal(peticion), idEntrega);
+    return respuesta.type(TIPO_PDF).send(pdf);
+  });
+
+  app.get('/entregas/:idEntrega/acta.pdf', OPCIONES_RUTA_PORTAL, async (peticion, respuesta) => {
+    const { idEntrega } = validar(esquemaParametrosEntregaPortal, peticion.params);
+    const pdf = await obtenerActaPdf(obtenerAccesoPortal(peticion), idEntrega);
+    return respuesta.type(TIPO_PDF).send(pdf);
   });
 }
