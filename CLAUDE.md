@@ -15,6 +15,8 @@ Antes de cualquier trabajo lee:
 - Prisma 7 (`prisma-client`, salida en `src/generated/prisma`, adaptador `@prisma/adapter-pg`) + PostgreSQL 17.
 - zod 4 para validar entrada y variables de entorno (`src/configuracion/entorno.ts`).
 - argon2 para contraseñas. `@azure/storage-blob` + `@azure/identity` para fotos, logos y firmas.
+- Feature 004 (P-17): `pdfkit` (reporte y acta en PDF), `@azure/communication-email` (correo con la
+  identidad administrada) y `@fastify/cors` (solo para el origen `URL_PORTAL`).
 
 ## Estructura
 
@@ -25,10 +27,12 @@ src/
   rutas/                    Una por recurso; solo validan, autorizan y llaman servicios
   servicios/                Lógica de negocio y acceso a datos (Prisma)
   esquemas/                 Esquemas zod de entrada y salida
-  middleware/               autenticacion.ts (verificarToken, exigirRol)
+  middleware/               autenticacion.ts (verificarToken, exigirRol); tokenPortal.ts
+                            (verificarTokenPortal: rutas /portal con el encabezado X-Token-Portal)
   utilidades/, constantes/, tipos/, baseDatos/
 prisma/                     schema.prisma y migraciones
-infra/                      Terraform (se crea en el módulo 00)
+infra/                      Terraform: hoy solo los recursos nuevos del feature 004 (ver infra/README.md);
+                            los existentes se leen con data, todavía no se importan
 pruebas/                    Pruebas Vitest (unidad, integración y configuración)
 herramientas/lint/          ESLint aislado (decisión T-07)
 specs/                      Especificaciones de Spec Kit por feature
@@ -50,7 +54,10 @@ npm run formatear                          # Prettier (verificar con npm run ver
 - **Pruebas**: Vitest en `pruebas/` (`unidad/`, `integracion/`, `configuracion/`). Usan
   `DATABASE_URL_PRUEBAS` (ver `.env.example`), nunca la base de desarrollo; se preparan con
   `prisma migrate deploy` y se vacían con `limpiarTablas()`. No uses `prisma migrate reset`.
-  Fábricas de datos en `pruebas/configuracion/fabricas.ts`; el almacenamiento es un doble en memoria.
+  Fábricas de datos en `pruebas/configuracion/fabricas.ts`; el almacenamiento y el correo son dobles
+  en memoria (`dobleAlmacenamiento.ts`, `dobleCorreo.ts`: lee el enlace y el código de los correos).
+- **Portal del cliente (local)**: en `.env` pon `URL_PORTAL`, `CLAVE_CIFRADO_PORTAL` (32 bytes en
+  base64) y `CORREO_EN_CONSOLA=true`: los correos con el enlace y el código salen en la consola.
 - **Lint**: ESLint vive en `herramientas/lint/` porque TypeScript 7 no trae la API de JavaScript que
   usa `typescript-eslint` (decisión T-07).
 - **Cobertura pendiente**: los servicios anteriores al módulo 00 (autenticación, obras, empresa,

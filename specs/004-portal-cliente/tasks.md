@@ -173,11 +173,11 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 
 - [x] T054 [P] portal: aviso de privacidad (`src/pantallas/PantallaPrivacidad.tsx`) enlazado al pie (constitución IV.7) y mensajes de error de red sin perder firma ni texto
 - [x] T055 [P] portal: `staticwebapp.config.json` con `Referrer-Policy: no-referrer`, CSP solo hacia la API y `.github/workflows/portal.yml` (tipos, lint, pruebas, Playwright y despliegue)
-- [ ] T056 (aprobado, P-17) `infra/comunicacion.tf` y `infra/portal.tf` (Communication Services con dominio administrado, Static Web Apps Free, secreto `CLAVE_CIFRADO_PORTAL` en Key Vault y su referencia en el App Service); `terraform plan` sin `destroy`/`replace`; **no aplicar**
+- [x] T056 (aprobado, P-17) `infra/comunicacion.tf` y `infra/portal.tf` (Communication Services con dominio administrado, Static Web Apps Free, secreto `CLAVE_CIFRADO_PORTAL` en Key Vault y su referencia en el App Service); `terraform plan` sin `destroy`/`replace`; **no aplicar**
 - [x] T057 [P] Sumar `servicioEnlacePortal`, `servicioEntregas`, `servicioCodigoEntrega`, `servicioPortal`, `servicioPdf` y `utilidades/cifrado` a los umbrales de 80 % en `vitest.config.ts`; app y portal al 60 % por archivo
-- [ ] T058 [P] Actualizar `CLAUDE.md` de la API y de la app (rutas `/portal`, dobles de correo, variables nuevas) y `README.md`
-- [ ] T059 Agregar a `docs/decisiones.md` (ambos repos) las decisiones técnicas que queden (R-01 a R-10) y marcar los pendientes resueltos
-- [ ] T060 Correr `quickstart.md` completo (pruebas y recorrido manual) y revisar cada pantalla contra el Figma
+- [x] T058 [P] Actualizar `CLAUDE.md` de la API y de la app (rutas `/portal`, dobles de correo, variables nuevas) y `README.md`
+- [x] T059 Agregar a `docs/decisiones.md` (ambos repos) las decisiones técnicas que queden (R-01 a R-10) y marcar los pendientes resueltos
+- [ ] T060 Correr `quickstart.md` completo (pruebas automáticas: hechas el 24/11/2026 en los tres repos; falta el recorrido manual en el celular) y revisar cada pantalla contra el Figma
 - [ ] T061 PR en los tres repos (API → app → portal) con la migración pendiente de aplicar en Azure anotada como P-09
 
 ---
