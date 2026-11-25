@@ -72,6 +72,10 @@ interface DatosAvancePrueba {
   comentario?: string;
   fechaRegistro?: Date;
   fotoBlob?: string;
+  // Feature 007: sin estos datos la foto queda como las anteriores al feature (sin ubicación).
+  latitud?: number;
+  longitud?: number;
+  referenciaUbicacion?: string;
 }
 
 // 3. Constantes del módulo
@@ -231,6 +235,9 @@ export async function crearAvance(datos: DatosAvancePrueba) {
       comentario: datos.comentario ?? 'Avance del día',
       fechaRegistro: datos.fechaRegistro ?? new Date('2026-11-03T18:00:00Z'),
       fotoBlob: datos.fotoBlob ?? `${datos.empresaId}/avances/${randomUUID()}.jpg`,
+      latitud: datos.latitud ?? null,
+      longitud: datos.longitud ?? null,
+      referenciaUbicacion: datos.referenciaUbicacion ?? null,
     },
   });
 }

@@ -6,11 +6,12 @@
  *   archivo. También bloquea las actividades terminadas de entregas aceptadas.
  * @autor Emilio Manuel Esquivel
  * @fecha 24/11/2026
- * @version 1.0.0
+ * @version 1.1.0
  * @requerimientos RF-12 Generar reporte de avance de obra, RF-16 Generar acta de
  *   entrega-recepción, RF-17 Bloquear entrega aceptada, RF-71 Descargar documentos de una entrega
  *   en el portal
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Creación (feature 004)
+ *   25/11/2026 - Emilio Manuel Esquivel - Ubicación de cada foto (feature 007, RF-08)
  */
 
 // 1. Importaciones
@@ -27,6 +28,7 @@ import {
 } from '@/servicios/servicioPdf';
 import { ErrorHttp } from '@/utilidades/errores';
 import { formatearFecha } from '@/utilidades/fechasLocales';
+import { describirUbicacion, SELECCION_UBICACION } from '@/utilidades/ubicacionEvidencia';
 
 // 2. Tipos e interfaces
 /** Obra y empresa a las que debe pertenecer la entrega (del token de la app o del enlace). */
@@ -86,7 +88,7 @@ async function buscarEntrega(alcance: AlcanceEntrega, entregaId: string) {
         include: {
           avances: {
             orderBy: { fechaRegistro: 'asc' },
-            include: { avance: { select: { fotoBlob: true } } },
+            include: { avance: { select: { fotoBlob: true, ...SELECCION_UBICACION } } },
           },
         },
       },
@@ -109,6 +111,7 @@ async function reunirDatos(entrega: EntregaCompleta): Promise<DatosDocumentoEntr
       fotos.push({
         comentario: foto.comentario,
         fechaHora: formatearFechaHora(foto.fechaRegistro, zona),
+        ubicacion: describirUbicacion(foto.avance),
         imagen: await leerImagenOpcional(foto.avance.fotoBlob),
       });
     }

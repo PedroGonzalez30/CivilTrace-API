@@ -220,7 +220,12 @@ describe('Acta, descargas y bloqueo de entregas (RF-16, RF-17, RF-71)', () => {
     const subir = await app.inject({
       method: 'POST',
       url: `${ruta}/avances`,
-      headers: { ...iniciarSesion(app, escenario.maria), 'content-type': 'image/png' },
+      headers: {
+        ...iniciarSesion(app, escenario.maria),
+        'content-type': 'image/png',
+        'x-latitud': '32.6245',
+        'x-longitud': '-115.4523',
+      },
       payload: Buffer.from('foto'),
     });
     expect(subir.statusCode).toBe(409);
@@ -238,7 +243,12 @@ describe('Acta, descargas y bloqueo de entregas (RF-16, RF-17, RF-71)', () => {
     const subir = await app.inject({
       method: 'POST',
       url: `${ruta}/avances`,
-      headers: { ...iniciarSesion(app, escenario.maria), 'content-type': 'image/png' },
+      headers: {
+        ...iniciarSesion(app, escenario.maria),
+        'content-type': 'image/png',
+        'x-latitud': '32.6245',
+        'x-longitud': '-115.4523',
+      },
       payload: Buffer.from('foto'),
     });
     expect(subir.statusCode).toBe(201);
