@@ -75,8 +75,8 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 
 ### App
 
-- [ ] T021 [P] [US1] app: tipo `enlacePortal` en `src/tipos/obra.ts`; aviso en `src/pantallas/dueno/PantallaAgregarObra.tsx` si es `FALLIDO`; pruebas en `__tests__/PantallaAgregarObra-test.tsx`
-- [ ] T022 [P] [US1] app: botón "Reenviar enlace al cliente" en `src/pantallas/dueno/PantallaDetalleObra.tsx` con `reenviarEnlacePortal` en `src/servicios/servicioObras.ts`; pruebas
+- [x] T021 [P] [US1] app: tipo `enlacePortal` en `src/tipos/obra.ts`; aviso en `src/pantallas/dueno/PantallaAgregarObra.tsx` si es `FALLIDO`; pruebas en `__tests__/PantallaAgregarObra-test.tsx`
+- [x] T022 [P] [US1] app: botón "Reenviar enlace al cliente" en `src/pantallas/dueno/PantallaDetalleObra.tsx` con `reenviarEnlacePortal` en `src/servicios/servicioObras.ts`; pruebas
 
 ### Portal
 
@@ -109,8 +109,8 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 - [x] T027 [P] [US3] `pruebas/integracion/entregas.test.ts`: `CP16-E1` entrega creada con actividades y solo fotos aprobadas, y correo con el enlace; `CP16-E2` rango sin fotos aprobadas → 400 `SIN_FOTOS_APROBADAS`; `CP16-E3` sin correo → 400 `SIN_CORREO_CLIENTE`; `CP16-E4` trabajador o supervisor ajeno → 403; `CP16-E5` rango encimado solo lleva fotos no enviadas (P-15); otra empresa → 404; el rango usa la zona horaria de la empresa
 - [x] T028 [US3] Crear `src/servicios/servicioEntregas.ts` con `enviarEntrega` (transacción: lee avances `APROBADO` del rango que no estén en entregas `ENVIADA`/`ACEPTADA`, crea `Entrega` con `Entrega.fechaInicio`/`Entrega.fechaFin`/`Entrega.estado`, copia `EntregaActividad.*` y `EntregaAvance.*` según data-model.md; correo después) y `listarEntregasObra`
 - [x] T029 [US3] `POST /obras/:idObra/entregas` y `GET /obras/:idObra/entregas` en `src/rutas/rutasEntregas.ts` con `src/esquemas/esquemasEntregas.ts` (`fechaFin >= fechaInicio`); permiso con `exigirSupervisorODueno`
-- [ ] T030 [P] [US3] app: `src/tipos/entrega.ts` y `src/servicios/servicioEntregas.ts` (`enviarEntrega`, `listarEntregas`) con pruebas en `__tests__/servicioEntregas-test.ts`
-- [ ] T031 [US3] app: botón "Enviar al cliente" en la vista previa de `src/pantallas/dueno/PantallaReportesObra.tsx` con el rango del filtro, confirmación y aviso "Se envió al cliente" (`144:2116`); mensajes de `SIN_CORREO_CLIENTE` y `SIN_FOTOS_APROBADAS`; pruebas en `__tests__/PantallaReportesObra-test.tsx`
+- [x] T030 [P] [US3] app: `src/tipos/entrega.ts` y `src/servicios/servicioEntregas.ts` (`enviarEntrega`, `listarEntregas`) con pruebas en `__tests__/servicioEntregas-test.ts`
+- [x] T031 [US3] app: botón "Enviar al cliente" en la vista previa de `src/pantallas/dueno/PantallaReportesObra.tsx` con el rango del filtro, confirmación y aviso "Se envió al cliente" (`144:2116`); mensajes de `SIN_CORREO_CLIENTE` y `SIN_FOTOS_APROBADAS`; pruebas en `__tests__/PantallaReportesObra-test.tsx`
 - [ ] T032 [US3] portal: `GET /portal/entregas` en `src/rutas/rutasPortal.ts` (API) y pestaña "Entregas" en `portal:src/pantallas/PantallaObra.tsx` con `portal:src/componentes/TarjetaEntrega.tsx` (estilo de `246:1178`); "Todavía no hay entregas"; pruebas
 
 **Checkpoint**: una entrega enviada desde la app aparece en el portal (quickstart paso 5).
@@ -148,8 +148,8 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 - [x] T044 [US6] En `src/servicios/servicioEntregas.ts`: `obtenerReportePdf` y `obtenerActaPdf` (generan una vez, guardan en `entregas/`, actualizan `Entrega.reporteBlob`, `Entrega.actaBlob`, `Entrega.actaSha256`; después leen del almacenamiento)
 - [x] T045 [US6] Rutas `GET /obras/:idObra/entregas/:idEntrega/reporte.pdf`, `GET /obras/:idObra/entregas/:idEntrega/acta.pdf` (`src/rutas/rutasEntregas.ts`), `GET /portal/entregas/:idEntrega/reporte.pdf` y `GET /portal/entregas/:idEntrega/acta.pdf` (`src/rutas/rutasPortal.ts`)
 - [x] T046 [US6] Crear `exigirActividadNoBloqueada` en `src/servicios/servicioEntregas.ts` y usarla en `actualizarEstadoActividad`, `registrarAvanceActividad` y `revisarAvance` de `src/servicios/servicioActividades.ts`; `bloqueada` en `obtenerDetalleActividad`
-- [ ] T047 [P] [US6] app: lista de entregas con su estado en `src/pantallas/dueno/PantallaReportesObra.tsx` con `src/componentes/TarjetaEntrega.tsx`; "Generar acta" (`144:2536`) y descarga del reporte con `expo-file-system` + `expo-sharing`; pruebas
-- [ ] T048 [P] [US6] app: ocultar botones de edición, subida y revisión cuando `bloqueada` en las pantallas de actividad del supervisor y del trabajador; pruebas
+- [x] T047 [P] [US6] app: lista de entregas con su estado en `src/pantallas/dueno/PantallaReportesObra.tsx` con `src/componentes/TarjetaEntrega.tsx`; "Generar acta" (`144:2536`) y descarga del reporte con `expo-file-system` + `expo-sharing`; pruebas
+- [x] T048 [P] [US6] app: ocultar botones de edición, subida y revisión cuando `bloqueada` en las pantallas de actividad del supervisor y del trabajador; pruebas
 - [ ] T049 [US6] portal: botones "Descargar reporte" y "Descargar acta (PDF)" en `src/pantallas/PantallaEntrega.tsx` y `src/pantallas/PantallaReporteAceptado.tsx`; "El acta se genera al aceptar la entrega" si está Enviada; pruebas
 
 **Checkpoint**: quickstart pasos 6–7 completos.
@@ -165,7 +165,7 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 - [x] T050 [P] [US5] En `pruebas/integracion/aceptacionEntrega.test.ts`: `CP17-E11` observaciones con texto, nombre y firma → `CON_OBSERVACIONES`; `CP17-E12` texto vacío → 400 y sin cambio de estado; `CP17-E13` las fotos de una entrega Con observaciones se pueden volver a enviar (P-15); no pide código (P-11)
 - [x] T051 [US5] `registrarObservaciones` en `src/servicios/servicioEntregas.ts` (`Entrega.observaciones` según data-model.md, firma como en T035) y `POST /portal/entregas/:idEntrega/observaciones` en `src/rutas/rutasPortal.ts`
 - [ ] T052 [US5] portal: `src/componentes/ModalObservaciones.tsx` (`246:1605`, "Rechazar y enviar") y `PantallaFirmar.tsx` en modo rechazo (`2271:158`, "Firmar y rechazar"); `e2e/observaciones.spec.ts`
-- [ ] T053 [P] [US5] app: mostrar observaciones y nombre del cliente en `src/componentes/TarjetaEntrega.tsx`; pruebas
+- [x] T053 [P] [US5] app: mostrar observaciones y nombre del cliente en `src/componentes/TarjetaEntrega.tsx`; pruebas
 
 ---
 
