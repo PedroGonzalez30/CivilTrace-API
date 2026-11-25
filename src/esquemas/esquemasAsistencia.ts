@@ -146,3 +146,8 @@ export const esquemaConsultaCalendario = z.object({
     .regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error: 'El mes debe tener el formato AAAA-MM' }),
   obraId: z.string().min(1, { error: 'La obra es inválida' }).optional(),
 });
+
+// Feature 005 (D-30): periodo de las métricas de desempeño.
+export const esquemaConsultaDesempeno = z.object({
+  periodo: z.enum(['SEMANA', 'MES', 'TODO'], { error: 'Periodo inválido' }).default('MES'),
+});
