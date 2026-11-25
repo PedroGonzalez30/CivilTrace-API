@@ -9,6 +9,7 @@
  * @historial 24/11/2026 - Emilio Manuel Esquivel - guardarPdf para reportes y actas de entregas
  *   (feature 004, RF-16 Generar acta de entrega-recepción)
  *   25/11/2026 - Emilio Manuel Esquivel - En desarrollo sin Azure guarda en disco (D-32)
+ *   25/11/2026 - Emilio Manuel Esquivel - Revisa que el contenido sea una imagen real (D-33)
  */
 
 // 1. Importaciones
@@ -25,6 +26,7 @@ import {
   usaAlmacenamientoLocal,
 } from '@/servicios/almacenamientoLocal';
 import { ErrorHttp } from '@/utilidades/errores';
+import { esContenidoImagen } from '@/utilidades/imagenes';
 
 // 2. Tipos e interfaces
 export type TipoImagen = `image/${string}`;
@@ -96,16 +98,14 @@ function obtenerExtension(tipo: TipoImagen): string {
 
 // 5. Funciones públicas
 /**
- * Valida el tamaño de una imagen y la sube al contenedor privado.
- * TEMPORAL: no se revisa el contenido real del archivo; se confía en el tipo declarado.
- * TODO(Equipo): restaurar la validación del tipo real antes del endpoint definitivo.
+ * Valida el tamaño y el contenido real de una imagen y la sube al contenedor privado.
  *
  * @param empresaId - Id de la empresa; debe salir del token, nunca de la petición.
  * @param carpeta - Subcarpeta dentro de la empresa, por ejemplo "prueba".
  * @param datos - Bytes de la imagen.
  * @param tipo - Tipo declarado por el cliente.
  * @returns Nombre del blob, tipo y tamaño.
- * @throws ErrorHttp 400 si excede el tamaño máximo.
+ * @throws ErrorHttp 400 si excede el tamaño máximo o no es una imagen (D-33).
  * @throws ErrorHttp 502 si Azure rechaza o falla al guardar.
  */
 export async function guardarImagen(
@@ -119,6 +119,15 @@ export async function guardarImagen(
     throw new ErrorHttp(
       CODIGO_PETICION_INVALIDA,
       `La imagen supera el máximo de ${entorno.TAMANO_MAX_EVIDENCIA_MB} MB`,
+    );
+  }
+
+  if (!esContenidoImagen(datos)) {
+    throw new ErrorHttp(
+      CODIGO_PETICION_INVALIDA,
+      'El archivo no es una imagen válida. Vuelve a tomar o elegir la foto',
+      undefined,
+      'IMAGEN_INVALIDA',
     );
   }
 
