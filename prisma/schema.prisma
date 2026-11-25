@@ -30,6 +30,18 @@ enum TipoAvance {
   TERMINADO
 }
 
+// Portal del cliente y entregas (feature 004): RF-13 a RF-17, RF-60, RF-65 a RF-67, RF-71.
+enum EstadoEntrega {
+  ENVIADA
+  ACEPTADA
+  CON_OBSERVACIONES
+}
+
+enum EstadoEnvioEnlace {
+  ENVIADO
+  FALLIDO
+}
+
 // Asistencia (feature 001): RF-19, RF-27, RF-56, RF-58, RF-60.
 enum AlcanceHorario {
   GENERAL
@@ -77,6 +89,8 @@ model Empresa {
   horariosObra           HorarioObra[]
   credencialesAsistencia CredencialAsistencia[]
   registrosAsistencia    RegistroAsistencia[]
+  enlacesPortal          EnlacePortal[]
+  entregas               Entrega[]
 }
 
 model Usuario {
@@ -104,6 +118,7 @@ model Usuario {
   entradasRegistradas  RegistroAsistencia[]  @relation("EntradaRegistradaPor")
   salidasRegistradas   RegistroAsistencia[]  @relation("SalidaRegistradaPor")
   cambiosAsistencia    CambioAsistencia[]
+  entregasEnviadas     Entrega[]             @relation("EntregaEnviadaPor")
 
   @@index([empresaId])
 }
@@ -127,28 +142,31 @@ model Obra {
   actividades         Actividad[]
   horarios            HorarioObra[]
   registrosAsistencia RegistroAsistencia[]
+  enlacePortal        EnlacePortal?
+  entregas            Entrega[]
 
   @@index([empresaId])
   @@index([supervisorId])
 }
 
 model Actividad {
-  id             String            @id @default(cuid())
+  id             String             @id @default(cuid())
   nombre         String
   // Instrucción para el responsable y fecha de inicio (feature 003, Sup_Agregar1ActividadObra).
-  descripcion    String            @default("")
-  fechaInicio    DateTime?         @db.Date
-  fechaEntrega   DateTime          @db.Date
-  fechaTerminada DateTime?         @db.Date
-  estado         EstadoActividad   @default(ACTIVA)
+  descripcion    String             @default("")
+  fechaInicio    DateTime?          @db.Date
+  fechaEntrega   DateTime           @db.Date
+  fechaTerminada DateTime?          @db.Date
+  estado         EstadoActividad    @default(ACTIVA)
   obraId         String
-  obra           Obra              @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  obra           Obra               @relation(fields: [obraId], references: [id], onDelete: Cascade)
   empresaId      String
-  empresa        Empresa           @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  empresa        Empresa            @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   responsableId  String?
-  responsable    Usuario?          @relation("ResponsableDeActividad", fields: [responsableId], references: [id], onDelete: SetNull)
+  responsable    Usuario?           @relation("ResponsableDeActividad", fields: [responsableId], references: [id], onDelete: SetNull)
   avances        AvanceActividad[]
-  creadaEn       DateTime          @default(now())
+  creadaEn       DateTime           @default(now())
+  entregas       EntregaActividad[]
 
   @@index([empresaId])
   @@index([obraId])
@@ -156,24 +174,25 @@ model Actividad {
 }
 
 model AvanceActividad {
-  id              String       @id @default(cuid())
-  comentario      String       @default("")
+  id              String          @id @default(cuid())
+  comentario      String          @default("")
   fotoBlob        String
-  fotoTipo        String       @default("image/jpeg")
-  estado          EstadoAvance @default(APROBADO)
-  fechaRegistro   DateTime     @default(now())
+  fotoTipo        String          @default("image/jpeg")
+  estado          EstadoAvance    @default(APROBADO)
+  fechaRegistro   DateTime        @default(now())
   actividadId     String
-  actividad       Actividad    @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  actividad       Actividad       @relation(fields: [actividadId], references: [id], onDelete: Cascade)
   empresaId       String
-  empresa         Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  empresa         Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   registradoPorId String?
-  registradoPor   Usuario?     @relation("AvancesRegistrados", fields: [registradoPorId], references: [id], onDelete: SetNull)
+  registradoPor   Usuario?        @relation("AvancesRegistrados", fields: [registradoPorId], references: [id], onDelete: SetNull)
   // Revisión del supervisor (D-10, feature 003): quién, cuándo y por qué.
-  tipo            TipoAvance   @default(DIARIO)
+  tipo            TipoAvance      @default(DIARIO)
   observacion     String?
   revisadoPorId   String?
-  revisadoPor     Usuario?     @relation("AvancesRevisados", fields: [revisadoPorId], references: [id], onDelete: SetNull)
+  revisadoPor     Usuario?        @relation("AvancesRevisados", fields: [revisadoPorId], references: [id], onDelete: SetNull)
   revisadoEn      DateTime?
+  entregas        EntregaAvance[]
 
   @@index([empresaId])
   @@index([actividadId])
@@ -286,4 +305,100 @@ model CambioAsistencia {
   creadoEn      DateTime           @default(now())
 
   @@index([registroId])
+}
+
+// Enlace permanente del portal de una obra (RF-65). El token se guarda como hash (para buscarlo) y
+// cifrado (para volver a mandar el mismo enlace en cada correo, research R-03).
+model EnlacePortal {
+  id            String             @id @default(cuid())
+  obraId        String             @unique
+  obra          Obra               @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  empresaId     String
+  empresa       Empresa            @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  tokenHash     String             @unique
+  tokenCifrado  String
+  correo        String
+  creadoEn      DateTime           @default(now())
+  ultimoEnvioEn DateTime?
+  estadoEnvio   EstadoEnvioEnlace?
+
+  @@index([empresaId])
+}
+
+// Entrega enviada al cliente (RF-13) y su respuesta (RF-14, RF-15, RF-60). No se borra (IV.6).
+model Entrega {
+  id            String             @id @default(cuid())
+  obraId        String
+  obra          Obra               @relation(fields: [obraId], references: [id], onDelete: Restrict)
+  empresaId     String
+  empresa       Empresa            @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  fechaInicio   DateTime           @db.Date
+  fechaFin      DateTime           @db.Date
+  enviadaPorId  String?
+  enviadaPor    Usuario?           @relation("EntregaEnviadaPor", fields: [enviadaPorId], references: [id], onDelete: SetNull)
+  enviadaEn     DateTime           @default(now())
+  estado        EstadoEntrega      @default(ENVIADA)
+  nombreCliente String?
+  observaciones String?
+  firmaBlob     String?
+  firmaSha256   String?
+  respondidaEn  DateTime?
+  reporteBlob   String?
+  actaBlob      String?
+  actaSha256    String?
+  actividades   EntregaActividad[]
+  avances       EntregaAvance[]
+  codigos       CodigoEntrega[]
+
+  @@index([empresaId])
+  @@index([obraId])
+}
+
+// Copia fija de cada actividad incluida en la entrega (research R-06).
+model EntregaActividad {
+  id             String          @id @default(cuid())
+  entregaId      String
+  entrega        Entrega         @relation(fields: [entregaId], references: [id], onDelete: Cascade)
+  actividadId    String
+  actividad      Actividad       @relation(fields: [actividadId], references: [id], onDelete: Restrict)
+  nombre         String
+  descripcion    String
+  estado         EstadoActividad
+  fechaEntrega   DateTime        @db.Date
+  fechaTerminada DateTime?       @db.Date
+  avances        EntregaAvance[]
+
+  @@unique([entregaId, actividadId])
+  @@index([actividadId])
+}
+
+// Fotos aprobadas incluidas en la entrega (research R-06).
+model EntregaAvance {
+  id                 String           @id @default(cuid())
+  entregaId          String
+  entrega            Entrega          @relation(fields: [entregaId], references: [id], onDelete: Cascade)
+  entregaActividadId String
+  entregaActividad   EntregaActividad @relation(fields: [entregaActividadId], references: [id], onDelete: Cascade)
+  avanceId           String
+  avance             AvanceActividad  @relation(fields: [avanceId], references: [id], onDelete: Restrict)
+  comentario         String
+  fechaRegistro      DateTime
+
+  @@unique([entregaId, avanceId])
+  @@index([avanceId])
+}
+
+// Código de un solo uso para aceptar una entrega (RF-14, constitución IV.3).
+model CodigoEntrega {
+  id         String    @id @default(cuid())
+  entregaId  String
+  entrega    Entrega   @relation(fields: [entregaId], references: [id], onDelete: Cascade)
+  codigoHash String
+  creadoEn   DateTime  @default(now())
+  venceEn    DateTime
+  intentos   Int       @default(0)
+  usadoEn    DateTime?
+  invalidado Boolean   @default(false)
+
+  @@index([entregaId])
 }

@@ -6,10 +6,12 @@
  *              la relación del usuario con la obra.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 2.0.0
+ * @version 2.1.0
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Permisos por obra y responsable, evidencia del
  *   trabajador pendiente de revisión (D-10), revisión con observación, entrega "Terminado", mis
  *   actividades, descripción y fecha de inicio (feature 003, R1–R8)
+ *   24/11/2026 - Emilio Manuel Esquivel - Bloqueo de actividades terminadas de entregas aceptadas
+ *   (feature 004, RF-17 Bloquear entrega aceptada, D-31)
  */
 
 // 1. Importaciones
@@ -21,6 +23,10 @@ import type {
 } from '@/esquemas/esquemasActividad';
 import { EstadoActividad, EstadoAvance, Rol, TipoAvance } from '@/generated/prisma/enums';
 import { guardarImagen, obtenerImagen, type TipoImagen } from '@/servicios/servicioAlmacenamiento';
+import {
+  estaActividadBloqueada,
+  exigirActividadNoBloqueada,
+} from '@/servicios/servicioDocumentosEntrega';
 import { obtenerZonaHorariaEmpresa } from '@/servicios/servicioHorario';
 import type { DatosTokenAcceso } from '@/tipos/fastifyJwt';
 import { ErrorHttp } from '@/utilidades/errores';
@@ -273,9 +279,11 @@ export async function obtenerDetalleActividad(
   usuario: DatosTokenAcceso,
   idObra: string,
   idActividad: string,
-): Promise<ActividadDetalleRespuesta> {
+): Promise<ActividadDetalleRespuesta & { bloqueada: boolean }> {
   await obtenerObraAccesible(usuario, idObra);
-  return convertirDetalle(await buscarActividad(usuario, idObra, idActividad));
+  const detalle = convertirDetalle(await buscarActividad(usuario, idObra, idActividad));
+  // La app oculta los botones de edición cuando la actividad ya se entregó y aceptó (RF-17).
+  return { ...detalle, bloqueada: await estaActividadBloqueada(idActividad) };
 }
 
 /**
@@ -317,6 +325,7 @@ export async function actualizarEstadoActividad(
   const obra = await obtenerObraDeEmpresa(idObra, usuario.empresaId);
   exigirSupervisorODueno(obra, usuario);
   await buscarActividad(usuario, idObra, idActividad);
+  await exigirActividadNoBloqueada(idActividad);
 
   const fechaTerminada =
     datos.estado === EstadoActividad.TERMINADA
@@ -350,6 +359,7 @@ export async function registrarAvanceActividad(
 ): Promise<AvanceActividadRespuesta> {
   await obtenerObraAccesible(usuario, idObra);
   const actividad = await buscarActividad(usuario, idObra, idActividad);
+  await exigirActividadNoBloqueada(idActividad);
   if (actividad.estado === EstadoActividad.TERMINADA) {
     throw new ErrorHttp(CODIGO_CONFLICTO, 'La actividad ya está terminada');
   }
@@ -410,6 +420,7 @@ export async function revisarAvance(
   const obra = await obtenerObraDeEmpresa(idObra, usuario.empresaId);
   exigirSupervisorODueno(obra, usuario);
   await buscarActividad(usuario, idObra, idActividad);
+  await exigirActividadNoBloqueada(idActividad);
 
   const existente = await prisma.avanceActividad.findFirst({
     where: { id: idAvance, actividadId: idActividad, empresaId: usuario.empresaId },

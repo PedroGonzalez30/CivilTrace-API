@@ -5,3 +5,9 @@ dist/
 !.env.example
 /src/generated/prisma
 coverage/
+
+# Terraform (feature 004): estado y variables locales no se versionan
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/terraform.tfvars

@@ -8,6 +8,7 @@
  * @version 1.0.0
  * @requerimientos Constitución III (pruebas primero)
  * @historial 23/11/2026 - Emilio Manuel Esquivel - Creación (módulo 00)
+ * @historial 24/11/2026 - Emilio Manuel Esquivel - Doble de correo y variables del portal (feature 004)
  */
 
 // 1. Importaciones
@@ -39,9 +40,16 @@ export default defineConfig({
       DATABASE_URL: urlBasePruebas,
       AZURE_STORAGE_CUENTA: 'cuentaprueba',
       AZURE_STORAGE_CONTENEDOR: 'contenedorprueba',
+      // Llave fija solo para pruebas (32 bytes en base64); nunca se usa fuera de Vitest.
+      CLAVE_CIFRADO_PORTAL: Buffer.alloc(32, 7).toString('base64'),
+      URL_PORTAL: 'https://portal.prueba',
+      CORREO_EN_CONSOLA: 'false',
     },
     globalSetup: ['pruebas/configuracion/configuracionGlobal.ts'],
-    setupFiles: ['pruebas/configuracion/dobleAlmacenamiento.ts'],
+    setupFiles: [
+      'pruebas/configuracion/dobleAlmacenamiento.ts',
+      'pruebas/configuracion/dobleCorreo.ts',
+    ],
     // Todas las pruebas comparten una base; en serie se evitan interferencias entre archivos.
     fileParallelism: false,
     testTimeout: TIEMPO_MAXIMO_PRUEBA_MS,
@@ -56,6 +64,10 @@ export default defineConfig({
         'src/servicios/servicio*Asistencia.ts': { lines: UMBRAL_COBERTURA_LINEAS },
         'src/servicios/servicioHorario.ts': { lines: UMBRAL_COBERTURA_LINEAS },
         'src/servicios/servicioActividades.ts': { lines: UMBRAL_COBERTURA_LINEAS },
+        // Feature 004. servicioCorreo queda fuera, como servicioAlmacenamiento: es el adaptador de
+        // Azure y en las pruebas siempre se sustituye con su doble (constitución III.5).
+        'src/servicios/servicio{EnlacePortal,Entregas,CodigoEntrega,Portal,Pdf,RespuestaCliente,DocumentosEntrega}.ts':
+          { lines: UMBRAL_COBERTURA_LINEAS },
       },
       reporter: ['text', 'html'],
     },

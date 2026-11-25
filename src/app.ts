@@ -4,15 +4,17 @@
  * @descripcion Construye la aplicación Fastify con sus plugins de seguridad y sus rutas.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.3.0
+ * @version 1.4.0
  * @historial 23/11/2026 - Emilio Manuel Esquivel - Rutas de asistencia y "motivo" en errores;
  *   registros silenciados en pruebas (feature 001)
  *   24/11/2026 - Emilio Manuel Esquivel - Ruta /actividades/mias (feature 003)
+ *   24/11/2026 - Emilio Manuel Esquivel - CORS del portal y rutas /portal y de entregas (feature 004)
  */
 
 // 1. Importaciones
 import '@/tipos/fastifyJwt';
 
+import cors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -29,6 +31,9 @@ import { rutasPruebaAlmacenamiento } from '@/rutas/rutasPruebaAlmacenamiento';
 import { rutasPerfil } from '@/rutas/rutasPerfil';
 import { rutasAsistencia } from '@/rutas/rutasAsistencia';
 import { rutasHorario } from '@/rutas/rutasHorario';
+import { rutasEntregas } from '@/rutas/rutasEntregas';
+import { rutasPortal } from '@/rutas/rutasPortal';
+import { ENCABEZADO_TOKEN_PORTAL } from '@/constantes/portal';
 import { ErrorHttp } from '@/utilidades/errores';
 
 // 3. Constantes del módulo
@@ -80,6 +85,12 @@ export async function construirApp() {
   });
 
   await app.register(helmet);
+  // Solo el portal del cliente corre en un navegador; la app móvil no necesita CORS (R-09).
+  await app.register(cors, {
+    origin: entorno.URL_PORTAL.replace(/\/+$/, ''),
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['content-type', ENCABEZADO_TOKEN_PORTAL],
+  });
   await app.register(rateLimit, {
     max: MAXIMO_PETICIONES_POR_VENTANA,
     timeWindow: VENTANA_LIMITE_PETICIONES,
@@ -99,5 +110,7 @@ export async function construirApp() {
   // Sin prefijo: combina rutas /asistencia/* y /obras/:obraId/asistencia/*.
   await app.register(rutasAsistencia);
   await app.register(rutasHorario, { prefix: '/obras' });
+  await app.register(rutasEntregas, { prefix: '/obras' });
+  await app.register(rutasPortal, { prefix: '/portal' });
   return app;
 }

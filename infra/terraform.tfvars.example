@@ -1,0 +1,2 @@
+# Copia como terraform.tfvars (no se sube a Git).
+id_suscripcion = "<id de la suscripción de rg-civiltrace>"
