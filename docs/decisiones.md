@@ -56,12 +56,15 @@ preguntar. Las nuevas decisiones se agregan al final con fecha.
 
 ## Pendientes de confirmar
 
-| #    | Tema                                                                                                                                                                                                                                      |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P-06 | "Pendientes" con casillas en `TRA-VERACTIVIDAD` (Paredes, Piso, Regadera): no hay dónde capturarlos al agregar la actividad. Por defecto (feature 003) **no se implementan**; la instrucción es la descripción.                           |
-| P-07 | El "Avance diario" del trabajador también nace pendiente de revisión (D-10 habla de "las fotos del trabajador"). Por defecto (feature 003) **sí**.                                                                                        |
-| P-08 | El responsable de una actividad: la app del supervisor ofrece solo los trabajadores asignados a la obra; la API acepta cualquier trabajador o supervisor de la empresa (como antes). Confirmar si basta.                                  |
-| P-09 | Migración `20261124092118_actividades_evidencias` por aplicar en Azure (solo agrega columnas): `npx prisma migrate deploy --config prisma7.config.ts` con la `DATABASE_URL` de producción, **antes** de desplegar la API del feature 003. |
+| #    | Tema                                                                                                                                                                                                                                                                           |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| P-06 | "Pendientes" con casillas en `TRA-VERACTIVIDAD` (Paredes, Piso, Regadera): no hay dónde capturarlos al agregar la actividad. Por defecto (feature 003) **no se implementan**; la instrucción es la descripción.                                                                |
+| P-07 | El "Avance diario" del trabajador también nace pendiente de revisión (D-10 habla de "las fotos del trabajador"). Por defecto (feature 003) **sí**.                                                                                                                             |
+| P-08 | El responsable de una actividad: la app del supervisor ofrece solo los trabajadores asignados a la obra; la API acepta cualquier trabajador o supervisor de la empresa (como antes). Confirmar si basta.                                                                       |
+| P-09 | Migración `20261124092118_actividades_evidencias` por aplicar en Azure (solo agrega columnas): `npx prisma migrate deploy --config prisma7.config.ts` con la `DATABASE_URL` de producción, **antes** de desplegar la API del feature 003.                                      |
+| P-10 | El SRS V4.0 quitó la página web del cliente (RF-13 y RF-57: firma en el teléfono del supervisor), pero el equipo la mantiene como en el Figma (D-01, D-02, D-03; confirmado por Emilio el 24/11/2026). Hay que actualizar el SRS y CP16–CP17 del plan de pruebas. Feature 004. |
+| P-11 | Feature 004: ¿rechazar una entrega también exige el código del correo? Por defecto **no** (el Figma solo lo pide al aceptar).                                                                                                                                                  |
+| P-12 | Feature 004: si cambia el correo del cliente de una obra, ¿se revocan los enlaces ya enviados? Por defecto **sí**.                                                                                                                                                             |
 
 ## Resueltas
 
