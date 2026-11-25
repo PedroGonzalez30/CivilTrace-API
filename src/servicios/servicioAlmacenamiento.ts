@@ -123,6 +123,12 @@ export async function guardarImagen(
   }
 
   if (!esContenidoImagen(datos)) {
+    // Solo en desarrollo: qué llegó en realidad, para diagnosticar la app (D-33).
+    if (entorno.NODE_ENV === 'development') {
+      console.warn(
+        `[imagen inválida] ${datos.length} bytes, tipo declarado ${tipo}, inicio ${datos.subarray(0, 16).toString('hex')}`,
+      );
+    }
     throw new ErrorHttp(
       CODIGO_PETICION_INVALIDA,
       'El archivo no es una imagen válida. Vuelve a tomar o elegir la foto',
