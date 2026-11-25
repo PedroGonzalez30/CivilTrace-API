@@ -31,24 +31,24 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 
 **Purpose**: dependencias, variables y proyecto del portal.
 
-- [ ] T001 (aprobado, P-17) Instalar `pdfkit`, `@types/pdfkit` (dev), `@azure/communication-email` y `@fastify/cors` en `package.json` (R-01, R-02, R-09)
-- [ ] T002 Agregar `URL_PORTAL`, `CLAVE_CIFRADO_PORTAL` (32 bytes base64), `AZURE_COMUNICACION_ENDPOINT`, `CORREO_REMITENTE` (opcionales) y `CORREO_EN_CONSOLA` (booleano) a `src/configuracion/entorno.ts` y `.env.example`
-- [ ] T003 [P] Crear `src/constantes/portal.ts` con las constantes de [data-model.md](./data-model.md) ("Constantes de negocio")
+- [x] T001 (aprobado, P-17) Instalar `pdfkit`, `@types/pdfkit` (dev), `@azure/communication-email` y `@fastify/cors` en `package.json` (R-01, R-02, R-09)
+- [x] T002 Agregar `URL_PORTAL`, `CLAVE_CIFRADO_PORTAL` (32 bytes base64), `AZURE_COMUNICACION_ENDPOINT`, `CORREO_REMITENTE` (opcionales) y `CORREO_EN_CONSOLA` (booleano) a `src/configuracion/entorno.ts` y `.env.example`
+- [x] T003 [P] Crear `src/constantes/portal.ts` con las constantes de [data-model.md](./data-model.md) ("Constantes de negocio")
 - [ ] T004 [P] Crear el repo `portal:` con Vite + React 19 + TypeScript estricto, React Router en modo hash, ESLint + Prettier con las reglas del ECCT, Vitest + Testing Library y Playwright; scripts `dev`, `build`, `typecheck`, `lint`, `test`, `test:e2e`, `verificar-formato` en `portal:package.json`
 - [ ] T005 [P] Crear `portal:src/estilos/tema.css` con colores, Poppins y espaciados tomados de las pantallas `CLIENTE_*` del Figma (`246:1178`, `2271:118`) y `portal:CLAUDE.md` con las reglas del repo
-- [ ] T006 [P] Enmienda 1.1.0 de `.specify/memory/constitution.md` (I.3 e I.4 citan el SRS v5.0 desde el feature 004) — (aprobado, P-17), va en el mismo PR para revisión
+- [x] T006 [P] Enmienda 1.1.0 de `.specify/memory/constitution.md` (I.3 e I.4 citan el SRS v5.0 desde el feature 004) — (aprobado, P-17), va en el mismo PR para revisión
 
 ---
 
 ## Phase 2: Foundational (bloquea todas las historias)
 
-- [ ] T007 Agregar a `prisma/schema.prisma` las enumeraciones `EstadoEntrega` y `EstadoEnvioEnlace` y los modelos `EnlacePortal`, `Entrega`, `EntregaActividad`, `EntregaAvance` y `CodigoEntrega` según [data-model.md](./data-model.md) (todos sus campos e índices, incluidos `EnlacePortal.obraId` único, `EnlacePortal.tokenHash` único, `EntregaActividad` y `EntregaAvance` con sus `@@unique`), más las relaciones en `Obra`, `Actividad`, `AvanceActividad`, `Usuario` y `Empresa`
-- [ ] T008 Crear la migración `npx prisma migrate dev --name portal_cliente_entregas --config prisma7.config.ts` y regenerar el cliente; confirmar que solo agrega tablas
-- [ ] T009 [P] Crear `src/utilidades/cifrado.ts`: `cifrarTexto`/`descifrarTexto` (AES-256-GCM, formato de `EnlacePortal.tokenCifrado` en data-model.md) y `calcularHmacCodigo` (R-04); pruebas en `pruebas/unidad/cifrado.test.ts`
-- [ ] T010 [P] Crear `src/servicios/servicioCorreo.ts` con `enviarCorreo({ para, asunto, texto, html })` sobre Azure Communication Services con `DefaultAzureCredential`; 503 sin configuración; con `CORREO_EN_CONSOLA` escribe el mensaje en el registro (R-02)
-- [ ] T011 [P] Crear `pruebas/configuracion/dobleCorreo.ts` (correos en memoria, `obtenerUltimoCorreo(para)`, `simularFallo()`) y registrarlo en la configuración de Vitest junto al doble de almacenamiento
-- [ ] T012 [P] Crear `src/middleware/tokenPortal.ts` con `verificarTokenPortal`: lee `X-Token-Portal`, busca por `EnlacePortal.tokenHash` y deja `obraId` y `empresaId` en la petición; 404 con el mensaje del contrato si no existe (R-09)
-- [ ] T013 Registrar en `src/app.ts` `@fastify/cors` solo para `URL_PORTAL`, el prefijo `/portal` con límite de 30 peticiones por minuto por IP y las rutas nuevas (vacías por ahora) de `src/rutas/rutasPortal.ts` y `src/rutas/rutasEntregas.ts`
+- [x] T007 Agregar a `prisma/schema.prisma` las enumeraciones `EstadoEntrega` y `EstadoEnvioEnlace` y los modelos `EnlacePortal`, `Entrega`, `EntregaActividad`, `EntregaAvance` y `CodigoEntrega` según [data-model.md](./data-model.md) (todos sus campos e índices, incluidos `EnlacePortal.obraId` único, `EnlacePortal.tokenHash` único, `EntregaActividad` y `EntregaAvance` con sus `@@unique`), más las relaciones en `Obra`, `Actividad`, `AvanceActividad`, `Usuario` y `Empresa`
+- [x] T008 Crear la migración `npx prisma migrate dev --name portal_cliente_entregas --config prisma7.config.ts` y regenerar el cliente; confirmar que solo agrega tablas
+- [x] T009 [P] Crear `src/utilidades/cifrado.ts`: `cifrarTexto`/`descifrarTexto` (AES-256-GCM, formato de `EnlacePortal.tokenCifrado` en data-model.md) y `calcularHmacCodigo` (R-04); pruebas en `pruebas/unidad/cifrado.test.ts`
+- [x] T010 [P] Crear `src/servicios/servicioCorreo.ts` con `enviarCorreo({ para, asunto, texto, html })` sobre Azure Communication Services con `DefaultAzureCredential`; 503 sin configuración; con `CORREO_EN_CONSOLA` escribe el mensaje en el registro (R-02)
+- [x] T011 [P] Crear `pruebas/configuracion/dobleCorreo.ts` (correos en memoria, `obtenerUltimoCorreo(para)`, `simularFallo()`) y registrarlo en la configuración de Vitest junto al doble de almacenamiento
+- [x] T012 [P] Crear `src/middleware/tokenPortal.ts` con `verificarTokenPortal`: lee `X-Token-Portal`, busca por `EnlacePortal.tokenHash` y deja `obraId` y `empresaId` en la petición; 404 con el mensaje del contrato si no existe (R-09)
+- [x] T013 Registrar en `src/app.ts` `@fastify/cors` solo para `URL_PORTAL`, el prefijo `/portal` con límite de 30 peticiones por minuto por IP y las rutas nuevas (vacías por ahora) de `src/rutas/rutasPortal.ts` y `src/rutas/rutasEntregas.ts`
 - [ ] T014 [P] Agregar a `pruebas/configuracion/fabricas.ts` fábricas de obra con enlace, avances aprobados en un rango y entregas en cada estado
 - [ ] T015 [P] Crear `portal:src/conexion/clientePortal.ts`: `fetch` con `X-Token-Portal` tomado del fragmento `#/o/<token>`, errores en español, descarga de imágenes y PDF como `blob:`; pruebas en `portal:pruebas/clientePortal.test.ts`
 
@@ -64,14 +64,14 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 
 ### Pruebas (API) ⚠️ primero, en rojo
 
-- [ ] T016 [P] [US1] `pruebas/integracion/enlacePortal.test.ts`: `CP16-PORTAL-E1` correo con enlace al crear obra y `enlacePortal: 'ENVIADO'`; `CP16-PORTAL-E2` token alterado → 404 sin datos; `CP16-PORTAL-E3` obra anterior recibe enlace al reenviar; `CP16-PORTAL-E4` fallo de correo → obra guardada y `'FALLIDO'`; `'SIN_CORREO'` sin correo; reenviar manda el **mismo** token; cambio de correo rota el token (P-12); solo el dueño reenvía (403)
+- [x] T016 [P] [US1] `pruebas/integracion/enlacePortal.test.ts`: `CP16-PORTAL-E1` correo con enlace al crear obra y `enlacePortal: 'ENVIADO'`; `CP16-PORTAL-E2` token alterado → 404 sin datos; `CP16-PORTAL-E3` obra anterior recibe enlace al reenviar; `CP16-PORTAL-E4` fallo de correo → obra guardada y `'FALLIDO'`; `'SIN_CORREO'` sin correo; reenviar manda el **mismo** token; cambio de correo rota el token (P-12); solo el dueño reenvía (403)
 
 ### Implementación
 
-- [ ] T017 [US1] Crear `src/servicios/servicioEnlacePortal.ts`: `crearEnlace` (token de `BYTES_TOKEN_PORTAL`, guarda `EnlacePortal.tokenHash` y `EnlacePortal.tokenCifrado`), `enviarEnlace`, `reenviarEnlace` (rota si `EnlacePortal.correo` difiere de `Obra.correoCliente`) y `construirUrlPortal`; actualiza `EnlacePortal.ultimoEnvioEn` y `EnlacePortal.estadoEnvio`
-- [ ] T018 [US1] Cambiar `crearObra` en `src/servicios/servicioObras.ts` y `POST /obras` en `src/rutas/rutasObras.ts` para crear el enlace en la transacción, enviar el correo después y responder `enlacePortal` (R-10)
-- [ ] T019 [US1] `POST /obras/:idObra/enlace-portal/reenviar` en `src/rutas/rutasEntregas.ts` (solo `DUENO`)
-- [ ] T020 [US1] `GET /portal/obra` en `src/rutas/rutasPortal.ts` con `src/esquemas/esquemasPortal.ts`
+- [x] T017 [US1] Crear `src/servicios/servicioEnlacePortal.ts`: `crearEnlace` (token de `BYTES_TOKEN_PORTAL`, guarda `EnlacePortal.tokenHash` y `EnlacePortal.tokenCifrado`), `enviarEnlace`, `reenviarEnlace` (rota si `EnlacePortal.correo` difiere de `Obra.correoCliente`) y `construirUrlPortal`; actualiza `EnlacePortal.ultimoEnvioEn` y `EnlacePortal.estadoEnvio`
+- [x] T018 [US1] Cambiar `crearObra` en `src/servicios/servicioObras.ts` y `POST /obras` en `src/rutas/rutasObras.ts` para crear el enlace en la transacción, enviar el correo después y responder `enlacePortal` (R-10)
+- [x] T019 [US1] `POST /obras/:idObra/enlace-portal/reenviar` en `src/rutas/rutasEntregas.ts` (solo `DUENO`)
+- [x] T020 [US1] `GET /portal/obra` en `src/rutas/rutasPortal.ts` con `src/esquemas/esquemasPortal.ts`
 
 ### App
 
@@ -92,8 +92,8 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 
 **Independent Test**: obra con 4 actividades y 10 fotos (2 rechazadas) → el portal muestra 4 y 8.
 
-- [ ] T024 [P] [US2] `pruebas/integracion/portalCliente.test.ts`: `CP16-PORTAL-E5` 4 actividades y 8 fotos aprobadas ordenadas por fecha; `CP16-PORTAL-E6` sin fotos → `[]`; `CP16-PORTAL-E7` pendientes y rechazadas no salen; `GET /portal/fotos/:id` 404 si no es `APROBADO` o es de otra obra u otra empresa (SC-003)
-- [ ] T025 [US2] `GET /portal/avances` y `GET /portal/fotos/:idAvance` en `src/rutas/rutasPortal.ts`, con la consulta en `src/servicios/servicioPortal.ts` (reutiliza `obtenerImagen`); `ubicacion: null` hasta P-16
+- [x] T024 [P] [US2] `pruebas/integracion/portalCliente.test.ts`: `CP16-PORTAL-E5` 4 actividades y 8 fotos aprobadas ordenadas por fecha; `CP16-PORTAL-E6` sin fotos → `[]`; `CP16-PORTAL-E7` pendientes y rechazadas no salen; `GET /portal/fotos/:id` 404 si no es `APROBADO` o es de otra obra u otra empresa (SC-003)
+- [x] T025 [US2] `GET /portal/avances` y `GET /portal/fotos/:idAvance` en `src/rutas/rutasPortal.ts`, con la consulta en `src/servicios/servicioPortal.ts` (reutiliza `obtenerImagen`); `ubicacion: null` hasta P-16
 - [ ] T026 [US2] portal: pestaña "Avances" en `src/pantallas/PantallaObra.tsx` con `src/componentes/TarjetaActividad.tsx` y `src/componentes/GaleriaFotos.tsx` (estilo de la lista de `246:1269`, P-14); "Aún no hay avances registrados"; pruebas Vitest
 
 **Checkpoint**: US1 + US2 funcionan solas.

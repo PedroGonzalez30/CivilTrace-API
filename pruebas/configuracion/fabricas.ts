@@ -11,11 +11,13 @@
  */
 
 // 1. Importaciones
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 
 import { construirApp } from '@/app';
 import { prisma } from '@/baseDatos/clientePrisma';
-import type { Rol } from '@/generated/prisma/enums';
+import type { EstadoActividad, EstadoAvance, Rol, TipoAvance } from '@/generated/prisma/enums';
+import { cifrarTexto } from '@/utilidades/cifrado';
+import { calcularHashToken } from '@/utilidades/tokens';
 
 // 2. Tipos e interfaces
 type AppPrueba = Awaited<ReturnType<typeof construirApp>>;
@@ -49,6 +51,27 @@ interface DatosObraPrueba {
   nombre?: string;
   fechaInicio?: string;
   fechaFinal?: string;
+}
+
+interface DatosActividadPrueba {
+  obraId: string;
+  empresaId: string;
+  responsableId?: string | null;
+  nombre?: string;
+  estado?: EstadoActividad;
+  fechaEntrega?: string;
+  fechaTerminada?: string | null;
+}
+
+interface DatosAvancePrueba {
+  actividadId: string;
+  empresaId: string;
+  registradoPorId?: string | null;
+  estado?: EstadoAvance;
+  tipo?: TipoAvance;
+  comentario?: string;
+  fechaRegistro?: Date;
+  fotoBlob?: string;
 }
 
 // 3. Constantes del módulo
@@ -180,4 +203,57 @@ export async function crearEscenarioBase() {
   });
 
   return { empresa, dueno, maria, ana, obra, otraEmpresa, trabajadorAjeno };
+}
+
+export async function crearActividad(datos: DatosActividadPrueba) {
+  return prisma.actividad.create({
+    data: {
+      nombre: datos.nombre ?? 'Colocar loseta',
+      descripcion: 'Colocar loseta en el baño del segundo piso',
+      fechaEntrega: new Date(`${datos.fechaEntrega ?? '2026-11-05'}T00:00:00Z`),
+      fechaTerminada: datos.fechaTerminada ? new Date(`${datos.fechaTerminada}T00:00:00Z`) : null,
+      estado: datos.estado ?? 'ACTIVA',
+      obraId: datos.obraId,
+      empresaId: datos.empresaId,
+      responsableId: datos.responsableId ?? null,
+    },
+  });
+}
+
+export async function crearAvance(datos: DatosAvancePrueba) {
+  return prisma.avanceActividad.create({
+    data: {
+      actividadId: datos.actividadId,
+      empresaId: datos.empresaId,
+      registradoPorId: datos.registradoPorId ?? null,
+      estado: datos.estado ?? 'APROBADO',
+      tipo: datos.tipo ?? 'DIARIO',
+      comentario: datos.comentario ?? 'Avance del día',
+      fechaRegistro: datos.fechaRegistro ?? new Date('2026-11-03T18:00:00Z'),
+      fotoBlob: datos.fotoBlob ?? `${datos.empresaId}/avances/${randomUUID()}.jpg`,
+    },
+  });
+}
+
+/**
+ * Crea el enlace del portal de una obra directamente en la base (sin correo).
+ *
+ * @returns El token en texto, como lo recibiría el cliente.
+ */
+export async function crearEnlacePortal(
+  obra: { id: string; empresaId: string },
+  correo = 'cliente@ejemplo.com',
+) {
+  const token = randomBytes(32).toString('base64url');
+  const llave = Buffer.from(process.env['CLAVE_CIFRADO_PORTAL'] ?? '', 'base64');
+  await prisma.enlacePortal.create({
+    data: {
+      obraId: obra.id,
+      empresaId: obra.empresaId,
+      tokenHash: calcularHashToken(token),
+      tokenCifrado: cifrarTexto(token, llave),
+      correo,
+    },
+  });
+  return token;
 }

@@ -37,6 +37,11 @@ vi.mock('@/servicios/servicioAlmacenamiento', async () => {
       }
       return imagen;
     },
+    guardarPdf: async (empresaId: string, carpeta: string, datos: Buffer) => {
+      const nombreBlob = `${empresaId}/${carpeta}/${randomUUID()}.pdf`;
+      imagenesEnMemoria.set(nombreBlob, { datos, tipo: 'application/pdf' });
+      return { nombreBlob, tipo: 'application/pdf', tamanoBytes: datos.length };
+    },
     eliminarImagen: async (nombreBlob: string) => {
       imagenesEnMemoria.delete(nombreBlob);
     },

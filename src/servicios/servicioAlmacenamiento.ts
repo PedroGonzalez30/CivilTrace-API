@@ -5,7 +5,9 @@
  * identidad administrada del App Service (sin claves ni cadenas de conexión).
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 18/11/2026
- * @version 1.0.0
+ * @version 1.1.0
+ * @historial 24/11/2026 - Emilio Manuel Esquivel - guardarPdf para reportes y actas de entregas
+ *   (feature 004, RF-16 Generar acta de entrega-recepción)
  */
 
 // 1. Importaciones
@@ -22,7 +24,7 @@ export type TipoImagen = `image/${string}`;
 
 export interface ArchivoGuardado {
   nombreBlob: string;
-  tipo: TipoImagen;
+  tipo: TipoImagen | 'application/pdf';
   tamanoBytes: number;
 }
 
@@ -31,6 +33,7 @@ const CODIGO_PETICION_INVALIDA = 400;
 const CODIGO_FALLO_ALMACENAMIENTO = 502;
 const CODIGO_NO_DISPONIBLE = 503;
 const BYTES_POR_MEGABYTE = 1024 * 1024;
+const TIPO_PDF = 'application/pdf' as const;
 
 let contenedorEnCache: ContainerClient | null = null;
 
@@ -132,6 +135,33 @@ export async function obtenerImagen(nombreBlob: string): Promise<{ datos: Buffer
   } catch (error) {
     throw new ErrorHttp(CODIGO_FALLO_ALMACENAMIENTO, 'No se pudo leer la imagen', error);
   }
+}
+
+/**
+ * Sube un PDF generado por el servidor (reporte o acta de una entrega). No se valida tamaño
+ * porque el archivo no viene del cliente.
+ *
+ * @param empresaId - Id de la empresa dueña del documento.
+ * @param carpeta - Subcarpeta dentro de la empresa, por ejemplo "entregas".
+ * @param datos - Bytes del PDF.
+ * @returns Nombre del blob, tipo y tamaño.
+ * @throws ErrorHttp 502 si Azure rechaza o falla al guardar.
+ */
+export async function guardarPdf(
+  empresaId: string,
+  carpeta: string,
+  datos: Buffer,
+): Promise<ArchivoGuardado> {
+  const contenedor = obtenerContenedor();
+  const nombreBlob = `${empresaId}/${carpeta}/${randomUUID()}.pdf`;
+  try {
+    await contenedor
+      .getBlockBlobClient(nombreBlob)
+      .uploadData(datos, { blobHTTPHeaders: { blobContentType: TIPO_PDF } });
+  } catch (error) {
+    throw new ErrorHttp(CODIGO_FALLO_ALMACENAMIENTO, 'No se pudo guardar el documento', error);
+  }
+  return { nombreBlob, tipo: TIPO_PDF, tamanoBytes: datos.length };
 }
 
 /**
