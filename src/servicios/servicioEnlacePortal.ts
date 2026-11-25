@@ -6,9 +6,10 @@
  *   mandar siempre el mismo enlace, research R-03).
  * @autor Emilio Manuel Esquivel
  * @fecha 24/11/2026
- * @version 1.0.0
+ * @version 1.1.0
  * @requerimientos RF-65 Enviar enlace del portal al cliente, RF-13 Enviar entrega al cliente
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Creación (feature 004)
+ *   25/11/2026 - Emilio Manuel Esquivel - Escribe en la consola por qué falló el envío
  */
 
 // 1. Importaciones
@@ -141,8 +142,14 @@ export async function enviarEnlacePortal(
     const correo = construirCorreoEnlace(obra, construirUrlPortal(token), adicional);
     await enviarCorreo({ para: obra.correoCliente, ...correo });
     estado = EstadoEnvioEnlace.ENVIADO;
-  } catch {
+  } catch (falla) {
     // La obra o la entrega ya se guardaron; el fallo queda registrado y la app ofrece reenviar.
+    // El motivo (p. ej. falta CLAVE_CIFRADO_PORTAL o el correo) se escribe en la consola del
+    // servidor; al usuario solo le llega "No se pudo enviar el correo".
+    console.error(
+      `[portal] No se pudo enviar el enlace de la obra ${obra.id}:`,
+      falla instanceof Error ? falla.message : falla,
+    );
   }
 
   await prisma.enlacePortal.updateMany({

@@ -157,6 +157,24 @@ describe('Enlace permanente del portal (RF-65)', () => {
     expect(extraerTokenPortal(obtenerUltimoCorreo('falla@ejemplo.com'))).toBeDefined();
   });
 
+  it('CP16-PORTAL-E8 si el reenvío falla dice por qué y no "Error interno"; el supervisor no puede reenviar', async () => {
+    const obraId: string = (await registrarObra('reenvio@ejemplo.com')).json().obra.id;
+    const reenviar = (usuario: typeof escenario.dueno) =>
+      app.inject({
+        method: 'POST',
+        url: `/obras/${obraId}/enlace-portal/reenviar`,
+        headers: iniciarSesion(app, usuario),
+      });
+
+    simularFalloCorreo();
+    const fallido = await reenviar(escenario.dueno);
+    restaurarCorreo();
+
+    expect(fallido.statusCode).toBe(503);
+    expect(fallido.json()).toEqual({ mensaje: 'No se pudo enviar el correo. Inténtalo más tarde' });
+    expect((await reenviar(escenario.maria)).statusCode).toBe(403);
+  });
+
   it('CP16-PORTAL-A4 reenviar manda el mismo enlace permanente', async () => {
     const obraId: string = (await registrarObra('mismo@ejemplo.com')).json().obra.id;
     const primero = extraerTokenPortal(obtenerUltimoCorreo('mismo@ejemplo.com'));
