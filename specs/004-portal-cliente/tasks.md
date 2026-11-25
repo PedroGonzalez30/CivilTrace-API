@@ -177,7 +177,7 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 - [x] T057 [P] Sumar `servicioEnlacePortal`, `servicioEntregas`, `servicioCodigoEntrega`, `servicioPortal`, `servicioPdf` y `utilidades/cifrado` a los umbrales de 80 % en `vitest.config.ts`; app y portal al 60 % por archivo
 - [x] T058 [P] Actualizar `CLAUDE.md` de la API y de la app (rutas `/portal`, dobles de correo, variables nuevas) y `README.md`
 - [x] T059 Agregar a `docs/decisiones.md` (ambos repos) las decisiones técnicas que queden (R-01 a R-10) y marcar los pendientes resueltos
-- [ ] T060 Correr `quickstart.md` completo (pruebas automáticas: hechas el 24/11/2026 en los tres repos; falta el recorrido manual en el celular) y revisar cada pantalla contra el Figma
+- [x] T060 Correr `quickstart.md` completo (pruebas automáticas el 24/11/2026; recorrido manual en Android el 25/11/2026, con las correcciones D-32, D-33 y P-18) y revisar cada pantalla contra el Figma
 - [ ] T061 PR en los tres repos (API → app → portal) con la migración pendiente de aplicar en Azure anotada como P-09
 
 ---
