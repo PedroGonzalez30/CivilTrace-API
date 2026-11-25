@@ -1,4 +1,4 @@
-# Especificación del feature: Portal web del cliente (enviar, aceptar o rechazar reportes)
+# Especificación del feature: Portal web del cliente y entregas
 
 **Feature Branch**: `004-portal-cliente` (API y app); repositorio nuevo `CivilTrace-Portal` (T-02)
 
@@ -8,200 +8,239 @@
 
 **Autor**: Emilio Manuel Esquivel
 
-**Input**: Descripción del usuario: "Hacer la página web del cliente aunque el SRS V4.0 la haya quitado; seguimos pensando en la página web como sale en el Figma."
+**Input**: Descripción del usuario: "Hacer la página web del cliente como sale en el Figma, con el SRS v5.0 como base."
 
-**Origen y discrepancia con el SRS V4.0**:
+**Base**: `SRS_Civil_Trace_v5.0_con_cambios.docx` (decisión D-28). Desde este feature los números de RF son los del **SRS v5.0**; los features 001 a 003 conservan los de la V4.0 (P-03).
 
-- El SRS V4.0 dice "eliminación de la página web del cliente": el cliente acepta con su firma en el dispositivo del supervisor (`RF-57`) y el supervisor registra sus observaciones (`RF-13`).
-- El equipo mantiene la página web porque así está en el Figma (D-01) y en las decisiones D-02, D-03, D-04, T-02 y T-03. Se registra como **P-10**: hay que corregir el SRS (y CP16–CP17 del plan de pruebas) para que digan que el cliente responde desde la página web.
-- Mientras tanto, este feature cumple los mismos requerimientos del SRS con la página web en lugar del dispositivo del supervisor:
+**Requerimientos del SRS v5.0 que atiende**:
 
-| RF del SRS V4.0                                   | Prioridad | Cómo se cumple aquí                                                                |
-| ------------------------------------------------- | --------- | ---------------------------------------------------------------------------------- |
-| `RF-12 Enviar entrega al cliente`                 | Must      | El supervisor o el dueño envía el reporte; el cliente recibe un enlace por correo. |
-| `RF-57 Registrar aceptación de entrega con firma` | Must      | El cliente firma en la página web (no en el teléfono del supervisor), con código.  |
-| `RF-13 Registrar observaciones del cliente`       | Should    | El cliente escribe su comentario y firma en la página web al rechazar.             |
-| `RF-14 Generar acta de entrega-recepción`         | Must      | Al aceptar se genera el acta en PDF; se descarga desde la página y desde la app.   |
-| `RF-15 Bloquear entrega aceptada`                 | Must      | Las actividades y evidencias de una entrega aceptada ya no se pueden modificar.    |
+| RF                                                       | Prioridad | Resumen                                                                                                        |
+| -------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------- |
+| `RF-65 Enviar enlace del portal al cliente`              | Must      | Al registrar la obra, el cliente recibe por correo un enlace **único y permanente** al portal de su obra.      |
+| `RF-66 Consultar avances en el portal del cliente`       | Must      | Actividades de la obra con su estado y solo las fotos aceptadas con fecha, hora y ubicación, por fecha.        |
+| `RF-67 Consultar entregas en el portal del cliente`      | Must      | Sección Entregas: cada entrega con su estado; en las Enviadas, Aceptar o Registrar observaciones.              |
+| `RF-13 Enviar entrega al cliente`                        | Must      | El supervisor selecciona actividades **Verificadas** y envía; la entrega se publica y el cliente recibe aviso. |
+| `RF-14 Registrar aceptación de entrega`                  | Must      | Nombre + código de un solo uso + firma; guarda nombre, firma, fecha y hora.                                    |
+| `RF-60 Firmar aceptación de entrega`                     | Must      | Recuadro de firma; no se confirma sin firma; la firma se guarda como imagen.                                   |
+| `RF-15 Registrar observaciones del cliente`              | Should    | Texto no vacío; la entrega pasa a Con observaciones y el supervisor las ve.                                    |
+| `RF-16 Generar acta de entrega-recepción`                | Must      | PDF para una entrega Aceptada, a solicitud del dueño o el supervisor ("Generar acta").                         |
+| `RF-71 Descargar documentos de una entrega en el portal` | Must      | El cliente descarga el reporte de la entrega y, si está Aceptada, el acta.                                     |
+| `RF-17 Bloquear entrega aceptada`                        | Must      | Nadie modifica ni elimina actividades o evidencias de una entrega Aceptada.                                    |
 
-**Fuera de este feature**:
+**Fuera de este feature** (features posteriores):
 
-- `RF-11 Generar reporte de avance de obra`: ya existe (la app genera el PDF con `expo-print`). Solo se reutiliza.
-- `RF-16 Consultar expediente`, `RF-23 Verificar acta por QR` y `RF-24 Evaluación del cliente`: features posteriores.
-- Métricas de desempeño (`RF-31`, `RF-61` a `RF-64`, D-09; pantalla `DesempenoTrabajador-Dueño` `2273:219`): feature 005.
-- Infraestructura en Terraform del portal y del correo (T-03, T-04): se hace en el plan de este feature, pero los recursos nuevos de Azure se crean solo con aprobación del equipo.
+- `RF-26 Registrar evaluación del cliente` (Could): calificación 1–5 opcional al aceptar. No está en el Figma.
+- `RF-22 Registrar cambio solicitado` y `RF-72 Aceptar cambio desde el portal` (Could).
+- `RF-25 Verificar acta por código QR` (Should).
+- `RF-18 Consultar expediente de la obra` (Must): el acta queda lista para el expediente, pero la pantalla del expediente es otro feature.
+- `RF-27 Mostrar indicadores por obra` (Could) y `RF-33 Calcular desempeño del trabajador` (**Won't** en el v5.0; ver P-13).
+- Infraestructura nueva de Azure (correo con Azure Communication Services, T-03; Static Web Apps, T-02): se describe en Terraform en el plan y se crea solo con aprobación del equipo.
 
 **Pantallas del Figma** (archivo `EIXrnioyKFd9EoBY5PINOV`):
 
-| Pantalla                                           | node-id    | Quién                |
-| -------------------------------------------------- | ---------- | -------------------- |
-| `SUP_REporte PDF` (botón "Enviar al cliente")      | `179:2834` | Supervisor (app)     |
-| `ReportePdf -Dueño`                                | `144:1963` | Dueño (app)          |
-| `ReportePdfEnviar -Dueño` ("Se envió al cliente")  | `144:2116` | Dueño (app)          |
-| `ReporteActa -Dueño` ("Crear acta de entrega")     | `144:2536` | Dueño (app)          |
-| `CLIENTE_Abrir enlace de reportes`                 | `246:1178` | Cliente (página web) |
-| `CLIENTE_AceptarREPORTE CON CODIGO`                | `246:1269` | Cliente (página web) |
-| `CLIENTE RECHAZAR REPORTE/AVNACES CON COMENTARIOS` | `246:1605` | Cliente (página web) |
-| `CLIENTE_FirmarAceptacion`                         | `2271:118` | Cliente (página web) |
-| `CLIENTE_FirmarRechazo`                            | `2271:158` | Cliente (página web) |
-| `CLIENTE_ReporteAceptado`                          | `2271:192` | Cliente (página web) |
+| Pantalla                                           | node-id    | Quién              |
+| -------------------------------------------------- | ---------- | ------------------ |
+| `SUP_REporte PDF` (botón "Enviar al cliente")      | `179:2834` | Supervisor (app)   |
+| `ReportePdf -Dueño`                                | `144:1963` | Dueño (app)        |
+| `ReportePdfEnviar -Dueño` ("Se envió al cliente")  | `144:2116` | Supervisor o dueño |
+| `ReporteActa -Dueño` ("Crear acta de entrega")     | `144:2536` | Supervisor o dueño |
+| `CLIENTE_Abrir enlace de reportes`                 | `246:1178` | Cliente (portal)   |
+| `CLIENTE_AceptarREPORTE CON CODIGO`                | `246:1269` | Cliente (portal)   |
+| `CLIENTE RECHAZAR REPORTE/AVNACES CON COMENTARIOS` | `246:1605` | Cliente (portal)   |
+| `CLIENTE_FirmarAceptacion`                         | `2271:118` | Cliente (portal)   |
+| `CLIENTE_FirmarRechazo`                            | `2271:158` | Cliente (portal)   |
+| `CLIENTE_ReporteAceptado`                          | `2271:192` | Cliente (portal)   |
 
-Las pantallas del cliente miden 412 px de ancho: la página se diseña primero para celular y también debe verse bien en computadora.
+Las pantallas del cliente miden 412 px: el portal se diseña primero para celular y también debe verse bien en computadora.
+
+**Faltan en el Figma** (P-14): la vista de **Avances** del portal (RF-66: actividades con estado y fotos) y cómo se separan Avances y Entregas (pestañas o secciones). Hasta que el equipo las diseñe, el portal usa los mismos componentes del Figma: tarjetas de `CLIENTE_Abrir enlace de reportes` y la lista de actividades de `CLIENTE_AceptarREPORTE CON CODIGO`.
+
+**Términos**: una actividad **Verificada** (SRS v5.0) es la que en la API tiene estado `TERMINADA`: el supervisor aprobó su foto "Terminado" o la terminó él mismo (feature 003). Una foto **aceptada** es un avance `APROBADO`.
 
 ## User Scenarios & Testing _(mandatory)_
 
-### Historia 1 - El supervisor o el dueño envía el reporte al cliente (Priority: P1)
+### Historia 1 - El cliente recibe el enlace permanente de su obra (Priority: P1)
 
-Desde la vista previa del reporte de avances de una obra (filtrada por fechas), el supervisor o el dueño toca "Enviar al cliente". El sistema guarda una **entrega** con el periodo y las actividades del reporte en ese momento, y manda al correo del cliente de la obra un enlace a la página web. La app muestra "Se envió al cliente".
+Cuando el dueño registra una obra con el correo del cliente, el sistema crea un enlace único y permanente al portal de esa obra y se lo envía al cliente por correo. El cliente lo abre en cualquier navegador, sin crear cuenta.
 
-**Why this priority**: sin entregas enviadas el cliente no tiene nada que revisar. Es la entrada de todo el flujo (RF-12, Must).
+**Why this priority**: es la puerta del portal (RF-65, Must); sin enlace el cliente no ve nada.
 
-**Independent Test**: con una obra con correo del cliente y actividades con evidencias aprobadas, enviar el reporte y comprobar que la entrega queda "Enviada" y que el doble del servicio de correo recibió un mensaje con un enlace válido.
+**Independent Test**: registrar una obra y comprobar que el doble de correo recibió un mensaje con un enlace que abre el portal de esa obra.
 
 **Acceptance Scenarios**:
 
-1. **Given** una obra con correo del cliente y al menos una actividad con evidencia aprobada en el periodo, **When** el supervisor de la obra toca "Enviar al cliente", **Then** se crea una entrega "Enviada" con sus actividades, se envía el correo con el enlace y la app muestra "Se envió al cliente".
-2. **Given** una obra sin correo del cliente, **When** se intenta enviar, **Then** no se crea la entrega y la app indica que la obra no tiene correo del cliente.
-3. **Given** un periodo sin actividades con evidencia aprobada, **When** se intenta enviar, **Then** no se crea la entrega y la app indica que no hay avances aprobados para enviar.
-4. **Given** un trabajador o un supervisor que no está asignado a la obra, **When** intenta enviar, **Then** la API lo rechaza (403).
-5. **Given** que el servicio de correo falla, **When** se envía, **Then** la app muestra un error y la entrega no queda como enviada (se puede reintentar).
+1. **Given** un dueño que registra una obra con correo del cliente, **When** la guarda, **Then** el cliente recibe un correo con el enlace y, al abrirlo, entra al portal de su obra sin crear cuenta.
+2. **Given** un enlace alterado o que no corresponde a ninguna obra, **When** alguien lo abre, **Then** el portal no muestra información de ninguna obra.
+3. **Given** una obra registrada antes de este feature (sin enlace), **When** el supervisor envía su primera entrega o el dueño elige "Reenviar enlace al cliente", **Then** se crea el enlace y se envía por correo.
+4. **Given** que el correo del cliente falla al enviarse, **When** se guarda la obra, **Then** la obra sí se guarda, la app avisa que el correo no salió y permite reenviar el enlace.
 
 ---
 
-### Historia 2 - El cliente abre el enlace y revisa sus reportes (Priority: P1)
+### Historia 2 - El cliente consulta los avances de su obra (Priority: P1)
 
-El cliente abre el enlace del correo sin crear cuenta. Ve "Reportes {obra}" con la lista de entregas de esa obra (la más reciente arriba, con periodo y estado) y abre una para ver sus actividades, avances y fotografías aprobadas.
+En el portal, el cliente ve las actividades de su obra con su estado y, en cada una, solo las fotografías aceptadas con fecha, hora y ubicación, ordenadas por fecha.
 
-**Why this priority**: es la razón de ser de la página (D-02) y lo que pide el cliente: ver avances con fotos.
+**Why this priority**: RF-66 (Must). Es lo que pidió el cliente: ver el avance con fotos sin depender de WhatsApp.
 
-**Independent Test**: con una entrega enviada, abrir el enlace en un navegador y ver la lista y el detalle con fotos, sin iniciar sesión.
+**Independent Test**: con una obra de 4 actividades y 10 fotos (2 rechazadas), abrir el enlace y ver las 4 actividades y solo las 8 fotos aceptadas.
 
 **Acceptance Scenarios**:
 
-1. **Given** un enlace válido, **When** el cliente lo abre, **Then** ve las entregas de esa obra con nombre, periodo (fecha de inicio y final) y estado (Enviada, Aceptada o Con observaciones).
-2. **Given** una entrega, **When** el cliente la abre, **Then** ve sus actividades con fecha, descripción y las fotografías **aprobadas** (D-10) con fecha y hora; nunca ve fotos pendientes o rechazadas.
-3. **Given** un enlace alterado, inventado o revocado, **When** se abre, **Then** la página muestra que el enlace no es válido y no muestra ningún dato.
-4. **Given** un enlace de la obra A, **When** el cliente cambia la dirección para pedir una entrega de la obra B, **Then** la API responde como si no existiera (404) y no muestra datos.
+1. **Given** una obra con 4 actividades y 10 fotos, 2 rechazadas, **When** el cliente abre su enlace, **Then** ve las 4 actividades con su estado y solo las 8 fotos aceptadas con fecha, hora y ubicación.
+2. **Given** una obra sin fotos aceptadas, **When** el cliente abre su enlace, **Then** el portal indica que aún no hay avances registrados.
+3. **Given** fotos pendientes de revisión, **When** el cliente consulta, **Then** no las ve (D-10).
 
 ---
 
-### Historia 3 - El cliente acepta un reporte con código y firma (Priority: P1)
+### Historia 3 - El supervisor envía una entrega al cliente (Priority: P1)
 
-En una entrega "Enviada" el cliente toca "Aceptar". El sistema envía un código de 6 dígitos a su correo; el cliente lo escribe ("Introduce el código de seguridad"), escribe su nombre completo, dibuja su firma ("Firma tu aceptación") y toca "Firmar y aceptar". Ve "Reporte aceptado" con su nombre, fecha, hora, firma y el botón "Descargar acta (PDF)".
+En la vista previa del reporte de la obra, el supervisor (o el dueño, como en el Figma) toca "Enviar al cliente". La entrega incluye las actividades **Verificadas** que eligió; queda publicada en el portal con estado Enviada y el cliente recibe un aviso por correo con el enlace de su obra. La app muestra "Se envió al cliente".
 
-**Why this priority**: la aceptación con constancia es el objetivo del sistema (RF-57, RF-14, Must).
+**Why this priority**: RF-13 (Must). Sin entregas no hay nada que aceptar.
 
-**Independent Test**: aceptar una entrega con el código que capturó el doble de correo y una firma; comprobar estado "Aceptada", firma guardada con su SHA-256 y acta descargable.
+**Independent Test**: enviar una entrega con 2 actividades Verificadas; comprobar que aparece en el portal como Enviada con sus fotos aceptadas y que el doble de correo recibió el aviso.
 
 **Acceptance Scenarios**:
 
-1. **Given** una entrega Enviada, **When** el cliente pide el código, **Then** recibe en el correo de la obra un código de 6 dígitos que vence en 10 minutos.
-2. **Given** el código correcto, nombre y firma, **When** toca "Firmar y aceptar", **Then** la entrega pasa a Aceptada con nombre, fecha, hora y firma, y se genera el acta.
-3. **Given** un código incorrecto, **When** lo escribe, **Then** se rechaza y se le indica cuántos intentos le quedan; al 5.º intento fallido el código se invalida y debe pedir otro.
-4. **Given** un código con más de 10 minutos o ya usado, **When** lo escribe, **Then** se rechaza y puede pedir uno nuevo.
-5. **Given** que no dibujó la firma o el nombre está vacío, **When** intenta confirmar, **Then** el botón "Firmar y aceptar" sigue desactivado.
-6. **Given** una entrega ya Aceptada o Con observaciones, **When** el cliente la abre, **Then** la ve con su estado y sin botones de aceptar o rechazar.
-7. **Given** una entrega Aceptada, **When** el cliente toca "Descargar acta (PDF)", **Then** descarga el acta con los datos de la obra, el periodo, las actividades, las evidencias aprobadas y el registro de aceptación (nombre, fecha, hora, firma).
-8. **Given** una entrega Aceptada, **When** alguien intenta modificar o borrar una actividad o evidencia incluida en ella, **Then** la API lo rechaza (RF-15).
+1. **Given** una obra con actividades Verificadas, **When** el supervisor selecciona una o más y envía, **Then** la entrega aparece en el portal con estado Enviada, con el resumen de cada actividad y sus fotos aceptadas, y el cliente recibe un correo con el enlace del portal.
+2. **Given** una selección que incluye actividades no Verificadas, **When** intenta enviar, **Then** el sistema lo impide e indica cuáles faltan.
+3. **Given** una obra sin correo del cliente, **When** intenta enviar, **Then** el sistema lo impide e indica que falta el correo.
+4. **Given** un supervisor no asignado a la obra o un trabajador, **When** intenta enviar, **Then** la API lo rechaza (403).
+5. **Given** una actividad que ya forma parte de una entrega Enviada o Aceptada, **When** se intenta incluir en otra entrega, **Then** el sistema lo impide (P-15).
 
 ---
 
-### Historia 4 - El cliente rechaza un reporte con comentario y firma (Priority: P2)
+### Historia 4 - El cliente acepta una entrega con código y firma (Priority: P1)
 
-En una entrega "Enviada" el cliente toca "Rechazar", escribe qué debe corregirse ("Agrega un comentario para el supervisor"), escribe su nombre, firma ("Firma tu rechazo") y toca "Firmar y rechazar". La entrega queda "Con observaciones" y el supervisor y el dueño ven el comentario en la app.
+En la sección Entregas, en una entrega Enviada, el cliente toca "Aceptar". El sistema envía un código de un solo uso a su correo ("Introduce el código de seguridad"); el cliente lo escribe, escribe su nombre, dibuja su firma ("Firma tu aceptación") y toca "Firmar y aceptar". Ve "Reporte aceptado" con nombre, fecha, hora y firma.
 
-**Why this priority**: RF-13 es Should; el flujo de aceptación funciona sin él, pero el cliente necesita dejar constancia de lo que falta.
+**Why this priority**: RF-14 y RF-60 (Must): la aceptación con constancia es el objetivo del sistema.
 
-**Independent Test**: rechazar una entrega con comentario y firma; comprobar estado, comentario y firma guardados y visibles en la app.
+**Independent Test**: aceptar una entrega con el código que capturó el doble de correo y una firma; comprobar estado Aceptada con nombre, firma (PNG + SHA-256), fecha y hora.
 
 **Acceptance Scenarios**:
 
-1. **Given** una entrega Enviada, comentario, nombre y firma, **When** toca "Firmar y rechazar", **Then** la entrega pasa a "Con observaciones" con el comentario, nombre, fecha, hora y firma.
-2. **Given** un comentario vacío, **When** intenta continuar, **Then** no avanza e indica que falta el comentario.
-3. **Given** una entrega Con observaciones, **When** el supervisor abre los reportes de la obra en la app, **Then** ve el estado y el comentario del cliente, y puede enviar una entrega nueva con las correcciones.
+1. **Given** una entrega Enviada, **When** el cliente escribe su nombre, ingresa el código recibido, dibuja su firma y confirma, **Then** la entrega pasa a Aceptada con nombre, firma, fecha y hora.
+2. **Given** un código incorrecto o vencido, **When** intenta confirmar, **Then** no se registra la aceptación y puede pedir un código nuevo.
+3. **Given** 5 intentos fallidos, **When** escribe otro código, **Then** el código queda invalidado y debe pedir uno nuevo.
+4. **Given** un recuadro de firma vacío, **When** intenta confirmar, **Then** no se registra la aceptación e indica que falta la firma ("El botón se activa cuando dibujas tu firma").
+5. **Given** una entrega Aceptada o Con observaciones, **When** el cliente la abre, **Then** ve su estado y no aparecen las opciones Aceptar ni Registrar observaciones.
 
 ---
 
-### Historia 5 - El supervisor y el dueño ven el estado de sus entregas (Priority: P2)
+### Historia 5 - El cliente registra observaciones (Priority: P2)
 
-En los reportes de la obra la app muestra las entregas enviadas con su estado; en las aceptadas permite descargar el acta.
+En una entrega Enviada, el cliente toca "Rechazar", escribe qué debe corregirse ("Agrega un comentario para el supervisor"), escribe su nombre, firma ("Firma tu rechazo") y toca "Firmar y rechazar". La entrega pasa a "Con observaciones" y el supervisor las ve en la app.
 
-**Why this priority**: cierra el ciclo y cumple el mensaje de `CLIENTE_ReporteAceptado` ("el supervisor recibirá tu aceptación y el acta quedará en el expediente").
+**Why this priority**: RF-15 es Should. El SRS solo exige el texto; el Figma (D-03) agrega nombre y firma, y se conservan.
 
-**Independent Test**: después de que el cliente acepte y rechace dos entregas, la app las muestra con su estado y el acta de la aceptada se descarga.
+**Independent Test**: registrar observaciones con texto, nombre y firma; la entrega queda Con observaciones y el texto aparece en la app.
 
 **Acceptance Scenarios**:
 
-1. **Given** entregas Enviada, Aceptada y Con observaciones, **When** el supervisor abre los reportes de la obra, **Then** ve las tres con su estado y fecha de respuesta.
-2. **Given** una entrega Aceptada, **When** toca el acta, **Then** descarga el mismo PDF que descarga el cliente.
+1. **Given** una entrega Enviada, **When** el cliente escribe observaciones, su nombre y firma, y las envía, **Then** la entrega pasa a Con observaciones y el supervisor las ve.
+2. **Given** un texto de observaciones vacío, **When** intenta guardar, **Then** la entrega no cambia de estado e indica que falta el texto.
+3. **Given** una entrega Con observaciones, **When** el supervisor corrige, **Then** puede enviar una entrega nueva con esas actividades (la anterior queda en el historial, P-15).
+
+---
+
+### Historia 6 - Acta de entrega-recepción y descargas (Priority: P1)
+
+Para una entrega Aceptada, el supervisor o el dueño toca "Generar acta" y obtiene el acta en PDF con los datos de la obra, las actividades, las fotos aceptadas y el registro de aceptación (nombre, firma, fecha y hora). En el portal, el cliente descarga el reporte de cualquier entrega y, si está Aceptada, también el acta.
+
+**Why this priority**: RF-16 y RF-71 (Must). El acta es el documento de cierre que hoy se hace en papel.
+
+**Independent Test**: con una entrega Aceptada, generar el acta desde la app y descargarla desde el portal: es el mismo PDF; con una Enviada, el portal solo ofrece el reporte.
+
+**Acceptance Scenarios**:
+
+1. **Given** una entrega Aceptada, **When** el dueño o el supervisor solicita el acta, **Then** obtiene un PDF con los datos de la obra, las actividades, las fotos aceptadas y el registro de aceptación con la firma del cliente.
+2. **Given** una entrega no aceptada, **When** se solicita el acta, **Then** el sistema no la genera e indica que falta la aceptación.
+3. **Given** una entrega Aceptada, **When** el cliente elige Descargar en el portal, **Then** obtiene el reporte de avance y el acta en PDF ("Descargar acta (PDF)" en `CLIENTE_ReporteAceptado`).
+4. **Given** una entrega Enviada, **When** el cliente consulta sus documentos, **Then** solo puede descargar el reporte y el portal indica que el acta se genera al aceptar.
+5. **Given** una entrega Aceptada, **When** cualquier usuario intenta modificar o eliminar una de sus actividades o evidencias, **Then** el sistema rechaza la operación y la app las muestra sin opciones de edición (RF-17).
 
 ### Edge Cases
 
-- El cliente pide varios códigos seguidos: solo vale el último; se limita la frecuencia (un código por minuto por entrega).
-- Dos pestañas responden la misma entrega: la segunda respuesta se rechaza porque la entrega ya no está "Enviada".
-- Cambia el correo del cliente de la obra después de enviar: los enlaces anteriores dejan de funcionar y los códigos se envían al correo nuevo. (Por confirmar en P-12.)
-- Una evidencia aprobada se rechaza después de enviar: la entrega conserva lo que se envió (se guarda la lista de actividades y evidencias en el momento del envío).
-- Imagen de firma vacía, enorme o que no es imagen: la API la rechaza (PNG, máximo 1 MB).
-- El enlace se reenvía a otra persona: puede ver la información, pero aceptar o rechazar exige el código que llega al correo de la obra (para rechazar, ver la pregunta abierta 2).
-- Sin conexión o error del servidor en la página: se muestra un mensaje y se puede reintentar sin perder la firma dibujada.
+- El cliente pide varios códigos seguidos: solo vale el último y se limita a un código por minuto por entrega.
+- Dos pestañas responden la misma entrega: la segunda respuesta se rechaza porque ya no está Enviada.
+- Cambia el correo del cliente de la obra: el enlace sigue siendo el mismo (es permanente), se envía al correo nuevo y los códigos van al correo nuevo (P-12).
+- Una foto aceptada se rechaza después de enviar la entrega: la entrega conserva lo que se envió (copia fija de actividades y fotos al enviar).
+- Imagen de firma vacía, mayor a 1 MB o que no es PNG: la API la rechaza.
+- El enlace se reenvía a otra persona: puede ver avances y entregas, pero aceptar exige el código que llega al correo de la obra.
+- Error de red en el portal: mensaje claro y se puede reintentar sin perder la firma dibujada ni el texto escrito.
 
 ## Requirements _(mandatory)_
 
 ### Functional Requirements
 
-**Envío (API y app)**
+**Enlace y correo**
 
-- **FR-001**: El supervisor asignado a la obra y el dueño de la empresa DEBEN poder enviar al cliente el reporte de un periodo de la obra (`POST /obras/:idObra/entregas`).
-- **FR-002**: Al enviar, el sistema DEBE guardar una entrega con obra, periodo, quién la envió, fecha y hora, y la lista de actividades y evidencias aprobadas incluidas en ese momento.
-- **FR-003**: El sistema DEBE rechazar el envío si la obra no tiene correo del cliente o si el periodo no tiene evidencias aprobadas.
-- **FR-004**: El sistema DEBE enviar al correo del cliente de la obra un mensaje con el enlace a la página web, usando Azure Communication Services Email (T-03). En las pruebas el correo se sustituye con un doble.
-- **FR-005**: El enlace DEBE llevar un token aleatorio de al menos 128 bits, guardado solo como hash, ligado a la obra y al correo del cliente; da acceso únicamente a las entregas de esa obra.
+- **FR-001**: Al registrar una obra con correo del cliente, el sistema DEBE crear un enlace único y permanente a su portal y enviarlo por correo (RF-65). El token DEBE ser aleatorio de al menos 128 bits y guardarse solo como hash (constitución IV.3).
+- **FR-002**: El dueño DEBE poder reenviar el enlace de una obra; las obras sin enlace lo reciben al reenviar o al enviar su primera entrega.
+- **FR-003**: Los correos DEBEN enviarse con Azure Communication Services Email (T-03). En pruebas se usa un doble.
 
-**Página web del cliente (repositorio `CivilTrace-Portal`)**
+**Portal: avances y entregas**
 
-- **FR-006**: La página DEBE mostrar, sin cuenta, la lista de entregas de la obra del enlace con nombre, periodo y estado, y el detalle de cada una con actividades y fotografías aprobadas.
-- **FR-007**: Las fotografías y firmas DEBEN servirse a través de la API o con enlaces temporales; el almacenamiento sigue privado.
-- **FR-008**: Para aceptar, el sistema DEBE enviar un código de un solo uso de 6 dígitos al correo de la obra, guardado como hash, válido 10 minutos y con máximo 5 intentos.
-- **FR-009**: Aceptar DEBE exigir código válido, nombre completo y firma dibujada; rechazar DEBE exigir comentario, nombre completo y firma.
-- **FR-010**: La firma DEBE guardarse como imagen PNG en Blob Storage privado con su huella SHA-256, nombre, fecha y hora (D-04).
-- **FR-011**: Los textos DEBEN decir "aceptación" o "constancia de recepción" y nunca "firma electrónica" (constitución IV.5).
-- **FR-012**: La página DEBE incluir el aviso de privacidad (LFPDPPP) o un enlace a él.
+- **FR-004**: El portal DEBE mostrar, sin cuenta, las actividades de la obra del enlace con su estado y solo sus fotos aceptadas con fecha, hora y ubicación, ordenadas por fecha (RF-66).
+- **FR-005**: El portal DEBE mostrar la sección Entregas con cada entrega y su estado (Enviada, Aceptada, Con observaciones); solo las Enviadas ofrecen Aceptar y Registrar observaciones (RF-67).
+- **FR-006**: Un enlace DEBE dar acceso solo a su obra; pedir datos de otra obra u otra empresa responde 404 sin datos.
+- **FR-007**: Fotos y firmas DEBEN servirse a través de la API o con enlaces temporales; el almacenamiento sigue privado.
 
-**Después de la respuesta**
+**Entregas**
 
-- **FR-013**: Al aceptar, el sistema DEBE generar el acta de entrega-recepción en PDF con los datos de la obra, el periodo, las actividades, las evidencias aprobadas y el registro de aceptación (RF-14). La pueden descargar el cliente (desde la página) y el supervisor y el dueño (desde la app).
-- **FR-014**: Una entrega solo DEBE poder responderse una vez; después queda Aceptada o Con observaciones de forma permanente.
-- **FR-015**: Las actividades y evidencias incluidas en una entrega Aceptada NO DEBEN poder modificarse ni borrarse (RF-15).
-- **FR-016**: La app DEBE mostrar al supervisor y al dueño las entregas de la obra con su estado, el comentario del cliente si lo rechazó y el acta si lo aceptó.
+- **FR-008**: El supervisor asignado a la obra y el dueño DEBEN poder enviar una entrega seleccionando una o más actividades Verificadas (RF-13).
+- **FR-009**: El sistema DEBE rechazar la entrega si incluye actividades no Verificadas (indicando cuáles) o si la obra no tiene correo del cliente.
+- **FR-010**: Al enviar, el sistema DEBE guardar una copia fija de las actividades y fotos aceptadas incluidas, publicar la entrega en el portal y avisar al cliente por correo.
+
+**Aceptación y observaciones**
+
+- **FR-011**: Para aceptar, el sistema DEBE enviar al correo de la obra un código de 6 dígitos, guardado como hash, válido 10 minutos, con máximo 5 intentos (constitución IV.3).
+- **FR-012**: Aceptar DEBE exigir nombre, código válido y firma dibujada; DEBE guardar nombre, firma, fecha y hora (RF-14, RF-60).
+- **FR-013**: Registrar observaciones DEBE exigir un texto no vacío; además pide nombre y firma como en el Figma (RF-15, D-03).
+- **FR-014**: La firma DEBE guardarse como PNG en Blob Storage privado con su huella SHA-256 (D-04). Los textos dicen "aceptación" o "constancia de recepción", nunca "firma electrónica" (constitución IV.5).
+- **FR-015**: Una entrega DEBE responderse una sola vez.
+
+**Documentos y bloqueo**
+
+- **FR-016**: El supervisor y el dueño DEBEN poder generar el acta en PDF de una entrega Aceptada; el sistema DEBE negarla si no está Aceptada (RF-16).
+- **FR-017**: El cliente DEBE poder descargar desde el portal el reporte de cada entrega y el acta de las Aceptadas (RF-71). Es el mismo archivo que obtienen el supervisor y el dueño.
+- **FR-018**: El sistema DEBE rechazar modificar o eliminar actividades y evidencias que formen parte de una entrega Aceptada (RF-17).
+- **FR-019**: La app DEBE mostrar al supervisor y al dueño las entregas de la obra con su estado, las observaciones del cliente y el acta.
+- **FR-020**: El portal DEBE incluir el aviso de privacidad o un enlace a él (LFPDPPP, constitución IV.7).
 
 ### Key Entities _(include if feature involves data)_
 
-- **Entrega**: un reporte enviado al cliente. Obra, empresa, periodo (inicio y fin), quién la envió, fecha de envío, estado (`ENVIADA`, `ACEPTADA`, `CON_OBSERVACIONES`), y la respuesta: nombre del cliente, comentario (al rechazar), firma (ruta y SHA-256), fecha y hora de respuesta, ruta del acta.
-- **Actividad de la entrega**: qué actividades y qué evidencias aprobadas incluía la entrega al enviarse (copia fija).
-- **Enlace del cliente**: hash del token, obra, correo del cliente, fecha de creación y de revocación.
+- **Enlace del portal**: obra, hash del token, correo al que se envió, fecha de creación y de último envío. Uno por obra (permanente).
+- **Entrega**: obra, empresa, quién la envió, fecha de envío, estado (`ENVIADA`, `ACEPTADA`, `CON_OBSERVACIONES`); respuesta del cliente: nombre, observaciones, firma (ruta y SHA-256), fecha y hora; ruta del acta y del reporte.
+- **Actividad de la entrega**: copia fija de cada actividad incluida y de sus fotos aceptadas al momento de enviar.
 - **Código de un solo uso**: entrega, hash del código, vencimiento, intentos, si ya se usó.
 
 ## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
-- **SC-001**: Un cliente que nunca ha usado Civil Trace acepta un reporte desde su celular, desde que abre el correo hasta ver "Reporte aceptado", en menos de 3 minutos.
-- **SC-002**: El 100 % de las entregas aceptadas tiene nombre, fecha, hora, firma con SHA-256 y acta descargable.
-- **SC-003**: Ningún enlace da acceso a datos de otra obra ni de otra empresa (pruebas de aislamiento en verde).
-- **SC-004**: Ningún código vencido, usado o después de 5 intentos permite aceptar.
-- **SC-005**: Pruebas con su clave del plan (CP16, CP17) y cobertura de 80 % en los servicios nuevos de la API y 60 % en la app y la página (constitución III).
+- **SC-001**: Un cliente que nunca usó Civil Trace acepta una entrega desde su celular, desde que abre el correo hasta ver "Reporte aceptado", en menos de 3 minutos.
+- **SC-002**: El 100 % de las entregas Aceptadas tiene nombre, fecha, hora, firma con SHA-256 y acta descargable.
+- **SC-003**: Ningún enlace muestra datos de otra obra ni de otra empresa (pruebas de aislamiento en verde).
+- **SC-004**: Ningún código vencido, usado o con 5 intentos fallidos permite aceptar.
+- **SC-005**: Cada escenario tiene prueba automática con la clave del plan de pruebas (por mapear al v5.0, P-10); cobertura de 80 % en servicios nuevos de la API y 60 % en la app y el portal (constitución III).
 
 ## Assumptions
 
-- Lo puede enviar el supervisor asignado a la obra y el dueño (el Figma tiene "Enviar al cliente" en las dos versiones de la pantalla de reportes).
-- El enlace es por obra: el cliente ve todas las entregas de esa obra con el mismo enlace (`CLIENTE_Abrir enlace de reportes` muestra "Reportes hospital" con varias entregas).
-- El correo sale de un dominio administrado por Azure (T-03); para la entrega final se puede usar el dominio del cliente.
-- La página se publica en Azure Static Web Apps nivel Free (T-02); la API agrega la dirección de la página a CORS.
-- El acta la genera la API (no la app), porque la descargan la página y la app y debe ser el mismo archivo. Se decide la biblioteca en `plan.md`.
+- El acta y el reporte de la entrega los genera la **API** (no la app): el portal y la app deben descargar el mismo archivo. La biblioteca de PDF se decide en `plan.md`.
+- El dueño también puede enviar entregas porque el Figma tiene "Enviar al cliente" en sus pantallas, aunque RF-13 menciona solo al supervisor.
+- La selección de actividades se hace en la vista previa del reporte: ahí aparecen las Verificadas del rango filtrado, todas marcadas, y el supervisor puede desmarcar. Es un ajuste menor al Figma (P-14).
+- El correo sale de un dominio administrado por Azure (T-03); en la entrega final puede usarse el dominio del cliente.
+- El portal se publica en Azure Static Web Apps nivel Free (T-02); la API agrega su dirección a CORS.
 - Las pruebas no usan Azure real: correo y almacenamiento con dobles (constitución III.5).
 
 ## Preguntas abiertas para el equipo
 
-1. **P-10**: actualizar el SRS (sección de interfaz, RF-13, RF-57 y versión) y CP16–CP17 del plan de pruebas para que el cliente responda en la página web. ¿Quién lo hace?
-2. **P-11**: ¿rechazar también exige el código del correo? El Figma solo pide código para aceptar (D-03). Por defecto: **no**, solo comentario, nombre y firma.
-3. **P-12**: ¿el cambio de correo del cliente en la obra revoca los enlaces ya enviados? Por defecto: **sí**.
+Las respuestas por defecto permiten avanzar; se registran en `docs/decisiones.md`.
+
+1. **P-10**: el plan de pruebas (CP15–CP17) sigue la V4.0. Hay que mapear sus claves al v5.0 o agregar casos para el portal. ¿Quién lo hace?
+2. **P-11**: ¿registrar observaciones también exige el código del correo? Por defecto **no** (ni el SRS ni el Figma lo piden).
+3. **P-12**: si cambia el correo del cliente, el enlace permanente se reenvía al correo nuevo. Por defecto **sí**.
+4. **P-14**: falta diseñar en el Figma la vista de Avances del portal y la selección de actividades al enviar. Por defecto se arman con los componentes existentes.
+5. **P-15**: una actividad solo puede estar en una entrega Enviada o Aceptada a la vez; si la entrega queda Con observaciones, sus actividades se pueden volver a enviar. Por defecto **sí**.
