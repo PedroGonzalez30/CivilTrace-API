@@ -5,11 +5,12 @@
  *   procesamiento de lotes (con y sin conexión, idempotentes) y vista previa del escaneo.
  * @autor Emilio Manuel Esquivel
  * @fecha 23/11/2026
- * @version 1.0.0
+ * @version 1.1.0
  * @requerimientos RF-19 Registrar asistencia propia, RF-27 Registrar asistencia por el
  *   supervisor, RF-60 Registrar retardo o salida anticipada, RNF-07 Captura sin conexión (D-14)
  * @historial 23/11/2026 - Emilio Manuel Esquivel - Creación (feature 001, research R-03, R-04,
  *   R-07)
+ *   24/11/2026 - Emilio Manuel Esquivel - Entrada desde la hora de salida = falta (D-22)
  */
 
 // 1. Importaciones
@@ -103,7 +104,8 @@ class RechazoEscaneo extends Error {
 // 4. Funciones públicas
 /**
  * Clasifica la jornada con el horario del día (research R-07). Sin horario o en día no laborable
- * no clasifica. Justo en el límite de la tolerancia no es retardo (SC-006).
+ * no clasifica. Justo en el límite de la tolerancia no es retardo (SC-006). Una entrada desde la
+ * hora de salida ya no es retardo sino falta (D-22): el trabajador no estuvo en su jornada.
  *
  * @returns El tipo de jornada resultante.
  */
@@ -114,6 +116,9 @@ export function clasificarJornada(datos: DatosClasificacion): TipoJornada {
   }
 
   if (datos.salidaMinutos === undefined) {
+    if (datos.entradaMinutos >= convertirHoraAMinutos(datos.horario.horaSalida)) {
+      return TipoJornada.FALTA;
+    }
     const limiteEntrada =
       convertirHoraAMinutos(datos.horario.horaEntrada) + datos.horario.toleranciaMinutos;
     return datos.entradaMinutos > limiteEntrada ? TipoJornada.RETARDO : TipoJornada.COMPLETA;

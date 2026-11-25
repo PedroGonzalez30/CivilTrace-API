@@ -4,9 +4,10 @@
  * @descripcion Construye la aplicación Fastify con sus plugins de seguridad y sus rutas.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.2.0
+ * @version 1.3.0
  * @historial 23/11/2026 - Emilio Manuel Esquivel - Rutas de asistencia y "motivo" en errores;
  *   registros silenciados en pruebas (feature 001)
+ *   24/11/2026 - Emilio Manuel Esquivel - Ruta /actividades/mias (feature 003)
  */
 
 // 1. Importaciones
@@ -23,7 +24,7 @@ import { rutasAutenticacion } from '@/rutas/rutasAutenticacion';
 import { rutasSalud } from '@/rutas/rutasSalud';
 import { rutasEmpresa } from '@/rutas/rutasEmpresa';
 import { rutasObras } from '@/rutas/rutasObras';
-import { rutasActividades } from '@/rutas/rutasActividades';
+import { rutasActividades, rutasMisActividades } from '@/rutas/rutasActividades';
 import { rutasPruebaAlmacenamiento } from '@/rutas/rutasPruebaAlmacenamiento';
 import { rutasPerfil } from '@/rutas/rutasPerfil';
 import { rutasAsistencia } from '@/rutas/rutasAsistencia';
@@ -92,6 +93,7 @@ export async function construirApp() {
   await app.register(rutasEmpresa, { prefix: '/empresa' });
   await app.register(rutasObras, { prefix: '/obras' });
   await app.register(rutasActividades, { prefix: '/obras' });
+  await app.register(rutasMisActividades, { prefix: '/actividades' });
   await app.register(rutasPruebaAlmacenamiento, { prefix: '/almacenamiento-prueba' });
   await app.register(rutasPerfil, { prefix: '/perfil' });
   // Sin prefijo: combina rutas /asistencia/* y /obras/:obraId/asistencia/*.

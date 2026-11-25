@@ -5,7 +5,9 @@
  *              crear, cambiar estado, subir evidencia fotográfica y descargar foto).
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.1.0
+ * @version 1.2.0
+ * @historial 24/11/2026 - Emilio Manuel Esquivel - Revisión de evidencias, tipo de avance y
+ *   /actividades/mias; permisos por obra en el servicio (feature 003)
  */
 
 // 1. Importaciones
@@ -20,6 +22,8 @@ import {
   esquemaParametrosActividad,
   esquemaParametrosAvance,
   esquemaParametrosObra,
+  esquemaRevisionAvance,
+  esquemaTipoAvance,
 } from '@/esquemas/esquemasActividad';
 import { Rol } from '@/generated/prisma/enums';
 import { exigirRol, verificarToken } from '@/middleware/autenticacion';
@@ -27,9 +31,11 @@ import {
   actualizarEstadoActividad,
   crearActividadObra,
   listarActividadesObra,
+  listarMisActividades,
   obtenerDetalleActividad,
   obtenerFotoAvance,
   registrarAvanceActividad,
+  revisarAvance,
 } from '@/servicios/servicioActividades';
 import { obtenerReporteObra } from '@/servicios/servicioReportes';
 import { esTipoImagen } from '@/servicios/servicioAlmacenamiento';
@@ -42,6 +48,7 @@ const CODIGO_PETICION_INVALIDA = 400;
 const BYTES_POR_MEGABYTE = 1024 * 1024;
 const LIMITE_CUERPO_BYTES = entorno.TAMANO_MAX_EVIDENCIA_MB * BYTES_POR_MEGABYTE;
 const CABECERA_COMENTARIO = 'x-comentario-avance';
+const CABECERA_TIPO = 'x-tipo-avance';
 
 const esquemaQueryReporte = z.object({
   fechaInicio: z
@@ -70,7 +77,7 @@ export async function rutasActividades(app: FastifyInstance): Promise<void> {
 
   app.get('/:idObra/actividades', { preHandler: [verificarToken] }, async (peticion) => {
     const { idObra } = validar(esquemaParametrosObra, peticion.params);
-    return { actividades: await listarActividadesObra(peticion.user.empresaId, idObra) };
+    return { actividades: await listarActividadesObra(peticion.user, idObra) };
   });
 
   app.get(
@@ -79,7 +86,7 @@ export async function rutasActividades(app: FastifyInstance): Promise<void> {
     async (peticion) => {
       const { idObra, idActividad } = validar(esquemaParametrosActividad, peticion.params);
       return {
-        actividad: await obtenerDetalleActividad(peticion.user.empresaId, idObra, idActividad),
+        actividad: await obtenerDetalleActividad(peticion.user, idObra, idActividad),
       };
     },
   );
@@ -90,7 +97,7 @@ export async function rutasActividades(app: FastifyInstance): Promise<void> {
     async (peticion, respuesta) => {
       const { idObra } = validar(esquemaParametrosObra, peticion.params);
       const datos = validar(esquemaCrearActividad, peticion.body);
-      const actividad = await crearActividadObra(peticion.user.empresaId, idObra, datos);
+      const actividad = await crearActividadObra(peticion.user, idObra, datos);
       return respuesta.status(CODIGO_CREADO).send({ actividad });
     },
   );
@@ -102,12 +109,7 @@ export async function rutasActividades(app: FastifyInstance): Promise<void> {
       const { idObra, idActividad } = validar(esquemaParametrosActividad, peticion.params);
       const datos = validar(esquemaActualizarEstadoActividad, peticion.body);
       return {
-        actividad: await actualizarEstadoActividad(
-          peticion.user.empresaId,
-          idObra,
-          idActividad,
-          datos,
-        ),
+        actividad: await actualizarEstadoActividad(peticion.user, idObra, idActividad, datos),
       };
     },
   );
@@ -133,15 +135,31 @@ export async function rutasActividades(app: FastifyInstance): Promise<void> {
         comentario: comentarioDecodificado,
       });
 
+      const tipoCabecera = peticion.headers[CABECERA_TIPO];
+      const { tipo: tipoAvance } = validar(esquemaTipoAvance, {
+        tipo: typeof tipoCabecera === 'string' ? tipoCabecera.trim().toUpperCase() : undefined,
+      });
+
       const avance = await registrarAvanceActividad(
-        peticion.user.empresaId,
-        peticion.user.sub,
+        peticion.user,
         idObra,
         idActividad,
         { datos: cuerpo, tipo },
         comentario ?? '',
+        tipoAvance,
       );
       return respuesta.status(CODIGO_CREADO).send({ avance });
+    },
+  );
+
+  // Revisión del supervisor de la obra o del dueño (D-10, feature 003).
+  app.patch(
+    '/:idObra/actividades/:idActividad/avances/:idAvance/revision',
+    { preHandler: [verificarToken, exigirRol(Rol.DUENO, Rol.SUPERVISOR)] },
+    async (peticion) => {
+      const { idObra, idActividad, idAvance } = validar(esquemaParametrosAvance, peticion.params);
+      const datos = validar(esquemaRevisionAvance, peticion.body);
+      return revisarAvance(peticion.user, idObra, idActividad, idAvance, datos);
     },
   );
 
@@ -150,13 +168,24 @@ export async function rutasActividades(app: FastifyInstance): Promise<void> {
     { preHandler: [verificarToken] },
     async (peticion, respuesta) => {
       const { idObra, idActividad, idAvance } = validar(esquemaParametrosAvance, peticion.params);
-      const { datos, tipo } = await obtenerFotoAvance(
-        peticion.user.empresaId,
-        idObra,
-        idActividad,
-        idAvance,
-      );
+      const { datos, tipo } = await obtenerFotoAvance(peticion.user, idObra, idActividad, idAvance);
       return respuesta.header('Cache-Control', 'private, no-cache').type(tipo).send(datos);
     },
+  );
+}
+
+/**
+ * Registra /actividades/mias (el prefijo /actividades lo pone quien la registra): las actividades
+ * activas del trabajador en todas sus obras (feature 003, TRA VER ACTIVIDADES).
+ *
+ * @param app - Instancia de Fastify donde se registra la ruta.
+ */
+export async function rutasMisActividades(app: FastifyInstance): Promise<void> {
+  app.get(
+    '/mias',
+    { preHandler: [verificarToken, exigirRol(Rol.TRABAJADOR)] },
+    async (peticion) => ({
+      actividades: await listarMisActividades(peticion.user),
+    }),
   );
 }

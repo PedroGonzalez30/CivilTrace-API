@@ -4,7 +4,8 @@
  * @descripcion Esquema Zod de la petición para crear una obra.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 16/11/2026
- * @version 1.1.0
+ * @version 1.2.0
+ * @historial 24/11/2026 - Emilio Manuel Esquivel - El supervisor es obligatorio (D-24, feature 002)
  */
 
 // 1. Importaciones
@@ -20,6 +21,7 @@ const LONGITUD_MAXIMA_CORREO = 254;
 const LONGITUD_MINIMA_DIRECCION = 5;
 const LONGITUD_MAXIMA_DIRECCION = 200;
 const LONGITUD_MAXIMA_ID = 64;
+const MENSAJE_SUPERVISOR_REQUERIDO = 'Selecciona un supervisor para la obra';
 const MAXIMO_TRABAJADORES_POR_OBRA = 500;
 const MENSAJE_DATOS_INVALIDOS = 'Datos inválidos';
 
@@ -59,13 +61,13 @@ export const esquemaCrearObra = z
       // Las fechas viajan en ISO 8601 (AAAA-MM-DD); la app las muestra como DD/MM/AAAA.
       fechaInicio: z.iso.date({ error: 'Fecha de inicio inválida' }),
       fechaFinal: z.iso.date({ error: 'Fecha de fin inválida' }),
-      // Opcional: una obra puede crearse sin supervisor. El servicio comprueba que sea de la empresa.
+      // Obligatorio (D-24): toda obra nueva necesita quien registre la asistencia. El servicio
+      // comprueba que el supervisor sea de la empresa.
       supervisorId: z
-        .string({ error: 'Supervisor inválido' })
+        .string({ error: MENSAJE_SUPERVISOR_REQUERIDO })
         .trim()
-        .min(1, { error: 'Supervisor inválido' })
-        .max(LONGITUD_MAXIMA_ID, { error: 'Supervisor inválido' })
-        .optional(),
+        .min(1, { error: MENSAJE_SUPERVISOR_REQUERIDO })
+        .max(LONGITUD_MAXIMA_ID, { error: 'Supervisor inválido' }),
       trabajadoresIds: z
         .array(
           z
