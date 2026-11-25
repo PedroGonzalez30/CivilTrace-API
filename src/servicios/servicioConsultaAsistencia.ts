@@ -10,6 +10,7 @@
  * @requerimientos RF-19 Registrar asistencia propia, RF-27 Registrar asistencia por el
  *   supervisor, RNF-07 Captura sin conexión (D-14)
  * @historial 23/11/2026 - Emilio Manuel Esquivel - Creación (feature 001)
+ * @historial 25/11/2026 - Emilio Manuel Esquivel - Falta al pasar la hora de salida (feature 006, D-34)
  */
 
 // 1. Importaciones
@@ -29,8 +30,10 @@ import { ErrorHttp } from '@/utilidades/errores';
 import {
   construirInstante,
   convertirFechaADate,
+  convertirHoraAMinutos,
   formatearFecha,
   obtenerFechaLocal,
+  obtenerMinutosLocales,
 } from '@/utilidades/fechasLocales';
 import {
   estaAsignadoAObra,
@@ -149,7 +152,13 @@ export async function obtenerResumenDia(
     registros.map((registro) => [registro.trabajadorId, registro]),
   );
   const yaPasoElDia = fecha < hoy;
-  const esFalta = yaPasoElDia && Boolean(horario?.esDiaLaborable);
+  // D-34: el mismo día, quien no registró entrada es falta en cuanto pasa la hora de salida.
+  const pasoLaSalida =
+    fecha === hoy &&
+    horario !== null &&
+    horario !== undefined &&
+    obtenerMinutosLocales(ahora, zona) >= convertirHoraAMinutos(horario.horaSalida);
+  const esFalta = (yaPasoElDia || pasoLaSalida) && Boolean(horario?.esDiaLaborable);
 
   return {
     fecha,

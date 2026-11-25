@@ -7,16 +7,23 @@
  * @version 1.1.0
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Envía el enlace del portal al crear la obra
  *   (feature 004, RF-65 Enviar enlace del portal al cliente)
+ *   25/11/2026 - Emilio Manuel Esquivel - Ver y asignar trabajadores de una obra (feature 006, RF-68)
  */
 
 // 1. Importaciones
 import type { FastifyInstance } from 'fastify';
 
-import { esquemaCrearObra } from '@/esquemas/esquemasObra';
+import { esquemaAsignarTrabajadores, esquemaCrearObra } from '@/esquemas/esquemasObra';
+import { esquemaParametrosObraEnlace } from '@/esquemas/esquemasPortal';
 import { Rol } from '@/generated/prisma/enums';
 import { exigirRol, verificarToken } from '@/middleware/autenticacion';
 import { enviarEnlacePortal } from '@/servicios/servicioEnlacePortal';
-import { crearObra, listarObras } from '@/servicios/servicioObras';
+import {
+  asignarTrabajadoresAObra,
+  crearObra,
+  listarObras,
+  listarTrabajadoresDeObra,
+} from '@/servicios/servicioObras';
 import { validar } from '@/utilidades/validar';
 
 // 3. Constantes del módulo
@@ -49,4 +56,16 @@ export async function rutasObras(app: FastifyInstance): Promise<void> {
       return respuesta.status(CODIGO_CREADO).send({ obra, enlacePortal });
     },
   );
+
+  // Feature 006 (RF-68): el supervisor de la obra o el dueño asignan trabajadores después.
+  app.get('/:idObra/trabajadores', { preHandler: [verificarToken] }, async (peticion) => {
+    const { idObra } = validar(esquemaParametrosObraEnlace, peticion.params);
+    return listarTrabajadoresDeObra(peticion.user, idObra);
+  });
+
+  app.post('/:idObra/trabajadores', { preHandler: [verificarToken] }, async (peticion) => {
+    const { idObra } = validar(esquemaParametrosObraEnlace, peticion.params);
+    const { trabajadoresIds } = validar(esquemaAsignarTrabajadores, peticion.body);
+    return asignarTrabajadoresAObra(peticion.user, idObra, trabajadoresIds);
+  });
 }

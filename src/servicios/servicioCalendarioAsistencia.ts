@@ -9,6 +9,8 @@
  * @requerimientos RF-56 Mostrar días con descuento, RF-58 Mostrar calendario de asistencia,
  *   D-08, D-13, D-16, D-20
  * @historial 23/11/2026 - Emilio Manuel Esquivel - Creación (feature 001, research R-08)
+ * @historial 25/11/2026 - Emilio Manuel Esquivel - Falta el mismo día al pasar la salida (D-34) y $ con
+ *   horas descontadas (D-35) (feature 006)
  */
 
 // 1. Importaciones
@@ -23,6 +25,8 @@ import type { DatosTokenAcceso } from '@/tipos/fastifyJwt';
 import { ErrorHttp } from '@/utilidades/errores';
 import {
   convertirFechaADate,
+  convertirHoraAMinutos,
+  obtenerMinutosLocales,
   formatearFecha,
   obtenerDiasDelMes,
   obtenerFechaLocal,
@@ -53,6 +57,8 @@ interface DatosCalculoDias {
   mes: string;
   zona: string;
   hoy: string;
+  /** Instante actual; solo las pruebas lo fijan. */
+  ahora?: Date;
 }
 
 // 3. Constantes del módulo
@@ -71,8 +77,9 @@ const MENSAJE_SIN_PERMISO = 'No tienes permiso para ver este calendario';
 
 // 4. Funciones
 /** Indica si un efecto en el pago es un descuento (muestra el símbolo $, D-13). */
-export function esConDescuento(efectoPago: EfectoPago): boolean {
-  return EFECTOS_CON_DESCUENTO.includes(efectoPago);
+export function esConDescuento(efectoPago: EfectoPago, horasDescontadas?: number | null): boolean {
+  // Feature 006: también hay descuento si se registraron horas a descontar (D-35).
+  return EFECTOS_CON_DESCUENTO.includes(efectoPago) || (horasDescontadas ?? 0) > 0;
 }
 
 /**
@@ -110,7 +117,13 @@ export async function calcularDiasAsistencia(datos: DatosCalculoDias): Promise<D
       obraId: { in: datos.obras.map((obra) => obra.id) },
       fecha: { gte: convertirFechaADate(primerDia), lte: convertirFechaADate(ultimoDia) },
     },
-    select: { obraId: true, fecha: true, tipoJornada: true, efectoPago: true },
+    select: {
+      obraId: true,
+      fecha: true,
+      tipoJornada: true,
+      efectoPago: true,
+      horasDescontadas: true,
+    },
   });
   const registroPorDia = new Map(
     registros.map((registro) => [`${registro.obraId}|${formatearFecha(registro.fecha)}`, registro]),
@@ -122,7 +135,13 @@ export async function calcularDiasAsistencia(datos: DatosCalculoDias): Promise<D
   for (const obra of datos.obras) {
     const filasHorario = await obtenerFilasHorario(obra.id);
     const desde = maximo(formatearFecha(obra.fechaInicio), altaTrabajador);
-    const hasta = minimo(formatearFecha(obra.fechaFinal), ayer);
+    // D-34: hoy ya cuenta como falta si pasó la hora de salida y no hay registro.
+    const horarioHoy = resolverHorarioEfectivo(filasHorario, datos.hoy, datos.zona);
+    const terminoHoy =
+      horarioHoy !== null &&
+      obtenerMinutosLocales(datos.ahora ?? new Date(), datos.zona) >=
+        convertirHoraAMinutos(horarioHoy.horaSalida);
+    const hasta = minimo(formatearFecha(obra.fechaFinal), terminoHoy ? datos.hoy : ayer);
 
     for (const fecha of dias) {
       const registro = registroPorDia.get(`${obra.id}|${fecha}`);
@@ -133,7 +152,7 @@ export async function calcularDiasAsistencia(datos: DatosCalculoDias): Promise<D
           color: COLOR_POR_TIPO[registro.tipoJornada],
           tipoJornada: registro.tipoJornada,
           esFaltaCalculada: false,
-          conDescuento: esConDescuento(registro.efectoPago),
+          conDescuento: esConDescuento(registro.efectoPago, registro.horasDescontadas),
         });
         continue;
       }
