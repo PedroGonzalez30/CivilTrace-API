@@ -80,7 +80,7 @@ Respuesta 201: la obra de siempre más
 
 ### Bloqueo — RF-17
 
-`PATCH /obras/:idObra/actividades/:idActividad`, `POST …/avances` y `PATCH …/avances/:id/revision`
+`PATCH /obras/:idObra/actividades/:idActividad/estado`, `POST …/avances` y `PATCH …/avances/:id/revision`
 responden 409 `motivo: "ENTREGA_ACEPTADA"` si la actividad está en una entrega Aceptada.
 `GET /obras/:idObra/actividades/:idActividad` agrega `"bloqueada": boolean`.
 
