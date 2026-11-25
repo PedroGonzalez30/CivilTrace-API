@@ -73,9 +73,10 @@ Respuesta 201: la obra de siempre más
 
 - Dueño o supervisor de la obra. 200 `application/pdf`. El mismo archivo que descarga el cliente.
 
-### `POST /obras/:idObra/entregas/:idEntrega/acta` — RF-16
+### `GET /obras/:idObra/entregas/:idEntrega/acta.pdf` — RF-16
 
-- Dueño o supervisor de la obra. Genera el acta si no existe (idempotente) y la devuelve:
+- Dueño o supervisor de la obra. GET para descargarla directo a un archivo en la app. Genera el
+  acta la primera vez y después devuelve el mismo archivo:
   200 `application/pdf`. 409 `motivo: "ENTREGA_NO_ACEPTADA"` si no está Aceptada.
 
 ### Bloqueo — RF-17

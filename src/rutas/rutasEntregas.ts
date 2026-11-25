@@ -63,9 +63,10 @@ export async function rutasEntregas(app: FastifyInstance): Promise<void> {
     },
   );
 
-  // POST porque la primera vez crea el acta (RF-16 "cuando el dueño o el supervisor la solicita").
-  app.post(
-    '/:idObra/entregas/:idEntrega/acta',
+  // GET para que la app la descargue directo a un archivo; la primera petición crea el acta y las
+  // siguientes devuelven el mismo archivo (RF-16 "cuando el dueño o el supervisor la solicita").
+  app.get(
+    '/:idObra/entregas/:idEntrega/acta.pdf',
     { preHandler: [verificarToken] },
     async (peticion, respuesta) => {
       const { idObra, idEntrega } = validar(esquemaParametrosEntrega, peticion.params);
