@@ -5,9 +5,10 @@
  * identidad administrada del App Service (sin claves ni cadenas de conexión).
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 18/11/2026
- * @version 1.1.0
+ * @version 1.2.0
  * @historial 24/11/2026 - Emilio Manuel Esquivel - guardarPdf para reportes y actas de entregas
  *   (feature 004, RF-16 Generar acta de entrega-recepción)
+ *   25/11/2026 - Emilio Manuel Esquivel - En desarrollo sin Azure guarda en disco (D-32)
  */
 
 // 1. Importaciones
@@ -17,6 +18,12 @@ import { DefaultAzureCredential } from '@azure/identity';
 import { BlobServiceClient, type ContainerClient } from '@azure/storage-blob';
 
 import { entorno } from '@/configuracion/entorno';
+import {
+  borrarLocal,
+  guardarLocal,
+  leerLocal,
+  usaAlmacenamientoLocal,
+} from '@/servicios/almacenamientoLocal';
 import { ErrorHttp } from '@/utilidades/errores';
 
 // 2. Tipos e interfaces
@@ -56,6 +63,29 @@ function obtenerContenedor(): ContainerClient {
   return contenedorEnCache;
 }
 
+// En desarrollo sin Azure se guarda en disco (D-32); en producción siempre va a Blob Storage.
+async function subirArchivo(
+  nombreBlob: string,
+  datos: Buffer,
+  tipo: string,
+  mensajeError: string,
+): Promise<void> {
+  try {
+    if (usaAlmacenamientoLocal()) {
+      await guardarLocal(nombreBlob, datos);
+      return;
+    }
+    await obtenerContenedor()
+      .getBlockBlobClient(nombreBlob)
+      .uploadData(datos, { blobHTTPHeaders: { blobContentType: tipo } });
+  } catch (error) {
+    if (error instanceof ErrorHttp) {
+      throw error;
+    }
+    throw new ErrorHttp(CODIGO_FALLO_ALMACENAMIENTO, mensajeError, error);
+  }
+}
+
 function obtenerExtension(tipo: TipoImagen): string {
   const subtipo = tipo
     .slice('image/'.length)
@@ -92,22 +122,9 @@ export async function guardarImagen(
     );
   }
 
-  const contenedor = obtenerContenedor();
   // El nombre lo genera el servidor; nunca se usa el nombre que mande el cliente.
   const nombreBlob = `${empresaId}/${carpeta}/${randomUUID()}.${obtenerExtension(tipo)}`;
-
-  try {
-    await contenedor
-      .getBlockBlobClient(nombreBlob)
-      .uploadData(datos, { blobHTTPHeaders: { blobContentType: tipo } });
-  } catch (error) {
-    throw new ErrorHttp(
-      CODIGO_FALLO_ALMACENAMIENTO,
-      'No se pudo guardar la imagen en el almacenamiento',
-      error,
-    );
-  }
-
+  await subirArchivo(nombreBlob, datos, tipo, 'No se pudo guardar la imagen en el almacenamiento');
   return { nombreBlob, tipo, tamanoBytes: datos.length };
 }
 
@@ -127,6 +144,13 @@ export function esTipoImagen(valor: string): valor is TipoImagen {
  * @throws ErrorHttp 502 si Azure falla o la imagen no existe.
  */
 export async function obtenerImagen(nombreBlob: string): Promise<{ datos: Buffer; tipo: string }> {
+  if (usaAlmacenamientoLocal()) {
+    try {
+      return await leerLocal(nombreBlob);
+    } catch (error) {
+      throw new ErrorHttp(CODIGO_FALLO_ALMACENAMIENTO, 'No se pudo leer la imagen', error);
+    }
+  }
   const cliente = obtenerContenedor().getBlockBlobClient(nombreBlob);
   try {
     const datos = await cliente.downloadToBuffer();
@@ -152,15 +176,8 @@ export async function guardarPdf(
   carpeta: string,
   datos: Buffer,
 ): Promise<ArchivoGuardado> {
-  const contenedor = obtenerContenedor();
   const nombreBlob = `${empresaId}/${carpeta}/${randomUUID()}.pdf`;
-  try {
-    await contenedor
-      .getBlockBlobClient(nombreBlob)
-      .uploadData(datos, { blobHTTPHeaders: { blobContentType: TIPO_PDF } });
-  } catch (error) {
-    throw new ErrorHttp(CODIGO_FALLO_ALMACENAMIENTO, 'No se pudo guardar el documento', error);
-  }
+  await subirArchivo(nombreBlob, datos, TIPO_PDF, 'No se pudo guardar el documento');
   return { nombreBlob, tipo: TIPO_PDF, tamanoBytes: datos.length };
 }
 
@@ -171,6 +188,10 @@ export async function guardarPdf(
  */
 export async function eliminarImagen(nombreBlob: string): Promise<void> {
   try {
+    if (usaAlmacenamientoLocal()) {
+      await borrarLocal(nombreBlob);
+      return;
+    }
     await obtenerContenedor().getBlockBlobClient(nombreBlob).deleteIfExists();
   } catch {
     // La foto nueva ya quedó guardada; no se bloquea al usuario por no borrar la vieja.

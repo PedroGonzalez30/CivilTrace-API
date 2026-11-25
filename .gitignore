@@ -11,3 +11,6 @@ infra/.terraform/
 infra/*.tfstate
 infra/*.tfstate.*
 infra/terraform.tfvars
+
+# Almacenamiento en disco para desarrollo local (D-32)
+almacenamiento-local/

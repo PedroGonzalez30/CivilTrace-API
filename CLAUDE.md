@@ -58,6 +58,7 @@ npm run formatear                          # Prettier (verificar con npm run ver
   en memoria (`dobleAlmacenamiento.ts`, `dobleCorreo.ts`: lee el enlace y el código de los correos).
 - **Portal del cliente (local)**: en `.env` pon `URL_PORTAL`, `CLAVE_CIFRADO_PORTAL` (32 bytes en
   base64) y `CORREO_EN_CONSOLA=true`: los correos con el enlace y el código salen en la consola.
+  Sin `AZURE_STORAGE_CUENTA`, en desarrollo las fotos se guardan en `almacenamiento-local/` (D-32).
 - **Lint**: ESLint vive en `herramientas/lint/` porque TypeScript 7 no trae la API de JavaScript que
   usa `typescript-eslint` (decisión T-07).
 - **Cobertura pendiente**: los servicios anteriores al módulo 00 (autenticación, obras, empresa,

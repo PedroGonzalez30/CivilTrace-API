@@ -10,3 +10,4 @@ coverage
 herramientas/lint/node_modules
 herramientas/lint/package-lock.json
 infra/.terraform
+almacenamiento-local
