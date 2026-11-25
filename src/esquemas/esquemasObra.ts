@@ -89,3 +89,16 @@ export const esquemaCrearObra = z
   });
 
 export type DatosCrearObra = z.output<typeof esquemaCrearObra>;
+
+// Feature 006 (RF-68): trabajadores a asignar a una obra ya creada.
+export const esquemaAsignarTrabajadores = z.object(
+  {
+    trabajadoresIds: z
+      .array(z.string().trim().min(1).max(LONGITUD_MAXIMA_ID), {
+        error: 'Selecciona al menos un trabajador',
+      })
+      .min(1, { error: 'Selecciona al menos un trabajador' })
+      .max(MAXIMO_TRABAJADORES_POR_OBRA, { error: 'Demasiados trabajadores' }),
+  },
+  { error: MENSAJE_DATOS_INVALIDOS },
+);
