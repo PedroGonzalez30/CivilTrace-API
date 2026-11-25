@@ -10,6 +10,7 @@
  * @requerimientos RF-60 Registrar retardo o salida anticipada, RF-58 Mostrar calendario de
  *   asistencia, D-07
  * @historial 23/11/2026 - Emilio Manuel Esquivel - Creación (feature 001, research R-09)
+ * @historial 25/11/2026 - Emilio Manuel Esquivel - Horas descontadas (feature 006, D-35)
  */
 
 // 1. Importaciones
@@ -31,7 +32,13 @@ import {
 
 // 2. Tipos e interfaces
 type CampoEditable =
-  'tipoJornada' | 'motivo' | 'efectoPago' | 'anotacion' | 'entradaEn' | 'salidaEn';
+  | 'tipoJornada'
+  | 'motivo'
+  | 'efectoPago'
+  | 'anotacion'
+  | 'entradaEn'
+  | 'salidaEn'
+  | 'horasDescontadas';
 
 // 3. Constantes del módulo
 const CODIGO_PETICION_INVALIDA = 400;
@@ -45,6 +52,7 @@ const CAMPOS_EDITABLES: CampoEditable[] = [
   'anotacion',
   'entradaEn',
   'salidaEn',
+  'horasDescontadas',
 ];
 const INCLUIR_DETALLE = {
   entradaRegistradaPor: { select: { nombre: true } },
@@ -113,6 +121,7 @@ export async function editarDetalleDia(
     anotacion: existente?.anotacion ?? null,
     entradaEn: existente?.entradaEn ?? null,
     salidaEn: existente?.salidaEn ?? null,
+    horasDescontadas: existente?.horasDescontadas ?? null,
   };
   const entradaNueva =
     cambios.entradaEn !== undefined ? convertirInstante(cambios.entradaEn) : anterior.entradaEn;
@@ -126,6 +135,8 @@ export async function editarDetalleDia(
     entradaEn: entradaNueva,
     salidaEn:
       cambios.salidaEn !== undefined ? convertirInstante(cambios.salidaEn) : anterior.salidaEn,
+    horasDescontadas:
+      cambios.horasDescontadas !== undefined ? cambios.horasDescontadas : anterior.horasDescontadas,
   };
   validarNuevoEstado(nuevo, fecha, zona);
 
@@ -233,6 +244,7 @@ async function armarDetalle(
       motivo: null,
       efectoPago: EfectoPago.PAGO_COMPLETO,
       conDescuento: false,
+      horasDescontadas: null,
       anotacion: null,
       registradoPor: null,
       registradoEn: null,
@@ -261,7 +273,8 @@ async function armarDetalle(
     esFaltaCalculada: false,
     motivo: registro.motivo,
     efectoPago: registro.efectoPago,
-    conDescuento: esConDescuento(registro.efectoPago),
+    conDescuento: esConDescuento(registro.efectoPago, registro.horasDescontadas),
+    horasDescontadas: registro.horasDescontadas,
     anotacion: registro.anotacion,
     registradoPor: registro.entradaRegistradaPor?.nombre ?? primerAutor,
     registradoEn: (registro.entradaEn ?? registro.creadoEn).toISOString(),
@@ -301,9 +314,12 @@ function convertirInstante(valor: string | null): Date | null {
   return valor === null ? null : new Date(valor);
 }
 
-function aTexto(valor: Date | string | null): string | null {
+function aTexto(valor: Date | string | number | null): string | null {
   if (valor === null) {
     return null;
+  }
+  if (typeof valor === 'number') {
+    return String(valor);
   }
   return valor instanceof Date ? valor.toISOString() : valor;
 }

@@ -277,6 +277,8 @@ model RegistroAsistencia {
   motivo                 MotivoAsistencia?
   efectoPago             EfectoPago         @default(PAGO_COMPLETO)
   anotacion              String?
+  // Feature 006: horas a descontar del pago por llegar tarde o salir antes (solo se registran).
+  horasDescontadas       Float?
   esDiaLaborable         Boolean
   horarioEntrada         String?
   horarioSalida          String?

@@ -18,6 +18,7 @@ import type { FastifyInstance } from 'fastify';
 
 import {
   esquemaConsultaCalendario,
+  esquemaConsultaDesempeno,
   esquemaConsultaFecha,
   esquemaEditarDetalles,
   esquemaLoteEscaneos,
@@ -30,6 +31,7 @@ import {
 import { Rol } from '@/generated/prisma/enums';
 import { exigirRol, verificarToken } from '@/middleware/autenticacion';
 import { obtenerCalendario } from '@/servicios/servicioCalendarioAsistencia';
+import { obtenerDesempeno } from '@/servicios/servicioDesempeno';
 import {
   listarObrasSupervisadas,
   obtenerFotoTrabajador,
@@ -142,6 +144,17 @@ export async function rutasAsistencia(app: FastifyInstance): Promise<void> {
       const { trabajadorId } = validar(esquemaParametrosCalendario, peticion.params);
       const { mes, obraId } = validar(esquemaConsultaCalendario, peticion.query);
       return obtenerCalendario(peticion.user, trabajadorId, mes, obraId);
+    },
+  );
+
+  // Feature 005 (D-30): métricas de desempeño para el dueño y el supervisor.
+  app.get(
+    '/asistencia/trabajadores/:trabajadorId/desempeno',
+    { preHandler: [verificarToken] },
+    async (peticion) => {
+      const { trabajadorId } = validar(esquemaParametrosCalendario, peticion.params);
+      const { periodo } = validar(esquemaConsultaDesempeno, peticion.query);
+      return obtenerDesempeno(peticion.user, trabajadorId, periodo);
     },
   );
 }

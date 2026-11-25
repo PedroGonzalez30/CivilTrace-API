@@ -113,6 +113,9 @@ export type DatosGuardarHorario = z.output<typeof esquemaGuardarHorario>;
 
 export const esquemaParametrosDia = esquemaParametrosTrabajador.extend({ fecha: esquemaFecha });
 
+const HORAS_MAXIMAS_DESCUENTO = 12;
+const PASO_HORAS_DESCUENTO = 0.5;
+
 export const esquemaEditarDetalles = z
   .object({
     tipoJornada: z.enum(TipoJornada, { error: 'El tipo de jornada es inválido' }).optional(),
@@ -127,6 +130,15 @@ export const esquemaEditarDetalles = z
       .optional(),
     entradaEn: z.iso.datetime({ error: 'La hora de entrada es inválida' }).nullable().optional(),
     salidaEn: z.iso.datetime({ error: 'La hora de salida es inválida' }).nullable().optional(),
+    // Feature 006: horas a descontar en pasos de media hora; 0 o null quitan el descuento.
+    horasDescontadas: z
+      .number({ error: 'Las horas a descontar son inválidas' })
+      .min(0, { error: 'Las horas a descontar no pueden ser negativas' })
+      .max(HORAS_MAXIMAS_DESCUENTO, { error: `Máximo ${HORAS_MAXIMAS_DESCUENTO} horas` })
+      .multipleOf(PASO_HORAS_DESCUENTO, { error: 'Usa horas completas o medias horas' })
+      .transform((valor) => (valor === 0 ? null : valor))
+      .nullable()
+      .optional(),
   })
   .refine((cambios) => Object.values(cambios).some((valor) => valor !== undefined), {
     error: 'No hay cambios que guardar',
@@ -145,4 +157,9 @@ export const esquemaConsultaCalendario = z.object({
     .string({ error: 'Indica el mes' })
     .regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error: 'El mes debe tener el formato AAAA-MM' }),
   obraId: z.string().min(1, { error: 'La obra es inválida' }).optional(),
+});
+
+// Feature 005 (D-30): periodo de las métricas de desempeño.
+export const esquemaConsultaDesempeno = z.object({
+  periodo: z.enum(['SEMANA', 'MES', 'TODO'], { error: 'Periodo inválido' }).default('MES'),
 });
