@@ -28,7 +28,7 @@ Detalle en [research.md](./research.md).
 
 **Primary Dependencies**:
 
-- API (nuevas, **requieren aprobación**, R-01, R-02, R-09): `pdfkit` (PDF), `@azure/communication-email` (correo), `@fastify/cors` (CORS del portal). El resto con `node:crypto` (token, AES-256-GCM, HMAC, SHA-256).
+- API (nuevas, aprobadas en P-17; R-01, R-02, R-09): `pdfkit` (PDF), `@azure/communication-email` (correo), `@fastify/cors` (CORS del portal). El resto con `node:crypto` (token, AES-256-GCM, HMAC, SHA-256).
 - App: ninguna nueva (`expo-file-system` y `expo-sharing` ya están para descargar y compartir el PDF).
 - Portal: `react`, `react-dom`, `react-router` (modo hash); desarrollo: `vite`, `vitest`, `@testing-library/react`, `@playwright/test`, ESLint y Prettier.
 
@@ -55,19 +55,19 @@ Detalle en [research.md](./research.md).
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principio                 | Cómo lo cumple este plan                                                                                                                                                                                                                                                         | Estado      |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| **I. El Figma manda**     | Las 10 pantallas están citadas por `node-id`. Falta en el Figma la vista de Avances del portal (RF-66): se arma con los componentes existentes y queda en P-14 para que el equipo la apruebe.                                                                                    | ⚠️ P-14     |
-| **I.3–I.4 SRS**           | La constitución nombra el **SRS V4.0**; el usuario decidió usar el **v5.0** desde este feature (D-28). Se propone en este PR la enmienda **1.1.0** (MINOR) de I.3 e I.4 para citar el v5.0; requiere aprobación del equipo (ver Complexity Tracking).                            | ⚠️ Enmienda |
-| **II. ECCT v1.0**         | Mismo patrón de archivos (`rutasPortal.ts`, `servicioEntregas.ts`, `servicioCorreo.ts`, `servicioPdf.ts`, `esquemasPortal.ts`, `constantes/portal.ts`); el portal usa las mismas reglas de ESLint y Prettier, encabezado y secciones numeradas.                                  | ✅          |
-| **III. Pruebas primero**  | Pruebas en rojo antes de cada servicio, con claves provisionales `CP16-*` y `CP17-*` (R-12, P-10). Dobles de correo y almacenamiento; Playwright para aceptar y observar en el portal (III.3). Cobertura 80 % en servicios nuevos, 60 % en app y portal.                         | ✅          |
-| **IV. Seguridad y datos** | Token de 256 bits (hash + cifrado AES-GCM), código de 6 dígitos con HMAC, 10 min y 5 intentos (IV.3); firmas y PDF en Blob privado con SHA-256 (IV.4); textos sin "firma electrónica" (IV.5); entregas respondidas no se borran (IV.6); aviso de privacidad en el portal (IV.7). | ✅          |
-| **V. Azure**              | Recursos nuevos: Azure Communication Services + dominio administrado, Static Web Apps Free y el secreto `CLAVE_CIFRADO_PORTAL` en Key Vault. Se describen en Terraform (`infra/`) y **no se aplican** sin aprobación; el plan no toca recursos existentes.                       | ⚠️ Aprobar  |
-| **VI. Forma de trabajar** | API primero, luego app y portal; una rama `004-portal-cliente` por repo y PR revisado; migración con nombre descriptivo; dudas registradas (P-10 a P-17).                                                                                                                        | ✅          |
+| Principio                 | Cómo lo cumple este plan                                                                                                                                                                                                                                                                   | Estado   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| **I. El Figma manda**     | Las 10 pantallas están citadas por `node-id`. Falta en el Figma la vista de Avances del portal (RF-66): se arma con los componentes existentes y queda en P-14 para que el equipo la apruebe.                                                                                              | ⚠️ P-14  |
+| **I.3–I.4 SRS**           | La constitución nombra el **SRS V4.0**; el usuario decidió usar el **v5.0** desde este feature (D-28). La enmienda **1.1.0** (MINOR) de I.3 e I.4 ya cita el SRS vigente (v5.0); aprobada (P-17).                                                                                          | ✅ 1.1.0 |
+| **II. ECCT v1.0**         | Mismo patrón de archivos (`rutasPortal.ts`, `servicioEntregas.ts`, `servicioCorreo.ts`, `servicioPdf.ts`, `esquemasPortal.ts`, `constantes/portal.ts`); el portal usa las mismas reglas de ESLint y Prettier, encabezado y secciones numeradas.                                            | ✅       |
+| **III. Pruebas primero**  | Pruebas en rojo antes de cada servicio, con claves provisionales `CP16-*` y `CP17-*` (R-12, P-10). Dobles de correo y almacenamiento; Playwright para aceptar y observar en el portal (III.3). Cobertura 80 % en servicios nuevos, 60 % en app y portal.                                   | ✅       |
+| **IV. Seguridad y datos** | Token de 256 bits (hash + cifrado AES-GCM), código de 6 dígitos con HMAC, 10 min y 5 intentos (IV.3); firmas y PDF en Blob privado con SHA-256 (IV.4); textos sin "firma electrónica" (IV.5); entregas respondidas no se borran (IV.6); aviso de privacidad en el portal (IV.7).           | ✅       |
+| **V. Azure**              | Recursos nuevos: Azure Communication Services + dominio administrado, Static Web Apps Free y el secreto `CLAVE_CIFRADO_PORTAL` en Key Vault. Se describen en Terraform (`infra/`) aprobados (P-17); `terraform apply` se confirma antes de correrlo y el plan no toca recursos existentes. | ✅ P-17  |
+| **VI. Forma de trabajar** | API primero, luego app y portal; una rama `004-portal-cliente` por repo y PR revisado; migración con nombre descriptivo; dudas registradas (P-10 a P-17).                                                                                                                                  | ✅       |
 
-**Resultado**: pasa con tres puntos que necesitan al equipo (P-14, enmienda de la constitución y recursos de Azure). Ninguno bloquea empezar la API con dobles de correo y almacenamiento.
+**Resultado**: pasa. Solo queda P-14 (vista de Avances sin diseño), que no bloquea la API.
 
-**Revisión después del diseño (fase 1)**: el modelo solo agrega tablas; las rutas públicas filtran por obra y empresa; las tres dependencias nuevas están justificadas en research. Sigue pasando con los mismos tres puntos.
+**Revisión después del diseño (fase 1)**: el modelo solo agrega tablas; las rutas públicas filtran por obra y empresa; las tres dependencias nuevas están justificadas en research. Sigue pasando.
 
 ## Project Structure
 
@@ -144,7 +144,7 @@ CivilTrace-Portal/ (nuevo)
 ## Pendientes que afectan el plan
 
 - **P-10** claves del plan de pruebas · **P-11** código para observar (no) · **P-12** rotar si cambia el correo (sí) · **P-14** vista de Avances en el Figma · **P-15** foto en una sola entrega activa (sí) · **P-16** ubicación de las fotos no se guarda (R-11).
-- **Aprobaciones**: `pdfkit`, `@azure/communication-email`, `@fastify/cors`; recursos de Azure; enmienda 1.1.0 de la constitución.
+- **Aprobado (P-17)**: `pdfkit`, `@azure/communication-email`, `@fastify/cors`; recursos de Azure; enmienda 1.1.0 de la constitución.
 
 ## Complexity Tracking
 
