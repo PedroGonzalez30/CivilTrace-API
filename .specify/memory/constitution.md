@@ -13,10 +13,10 @@ se pregunta al equipo.
 2. Lo que no está en el Figma **no se desarrolla**. Si una función hace falta para que el sistema
    funcione, se propone al equipo con su justificación y, si se aprueba, se diseña con el mismo
    estilo.
-3. El SRS V4.0 (ISO/IEC/IEEE 29148) da los requerimientos y criterios de aceptación. Cuando el SRS
+3. El SRS (ISO/IEC/IEEE 29148) da los requerimientos y criterios de aceptación. Desde el feature 004 rige el **SRS v5.0** (`SRS_Civil_Trace_v5.0_con_cambios.docx`, D-28); los features 001 a 003 conservan la numeración de la V4.0. Cuando el SRS
    y el Figma no coinciden, manda el Figma y se registra el ajuste en `docs/decisiones.md`.
 4. Cada artefacto (spec, plan, tarea, archivo) DEBE citar los requerimientos que atiende con su
-   clave del **SRS V4.0** (por ejemplo `RF-55 Aprobar avances de trabajadores`).
+   clave del **SRS vigente** (v5.0 desde el feature 004; por ejemplo `RF-55 Aprobar avances de trabajadores`).
 
 **Razón:** evita trabajo fuera del alcance acordado y mantiene la trazabilidad con el SRS.
 
@@ -154,7 +154,7 @@ Una tarea, plan o pull request solo avanza si cumple todo lo siguiente:
 - `npm run typecheck`, `npm run lint` y `npm test` pasan sin errores.
 - Las pruebas nuevas llevan la clave del caso del plan de pruebas y la cobertura no baja de los
   mínimos del principio III.
-- Los archivos nuevos tienen el encabezado ECCT y citan sus claves del SRS V4.0.
+- Los archivos nuevos tienen el encabezado ECCT y citan sus claves del SRS vigente.
 - El resultado se revisó contra la pantalla de Figma correspondiente (`node-id` de la spec).
 - `terraform plan` (si aplica) no muestra `destroy` ni `replace` de recursos existentes.
 
@@ -170,4 +170,4 @@ Una tarea, plan o pull request solo avanza si cumple todo lo siguiente:
 - Toda revisión de pull request verifica el cumplimiento de estos principios. `CLAUDE.md` es la
   guía operativa del día a día y debe mantenerse consistente con esta constitución.
 
-**Version**: 1.0.0 | **Ratified**: 2026-11-20 | **Last Amended**: 2026-11-20
+**Version**: 1.1.0 | **Ratified**: 2026-11-20 | **Last Amended**: 2026-11-24

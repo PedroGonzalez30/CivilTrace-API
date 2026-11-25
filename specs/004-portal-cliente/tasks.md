@@ -16,7 +16,7 @@ description: 'Lista de tareas del feature 004: portal web del cliente y entregas
 
 - **[P]**: se puede hacer en paralelo (archivos distintos, sin dependencias pendientes).
 - **[Story]**: US1 a US6, las historias de la spec.
-- **⚠️ APROBAR**: no se ejecuta hasta que el equipo apruebe (P-17).
+- **(aprobado, P-17)**: no se ejecuta hasta que el equipo apruebe (P-17).
 - Rutas sin prefijo son de `CivilTrace-API/`; `app:` es `CivilTrace/` y `portal:` es `CivilTrace-Portal/`.
 
 **Reglas para todo archivo nuevo** (constitución II), que no se repiten en cada tarea: encabezado
@@ -31,12 +31,12 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 
 **Purpose**: dependencias, variables y proyecto del portal.
 
-- [ ] T001 ⚠️ APROBAR Instalar `pdfkit`, `@types/pdfkit` (dev), `@azure/communication-email` y `@fastify/cors` en `package.json` (R-01, R-02, R-09)
+- [ ] T001 (aprobado, P-17) Instalar `pdfkit`, `@types/pdfkit` (dev), `@azure/communication-email` y `@fastify/cors` en `package.json` (R-01, R-02, R-09)
 - [ ] T002 Agregar `URL_PORTAL`, `CLAVE_CIFRADO_PORTAL` (32 bytes base64), `AZURE_COMUNICACION_ENDPOINT`, `CORREO_REMITENTE` (opcionales) y `CORREO_EN_CONSOLA` (booleano) a `src/configuracion/entorno.ts` y `.env.example`
 - [ ] T003 [P] Crear `src/constantes/portal.ts` con las constantes de [data-model.md](./data-model.md) ("Constantes de negocio")
 - [ ] T004 [P] Crear el repo `portal:` con Vite + React 19 + TypeScript estricto, React Router en modo hash, ESLint + Prettier con las reglas del ECCT, Vitest + Testing Library y Playwright; scripts `dev`, `build`, `typecheck`, `lint`, `test`, `test:e2e`, `verificar-formato` en `portal:package.json`
 - [ ] T005 [P] Crear `portal:src/estilos/tema.css` con colores, Poppins y espaciados tomados de las pantallas `CLIENTE_*` del Figma (`246:1178`, `2271:118`) y `portal:CLAUDE.md` con las reglas del repo
-- [ ] T006 [P] Enmienda 1.1.0 de `.specify/memory/constitution.md` (I.3 e I.4 citan el SRS v5.0 desde el feature 004) — ⚠️ APROBAR, va en el mismo PR para revisión
+- [ ] T006 [P] Enmienda 1.1.0 de `.specify/memory/constitution.md` (I.3 e I.4 citan el SRS v5.0 desde el feature 004) — (aprobado, P-17), va en el mismo PR para revisión
 
 ---
 
@@ -173,7 +173,7 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 
 - [ ] T054 [P] portal: aviso de privacidad (`src/pantallas/PantallaPrivacidad.tsx`) enlazado al pie (constitución IV.7) y mensajes de error de red sin perder firma ni texto
 - [ ] T055 [P] portal: `staticwebapp.config.json` con `Referrer-Policy: no-referrer`, CSP solo hacia la API y `.github/workflows/portal.yml` (tipos, lint, pruebas, Playwright y despliegue)
-- [ ] T056 ⚠️ APROBAR `infra/comunicacion.tf` y `infra/portal.tf` (Communication Services con dominio administrado, Static Web Apps Free, secreto `CLAVE_CIFRADO_PORTAL` en Key Vault y su referencia en el App Service); `terraform plan` sin `destroy`/`replace`; **no aplicar**
+- [ ] T056 (aprobado, P-17) `infra/comunicacion.tf` y `infra/portal.tf` (Communication Services con dominio administrado, Static Web Apps Free, secreto `CLAVE_CIFRADO_PORTAL` en Key Vault y su referencia en el App Service); `terraform plan` sin `destroy`/`replace`; **no aplicar**
 - [ ] T057 [P] Sumar `servicioEnlacePortal`, `servicioEntregas`, `servicioCodigoEntrega`, `servicioPortal`, `servicioPdf` y `utilidades/cifrado` a los umbrales de 80 % en `vitest.config.ts`; app y portal al 60 % por archivo
 - [ ] T058 [P] Actualizar `CLAUDE.md` de la API y de la app (rutas `/portal`, dobles de correo, variables nuevas) y `README.md`
 - [ ] T059 Agregar a `docs/decisiones.md` (ambos repos) las decisiones técnicas que queden (R-01 a R-10) y marcar los pendientes resueltos
