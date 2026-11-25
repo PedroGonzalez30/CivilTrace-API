@@ -156,6 +156,11 @@ firma con `/portal/entregas/:idEntrega/firma` (`image/png`).
   (correo enmascarado).
 - 409 si la entrega no está Enviada · 429 si se pidió otro hace menos de 60 s.
 
+### `POST /portal/entregas/:idEntrega/codigo/comprobar` — RF-14
+
+- Cuerpo `{ "codigo": "123456" }`. 200 `{ "valido": true }` para mostrar "✓ Código verificado"
+  antes de firmar (`2271:118`). No gasta el código; los fallos cuentan para los 5 intentos.
+
 ### `POST /portal/entregas/:idEntrega/aceptar` — RF-14, RF-60
 
 - `bodyLimit` 1 MB. Cuerpo: `{ "codigo": "123456", "nombre": "…", "firmaPng": "<base64>" }`.
