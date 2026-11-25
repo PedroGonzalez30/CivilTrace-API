@@ -5,13 +5,19 @@
  *              y vista previa, filtrado por empresaId y rango de fechas opcional.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.1.0
+ * @version 1.2.0
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Solo evidencias aprobadas (D-10, feature 003)
+ *   25/11/2026 - Emilio Manuel Esquivel - Ubicación de cada foto (feature 007, RF-08)
  */
 
 import { prisma } from '@/baseDatos/clientePrisma';
 import { EstadoActividad, EstadoAvance } from '@/generated/prisma/enums';
 import { ErrorHttp } from '@/utilidades/errores';
+import {
+  convertirUbicacion,
+  SELECCION_UBICACION,
+  type UbicacionEvidencia,
+} from '@/utilidades/ubicacionEvidencia';
 
 export interface AvanceReporteRespuesta {
   id: string;
@@ -20,6 +26,8 @@ export interface AvanceReporteRespuesta {
   fechaRegistro: string;
   registradoPor: string | null;
   tieneFoto: boolean;
+  ubicacion: UbicacionEvidencia | null;
+  referenciaUbicacion: string | null;
 }
 
 export interface ActividadReporteRespuesta {
@@ -102,6 +110,7 @@ export async function obtenerReporteObra(
           estado: true,
           fechaRegistro: true,
           registradoPor: { select: { nombre: true } },
+          ...SELECCION_UBICACION,
         },
         orderBy: { fechaRegistro: 'asc' },
       },
@@ -129,6 +138,7 @@ export async function obtenerReporteObra(
         fechaRegistro: av.fechaRegistro.toISOString(),
         registradoPor: av.registradoPor?.nombre ?? null,
         tieneFoto: true,
+        ...convertirUbicacion(av),
       })),
     }));
 

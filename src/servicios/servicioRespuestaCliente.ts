@@ -5,10 +5,11 @@
  *   código, aceptarla con nombre y firma, registrar observaciones y consultar la firma guardada.
  * @autor Emilio Manuel Esquivel
  * @fecha 24/11/2026
- * @version 1.0.0
+ * @version 1.1.0
  * @requerimientos RF-14 Registrar aceptación de entrega, RF-60 Firmar aceptación de entrega,
  *   RF-67 Consultar entregas en el portal del cliente, RF-15 Registrar observaciones del cliente
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Creación (feature 004)
+ *   25/11/2026 - Emilio Manuel Esquivel - Ubicación de cada foto (feature 007, RF-08)
  */
 
 // 1. Importaciones
@@ -27,6 +28,11 @@ import {
 } from '@/servicios/servicioCodigoEntrega';
 import { ErrorHttp } from '@/utilidades/errores';
 import { formatearFecha } from '@/utilidades/fechasLocales';
+import {
+  convertirUbicacion,
+  SELECCION_UBICACION,
+  type UbicacionEvidencia,
+} from '@/utilidades/ubicacionEvidencia';
 
 // 2. Tipos e interfaces
 export interface DatosAceptacion {
@@ -45,6 +51,8 @@ export interface FotoEntrega {
   id: string;
   comentario: string;
   fechaRegistro: string;
+  ubicacion: UbicacionEvidencia | null;
+  referenciaUbicacion: string | null;
 }
 
 export interface ActividadEntrega {
@@ -175,7 +183,13 @@ export async function obtenerDetalleEntrega(
     include: {
       actividades: {
         orderBy: { fechaEntrega: 'asc' },
-        include: { avances: { orderBy: { fechaRegistro: 'asc' } } },
+        include: {
+          avances: {
+            orderBy: { fechaRegistro: 'asc' },
+            // La ubicación no se edita (RF-08): se lee de la foto original.
+            include: { avance: { select: SELECCION_UBICACION } },
+          },
+        },
       },
     },
   });
@@ -203,6 +217,7 @@ export async function obtenerDetalleEntrega(
         id: avance.avanceId,
         comentario: avance.comentario,
         fechaRegistro: avance.fechaRegistro.toISOString(),
+        ...convertirUbicacion(avance.avance),
       })),
     })),
   };

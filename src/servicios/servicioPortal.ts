@@ -5,10 +5,11 @@
  *   fotos aprobadas y las fotos mismas. Todo se filtra por la obra y la empresa del enlace.
  * @autor Emilio Manuel Esquivel
  * @fecha 24/11/2026
- * @version 1.0.0
+ * @version 1.1.0
  * @requerimientos RF-65 Enviar enlace del portal al cliente, RF-66 Consultar avances en el portal
  *   del cliente
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Creación (feature 004)
+ *   25/11/2026 - Emilio Manuel Esquivel - Ubicación de cada foto (feature 007, RF-08)
  */
 
 // 1. Importaciones
@@ -18,6 +19,11 @@ import type { AccesoPortal } from '@/middleware/tokenPortal';
 import { obtenerImagen } from '@/servicios/servicioAlmacenamiento';
 import { ErrorHttp } from '@/utilidades/errores';
 import { formatearFecha } from '@/utilidades/fechasLocales';
+import {
+  convertirUbicacion,
+  SELECCION_UBICACION,
+  type UbicacionEvidencia,
+} from '@/utilidades/ubicacionEvidencia';
 
 // 2. Tipos e interfaces
 export interface ObraPortal {
@@ -33,8 +39,9 @@ export interface FotoPortal {
   id: string;
   comentario: string;
   fechaRegistro: string;
-  // La app aún no captura la ubicación (P-16); el portal la muestra cuando exista.
-  ubicacion: null;
+  // Feature 007 (RF-66): coordenadas o, sin GPS, la referencia escrita.
+  ubicacion: UbicacionEvidencia | null;
+  referenciaUbicacion: string | null;
 }
 
 export interface ActividadPortal {
@@ -103,7 +110,7 @@ export async function listarAvancesPortal(acceso: AccesoPortal): Promise<Activid
       avances: {
         where: { estado: EstadoAvance.APROBADO },
         orderBy: { fechaRegistro: 'asc' },
-        select: { id: true, comentario: true, fechaRegistro: true },
+        select: { id: true, comentario: true, fechaRegistro: true, ...SELECCION_UBICACION },
       },
     },
   });
@@ -119,7 +126,7 @@ export async function listarAvancesPortal(acceso: AccesoPortal): Promise<Activid
       id: avance.id,
       comentario: avance.comentario,
       fechaRegistro: avance.fechaRegistro.toISOString(),
-      ubicacion: null,
+      ...convertirUbicacion(avance),
     })),
   }));
 }

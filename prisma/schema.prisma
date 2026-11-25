@@ -193,6 +193,12 @@ model AvanceActividad {
   revisadoPor     Usuario?        @relation("AvancesRevisados", fields: [revisadoPorId], references: [id], onDelete: SetNull)
   revisadoEn      DateTime?
   entregas        EntregaAvance[]
+  // Feature 007 (RF-08): coordenadas del teléfono al tomar la foto; no se editan. Sin señal GPS,
+  // la referencia escrita por quien la tomó. Las fotos anteriores no tienen ninguna.
+  latitud             Decimal?    @db.Decimal(9, 6)
+  longitud            Decimal?    @db.Decimal(9, 6)
+  precisionMetros     Float?
+  referenciaUbicacion String?
 
   @@index([empresaId])
   @@index([actividadId])
