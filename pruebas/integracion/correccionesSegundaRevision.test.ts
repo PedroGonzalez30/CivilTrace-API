@@ -180,4 +180,32 @@ describe('Correcciones de la segunda revisión (feature 006)', () => {
       expect(hoy).toMatchObject({ tipoJornada: 'FALTA', esFaltaCalculada: true });
     });
   });
+
+  describe('D-12 reglas de contraseña al registrarse', () => {
+    it('CP02-A10 rechaza contraseñas sin mayúscula, minúscula o número', async () => {
+      const registrar = (contrasena: string) =>
+        app.inject({
+          method: 'POST',
+          url: '/auth/registro',
+          payload: {
+            nombre: 'Dueña Nueva',
+            correo: `duena.${contrasena.length}.${contrasena.charCodeAt(0)}@ejemplo.com`,
+            contrasena,
+            rol: 'DUENO',
+            empresa: 'Constructora Nueva',
+          },
+        });
+
+      expect((await registrar('sinmayuscula1')).json().mensaje).toBe(
+        'La contraseña debe tener una mayúscula',
+      );
+      expect((await registrar('SINMINUSCULA1')).json().mensaje).toBe(
+        'La contraseña debe tener una minúscula',
+      );
+      expect((await registrar('SinNumeros')).json().mensaje).toBe(
+        'La contraseña debe tener un número',
+      );
+      expect((await registrar('Segura123')).statusCode).toBe(201);
+    });
+  });
 });

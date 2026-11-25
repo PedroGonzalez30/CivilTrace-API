@@ -14,12 +14,12 @@ rechazadas), `RF-61` (retardos y salidas anticipadas), `RF-62` (entregas a tiemp
 Por trabajador y periodo (**Semana**: lunes a hoy; **Mes**: día 1 a hoy; **Todo**: desde su alta),
 en la zona horaria de la empresa:
 
-| Tarjeta                 | Cálculo                                                                                                                                                    |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Asistencia              | Días del calendario (RF-58) en el periodo: % = completos / total; además retardos, medias jornadas, salidas tempranas y faltas (calculadas o guardadas). |
-| Evidencias aceptadas    | Fotos que subió el trabajador en el periodo: % = aprobadas / (aprobadas + rechazadas); las pendientes no cuentan.                                          |
-| Actividades entregadas  | Actividades a su cargo terminadas en el periodo: antes de la fecha, el mismo día o con retraso (comparando la fecha terminada con la programada).          |
-| Actividades aprobadas   | Entregas "Terminado" del trabajador revisadas en el periodo: % = aprobadas / (aprobadas + rechazadas) (RF-31).                                            |
+| Tarjeta                | Cálculo                                                                                                                                                  |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Asistencia             | Días del calendario (RF-58) en el periodo: % = completos / total; además retardos, medias jornadas, salidas tempranas y faltas (calculadas o guardadas). |
+| Evidencias aceptadas   | Fotos que subió el trabajador en el periodo: % = aprobadas / (aprobadas + rechazadas); las pendientes no cuentan.                                        |
+| Actividades entregadas | Actividades a su cargo terminadas en el periodo: antes de la fecha, el mismo día o con retraso (comparando la fecha terminada con la programada).        |
+| Actividades aprobadas  | Entregas "Terminado" del trabajador revisadas en el periodo: % = aprobadas / (aprobadas + rechazadas) (RF-31).                                           |
 
 Sin datos, el porcentaje es `null` y la app muestra "Sin datos".
 
@@ -38,7 +38,15 @@ la lista de sus trabajadores y de ahí a sus métricas.
 {
   "trabajador": { "id": "…", "nombre": "Emilio", "oficio": "Plomero" },
   "periodo": { "tipo": "MES", "desde": "2026-11-01", "hasta": "2026-11-25" },
-  "asistencia": { "porcentaje": 92, "completos": 22, "total": 24, "retardos": 1, "mediasJornadas": 0, "salidasTempranas": 0, "faltas": 1 },
+  "asistencia": {
+    "porcentaje": 92,
+    "completos": 22,
+    "total": 24,
+    "retardos": 1,
+    "mediasJornadas": 0,
+    "salidasTempranas": 0,
+    "faltas": 1
+  },
   "evidencias": { "porcentaje": 90, "aprobadas": 18, "rechazadas": 2, "pendientes": 1 },
   "actividadesEntregadas": { "total": 14, "antes": 9, "mismoDia": 3, "conRetraso": 2 },
   "actividadesAprobadas": { "porcentaje": 80, "aprobadas": 4, "rechazadas": 1 }
