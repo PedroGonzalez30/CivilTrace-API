@@ -5,6 +5,8 @@
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 16/11/2026
  * @version 1.0.0
+ * @historial 25/11/2026 - Emilio Manuel Esquivel - Reglas de contraseña también al registrarse
+ *   (feature 006, D-12)
  */
 
 // 1. Importaciones
@@ -53,7 +55,11 @@ export const esquemaRegistro = z.object(
       })
       .max(LONGITUD_MAXIMA_NOMBRE, { error: 'El nombre es demasiado largo' }),
     correo,
-    contrasena: contrasenaNueva,
+    // D-12 (feature 006): las mismas reglas que al cambiar la contraseña.
+    contrasena: contrasenaNueva
+      .regex(/[a-z]/, { error: 'La contraseña debe tener una minúscula' })
+      .regex(/[A-Z]/, { error: 'La contraseña debe tener una mayúscula' })
+      .regex(/[0-9]/, { error: 'La contraseña debe tener un número' }),
     rol: z.enum(Rol, { error: 'Rol inválido' }),
     // Dueño: nombre de la empresa. Supervisor y trabajador: código de acceso.
     empresa: z
