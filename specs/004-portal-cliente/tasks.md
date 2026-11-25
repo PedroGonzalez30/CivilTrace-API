@@ -34,8 +34,8 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 - [x] T001 (aprobado, P-17) Instalar `pdfkit`, `@types/pdfkit` (dev), `@azure/communication-email` y `@fastify/cors` en `package.json` (R-01, R-02, R-09)
 - [x] T002 Agregar `URL_PORTAL`, `CLAVE_CIFRADO_PORTAL` (32 bytes base64), `AZURE_COMUNICACION_ENDPOINT`, `CORREO_REMITENTE` (opcionales) y `CORREO_EN_CONSOLA` (booleano) a `src/configuracion/entorno.ts` y `.env.example`
 - [x] T003 [P] Crear `src/constantes/portal.ts` con las constantes de [data-model.md](./data-model.md) ("Constantes de negocio")
-- [ ] T004 [P] Crear el repo `portal:` con Vite + React 19 + TypeScript estricto, React Router en modo hash, ESLint + Prettier con las reglas del ECCT, Vitest + Testing Library y Playwright; scripts `dev`, `build`, `typecheck`, `lint`, `test`, `test:e2e`, `verificar-formato` en `portal:package.json`
-- [ ] T005 [P] Crear `portal:src/estilos/tema.css` con colores, Poppins y espaciados tomados de las pantallas `CLIENTE_*` del Figma (`246:1178`, `2271:118`) y `portal:CLAUDE.md` con las reglas del repo
+- [x] T004 [P] Crear el repo `portal:` con Vite + React 19 + TypeScript estricto, React Router en modo hash, ESLint + Prettier con las reglas del ECCT, Vitest + Testing Library y Playwright; scripts `dev`, `build`, `typecheck`, `lint`, `test`, `test:e2e`, `verificar-formato` en `portal:package.json`
+- [x] T005 [P] Crear `portal:src/estilos/tema.css` con colores, Poppins y espaciados tomados de las pantallas `CLIENTE_*` del Figma (`246:1178`, `2271:118`) y `portal:CLAUDE.md` con las reglas del repo
 - [x] T006 [P] Enmienda 1.1.0 de `.specify/memory/constitution.md` (I.3 e I.4 citan el SRS v5.0 desde el feature 004) — (aprobado, P-17), va en el mismo PR para revisión
 
 ---
@@ -50,7 +50,7 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 - [x] T012 [P] Crear `src/middleware/tokenPortal.ts` con `verificarTokenPortal`: lee `X-Token-Portal`, busca por `EnlacePortal.tokenHash` y deja `obraId` y `empresaId` en la petición; 404 con el mensaje del contrato si no existe (R-09)
 - [x] T013 Registrar en `src/app.ts` `@fastify/cors` solo para `URL_PORTAL`, el prefijo `/portal` con límite de 30 peticiones por minuto por IP y las rutas nuevas (vacías por ahora) de `src/rutas/rutasPortal.ts` y `src/rutas/rutasEntregas.ts`
 - [ ] T014 [P] Agregar a `pruebas/configuracion/fabricas.ts` fábricas de obra con enlace, avances aprobados en un rango y entregas en cada estado
-- [ ] T015 [P] Crear `portal:src/conexion/clientePortal.ts`: `fetch` con `X-Token-Portal` tomado del fragmento `#/o/<token>`, errores en español, descarga de imágenes y PDF como `blob:`; pruebas en `portal:pruebas/clientePortal.test.ts`
+- [x] T015 [P] Crear `portal:src/conexion/clientePortal.ts`: `fetch` con `X-Token-Portal` tomado del fragmento `#/o/<token>`, errores en español, descarga de imágenes y PDF como `blob:`; pruebas en `portal:pruebas/clientePortal.test.ts`
 
 **Checkpoint**: migración aplicada en la base de pruebas; tipos, lint y pruebas en verde.
 
@@ -80,7 +80,7 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 
 ### Portal
 
-- [ ] T023 [US1] portal: `src/rutas.tsx` con `#/o/:token`, `src/pantallas/PantallaObra.tsx` (encabezado con la obra) y `src/pantallas/PantallaEnlaceInvalido.tsx` ("Este enlace no es válido…"); pruebas Vitest
+- [x] T023 [US1] portal: `src/rutas.tsx` con `#/o/:token`, `src/pantallas/PantallaObra.tsx` (encabezado con la obra) y `src/pantallas/PantallaEnlaceInvalido.tsx` ("Este enlace no es válido…"); pruebas Vitest
 
 **Checkpoint**: US1 funciona sola (quickstart pasos 2–3).
 
@@ -94,7 +94,7 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 
 - [x] T024 [P] [US2] `pruebas/integracion/portalCliente.test.ts`: `CP16-PORTAL-E5` 4 actividades y 8 fotos aprobadas ordenadas por fecha; `CP16-PORTAL-E6` sin fotos → `[]`; `CP16-PORTAL-E7` pendientes y rechazadas no salen; `GET /portal/fotos/:id` 404 si no es `APROBADO` o es de otra obra u otra empresa (SC-003)
 - [x] T025 [US2] `GET /portal/avances` y `GET /portal/fotos/:idAvance` en `src/rutas/rutasPortal.ts`, con la consulta en `src/servicios/servicioPortal.ts` (reutiliza `obtenerImagen`); `ubicacion: null` hasta P-16
-- [ ] T026 [US2] portal: pestaña "Avances" en `src/pantallas/PantallaObra.tsx` con `src/componentes/TarjetaActividad.tsx` y `src/componentes/GaleriaFotos.tsx` (estilo de la lista de `246:1269`, P-14); "Aún no hay avances registrados"; pruebas Vitest
+- [x] T026 [US2] portal: pestaña "Avances" en `src/pantallas/PantallaObra.tsx` con `src/componentes/TarjetaActividad.tsx` y `src/componentes/GaleriaFotos.tsx` (estilo de la lista de `246:1269`, P-14); "Aún no hay avances registrados"; pruebas Vitest
 
 **Checkpoint**: US1 + US2 funcionan solas.
 
@@ -111,7 +111,7 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 - [x] T029 [US3] `POST /obras/:idObra/entregas` y `GET /obras/:idObra/entregas` en `src/rutas/rutasEntregas.ts` con `src/esquemas/esquemasEntregas.ts` (`fechaFin >= fechaInicio`); permiso con `exigirSupervisorODueno`
 - [x] T030 [P] [US3] app: `src/tipos/entrega.ts` y `src/servicios/servicioEntregas.ts` (`enviarEntrega`, `listarEntregas`) con pruebas en `__tests__/servicioEntregas-test.ts`
 - [x] T031 [US3] app: botón "Enviar al cliente" en la vista previa de `src/pantallas/dueno/PantallaReportesObra.tsx` con el rango del filtro, confirmación y aviso "Se envió al cliente" (`144:2116`); mensajes de `SIN_CORREO_CLIENTE` y `SIN_FOTOS_APROBADAS`; pruebas en `__tests__/PantallaReportesObra-test.tsx`
-- [ ] T032 [US3] portal: `GET /portal/entregas` en `src/rutas/rutasPortal.ts` (API) y pestaña "Entregas" en `portal:src/pantallas/PantallaObra.tsx` con `portal:src/componentes/TarjetaEntrega.tsx` (estilo de `246:1178`); "Todavía no hay entregas"; pruebas
+- [x] T032 [US3] portal: `GET /portal/entregas` en `src/rutas/rutasPortal.ts` (API) y pestaña "Entregas" en `portal:src/pantallas/PantallaObra.tsx` con `portal:src/componentes/TarjetaEntrega.tsx` (estilo de `246:1178`); "Todavía no hay entregas"; pruebas
 
 **Checkpoint**: una entrega enviada desde la app aparece en el portal (quickstart paso 5).
 
@@ -127,10 +127,10 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 - [x] T034 [US4] Crear `src/servicios/servicioCodigoEntrega.ts`: `solicitarCodigo` (invalida el anterior, `CodigoEntrega.codigoHash` con HMAC, `CodigoEntrega.venceEn`) y `verificarCodigo` (`CodigoEntrega.intentos`, `CodigoEntrega.invalidado`, `CodigoEntrega.usadoEn`)
 - [x] T035 [US4] En `src/servicios/servicioEntregas.ts`: `aceptarEntrega` (valida PNG, guarda en `firmas/` con `guardarImagen`, `Entrega.firmaBlob`, `Entrega.firmaSha256`, `Entrega.nombreCliente`, `Entrega.respondidaEn`; cambio de estado con `updateMany` sobre `ENVIADA`)
 - [x] T036 [US4] `GET /portal/entregas/:idEntrega`, `POST /portal/entregas/:idEntrega/codigo` (5 por minuto) y `POST /portal/entregas/:idEntrega/aceptar` (`bodyLimit` 1 MB) en `src/rutas/rutasPortal.ts`; `GET /portal/entregas/:idEntrega/firma`
-- [ ] T037 [P] [US4] portal: `src/componentes/LienzoFirma.tsx` (Pointer Events, "Borrar", exporta PNG, avisa si está vacío) con pruebas
-- [ ] T038 [US4] portal: `src/pantallas/PantallaEntrega.tsx` (detalle con actividades y fotos de la copia fija; botones solo si `ENVIADA`), `src/componentes/ModalCodigo.tsx` (`246:1269`) y `src/pantallas/PantallaFirmar.tsx` en modo aceptación (`2271:118`: "✓ Código verificado", nombre, firma, "Firmar y aceptar" desactivado sin firma, aviso de constancia)
-- [ ] T039 [US4] portal: `src/pantallas/PantallaReporteAceptado.tsx` (`2271:192`: nombre, fecha y hora, firma, "Volver a mis reportes")
-- [ ] T040 [US4] portal: `e2e/aceptar.spec.ts` (Playwright, 412 px de ancho): abrir enlace → entrega → código → firmar → "Reporte aceptado"
+- [x] T037 [P] [US4] portal: `src/componentes/LienzoFirma.tsx` (Pointer Events, "Borrar", exporta PNG, avisa si está vacío) con pruebas
+- [x] T038 [US4] portal: `src/pantallas/PantallaEntrega.tsx` (detalle con actividades y fotos de la copia fija; botones solo si `ENVIADA`), `src/componentes/ModalCodigo.tsx` (`246:1269`) y `src/pantallas/PantallaFirmar.tsx` en modo aceptación (`2271:118`: "✓ Código verificado", nombre, firma, "Firmar y aceptar" desactivado sin firma, aviso de constancia)
+- [x] T039 [US4] portal: `src/pantallas/PantallaReporteAceptado.tsx` (`2271:192`: nombre, fecha y hora, firma, "Volver a mis reportes")
+- [x] T040 [US4] portal: `e2e/aceptar.spec.ts` (Playwright, 412 px de ancho): abrir enlace → entrega → código → firmar → "Reporte aceptado"
 
 **Checkpoint**: quickstart paso 6 sin las descargas.
 
@@ -150,7 +150,7 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 - [x] T046 [US6] Crear `exigirActividadNoBloqueada` en `src/servicios/servicioEntregas.ts` y usarla en `actualizarEstadoActividad`, `registrarAvanceActividad` y `revisarAvance` de `src/servicios/servicioActividades.ts`; `bloqueada` en `obtenerDetalleActividad`
 - [x] T047 [P] [US6] app: lista de entregas con su estado en `src/pantallas/dueno/PantallaReportesObra.tsx` con `src/componentes/TarjetaEntrega.tsx`; "Generar acta" (`144:2536`) y descarga del reporte con `expo-file-system` + `expo-sharing`; pruebas
 - [x] T048 [P] [US6] app: ocultar botones de edición, subida y revisión cuando `bloqueada` en las pantallas de actividad del supervisor y del trabajador; pruebas
-- [ ] T049 [US6] portal: botones "Descargar reporte" y "Descargar acta (PDF)" en `src/pantallas/PantallaEntrega.tsx` y `src/pantallas/PantallaReporteAceptado.tsx`; "El acta se genera al aceptar la entrega" si está Enviada; pruebas
+- [x] T049 [US6] portal: botones "Descargar reporte" y "Descargar acta (PDF)" en `src/pantallas/PantallaEntrega.tsx` y `src/pantallas/PantallaReporteAceptado.tsx`; "El acta se genera al aceptar la entrega" si está Enviada; pruebas
 
 **Checkpoint**: quickstart pasos 6–7 completos.
 
@@ -164,15 +164,15 @@ cada ruta y filtro por `empresaId` (rutas de la app) o por `obraId` + `empresaId
 
 - [x] T050 [P] [US5] En `pruebas/integracion/aceptacionEntrega.test.ts`: `CP17-E11` observaciones con texto, nombre y firma → `CON_OBSERVACIONES`; `CP17-E12` texto vacío → 400 y sin cambio de estado; `CP17-E13` las fotos de una entrega Con observaciones se pueden volver a enviar (P-15); no pide código (P-11)
 - [x] T051 [US5] `registrarObservaciones` en `src/servicios/servicioEntregas.ts` (`Entrega.observaciones` según data-model.md, firma como en T035) y `POST /portal/entregas/:idEntrega/observaciones` en `src/rutas/rutasPortal.ts`
-- [ ] T052 [US5] portal: `src/componentes/ModalObservaciones.tsx` (`246:1605`, "Rechazar y enviar") y `PantallaFirmar.tsx` en modo rechazo (`2271:158`, "Firmar y rechazar"); `e2e/observaciones.spec.ts`
+- [x] T052 [US5] portal: `src/componentes/ModalObservaciones.tsx` (`246:1605`, "Rechazar y enviar") y `PantallaFirmar.tsx` en modo rechazo (`2271:158`, "Firmar y rechazar"); `e2e/observaciones.spec.ts`
 - [x] T053 [P] [US5] app: mostrar observaciones y nombre del cliente en `src/componentes/TarjetaEntrega.tsx`; pruebas
 
 ---
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T054 [P] portal: aviso de privacidad (`src/pantallas/PantallaPrivacidad.tsx`) enlazado al pie (constitución IV.7) y mensajes de error de red sin perder firma ni texto
-- [ ] T055 [P] portal: `staticwebapp.config.json` con `Referrer-Policy: no-referrer`, CSP solo hacia la API y `.github/workflows/portal.yml` (tipos, lint, pruebas, Playwright y despliegue)
+- [x] T054 [P] portal: aviso de privacidad (`src/pantallas/PantallaPrivacidad.tsx`) enlazado al pie (constitución IV.7) y mensajes de error de red sin perder firma ni texto
+- [x] T055 [P] portal: `staticwebapp.config.json` con `Referrer-Policy: no-referrer`, CSP solo hacia la API y `.github/workflows/portal.yml` (tipos, lint, pruebas, Playwright y despliegue)
 - [ ] T056 (aprobado, P-17) `infra/comunicacion.tf` y `infra/portal.tf` (Communication Services con dominio administrado, Static Web Apps Free, secreto `CLAVE_CIFRADO_PORTAL` en Key Vault y su referencia en el App Service); `terraform plan` sin `destroy`/`replace`; **no aplicar**
 - [x] T057 [P] Sumar `servicioEnlacePortal`, `servicioEntregas`, `servicioCodigoEntrega`, `servicioPortal`, `servicioPdf` y `utilidades/cifrado` a los umbrales de 80 % en `vitest.config.ts`; app y portal al 60 % por archivo
 - [ ] T058 [P] Actualizar `CLAUDE.md` de la API y de la app (rutas `/portal`, dobles de correo, variables nuevas) y `README.md`
