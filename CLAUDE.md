@@ -60,7 +60,7 @@ npm run formatear                          # Prettier (verificar con npm run ver
   base64) y `CORREO_EN_CONSOLA=true`: los correos con el enlace y el código salen en la consola.
   Sin `AZURE_STORAGE_CUENTA`, en desarrollo las fotos se guardan en `almacenamiento-local/` (D-32).
 - **Probar en el teléfono sin Azure**: `powershell -ExecutionPolicy Bypass -File
-  herramientas\prepararPruebaLocal.ps1` pone la IP del Wi-Fi en la API (`URL_PORTAL`), el portal
+herramientas\prepararPruebaLocal.ps1` pone la IP del Wi-Fi en la API (`URL_PORTAL`), el portal
   (`VITE_URL_API`) y la app (`EXPO_PUBLIC_API_URL`). Repetirlo al cambiar de red; el portal se corre con
   `npm run dev -- --host`.
 - **Lint**: ESLint vive en `herramientas/lint/` porque TypeScript 7 no trae la API de JavaScript que
