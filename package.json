@@ -10,7 +10,7 @@
     "formatear": "prettier --write .",
     "verificar-formato": "prettier --check .",
     "start": "npm run migrar && node --import tsx src/servidor.ts",
-    "migrar": "prisma migrate deploy --config prisma7.config.ts",
+    "migrar": "node node_modules/prisma/build/index.js migrate deploy --config prisma7.config.ts",
     "generar": "prisma generate",
     "postinstall": "prisma generate && npm install --prefix herramientas/lint --no-audit --no-fund",
     "lint": "node herramientas/lint/node_modules/eslint/bin/eslint.js --config herramientas/lint/eslint.config.js src pruebas",
