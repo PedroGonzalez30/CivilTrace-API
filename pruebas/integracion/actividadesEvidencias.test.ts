@@ -29,6 +29,8 @@ type Usuario = Escenario['ana'];
 
 // 3. Constantes del módulo
 const FOTO = Buffer.from('foto-de-prueba');
+// Feature 007 (RF-08): toda evidencia lleva ubicación.
+const UBICACION = { 'x-latitud': '32.6245', 'x-longitud': '-115.4523' };
 
 // 4. Pruebas
 describe('Actividades y evidencias (feature 003)', () => {
@@ -65,6 +67,7 @@ describe('Actividades y evidencias (feature 003)', () => {
         ...iniciarSesion(app, usuario),
         'content-type': 'image/png',
         'x-comentario-avance': encodeURIComponent(comentario),
+        ...UBICACION,
         ...(tipo ? { 'x-tipo-avance': tipo } : {}),
       },
       payload: FOTO,

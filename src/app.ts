@@ -4,11 +4,13 @@
  * @descripcion Construye la aplicación Fastify con sus plugins de seguridad y sus rutas.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.4.0
+ * @version 1.5.0
  * @historial 23/11/2026 - Emilio Manuel Esquivel - Rutas de asistencia y "motivo" en errores;
  *   registros silenciados en pruebas (feature 001)
  *   24/11/2026 - Emilio Manuel Esquivel - Ruta /actividades/mias (feature 003)
  *   24/11/2026 - Emilio Manuel Esquivel - CORS del portal y rutas /portal y de entregas (feature 004)
+ *   25/11/2026 - Emilio Manuel Esquivel - Los ErrorHttp 5xx (correo o portal sin configurar o
+ *   caídos) muestran su mensaje; solo los errores inesperados dicen "Error interno del servidor"
  */
 
 // 1. Importaciones
@@ -67,6 +69,11 @@ export async function construirApp() {
 
     if (codigoEstado >= CODIGO_ERROR_SERVIDOR) {
       peticion.log.error(error);
+      // Un ErrorHttp 5xx es un fallo previsto (502/503: el correo no respondió o no está
+      // configurado): su mensaje es para el usuario. Cualquier otro error se oculta.
+      if (error instanceof ErrorHttp) {
+        return respuesta.status(codigoEstado).send({ mensaje: error.message });
+      }
       return respuesta
         .status(CODIGO_ERROR_SERVIDOR)
         .send({ mensaje: 'Error interno del servidor' });

@@ -5,9 +5,10 @@
  *   reenviar y abre el portal de esa obra (historia 1 del feature 004).
  * @autor Emilio Manuel Esquivel
  * @fecha 24/11/2026
- * @version 1.0.0
+ * @version 1.1.0
  * @requerimientos RF-65 Enviar enlace del portal al cliente
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Creación (feature 004)
+ *   26/11/2026 - Emilio Manuel Esquivel - Nombre y logo de la empresa en el correo (A7, A8)
  */
 
 // 1. Importaciones
@@ -16,6 +17,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '@/baseDatos/clientePrisma';
 
 import { limpiarTablas } from '../configuracion/baseDatosPrueba';
+import { imagenesEnMemoria } from '../configuracion/dobleAlmacenamiento';
 import {
   extraerTokenPortal,
   obtenerUltimoCorreo,
@@ -157,6 +159,24 @@ describe('Enlace permanente del portal (RF-65)', () => {
     expect(extraerTokenPortal(obtenerUltimoCorreo('falla@ejemplo.com'))).toBeDefined();
   });
 
+  it('CP16-PORTAL-E8 si el reenvío falla dice por qué y no "Error interno"; el supervisor no puede reenviar', async () => {
+    const obraId: string = (await registrarObra('reenvio@ejemplo.com')).json().obra.id;
+    const reenviar = (usuario: typeof escenario.dueno) =>
+      app.inject({
+        method: 'POST',
+        url: `/obras/${obraId}/enlace-portal/reenviar`,
+        headers: iniciarSesion(app, usuario),
+      });
+
+    simularFalloCorreo();
+    const fallido = await reenviar(escenario.dueno);
+    restaurarCorreo();
+
+    expect(fallido.statusCode).toBe(503);
+    expect(fallido.json()).toEqual({ mensaje: 'No se pudo enviar el correo. Inténtalo más tarde' });
+    expect((await reenviar(escenario.maria)).statusCode).toBe(403);
+  });
+
   it('CP16-PORTAL-A4 reenviar manda el mismo enlace permanente', async () => {
     const obraId: string = (await registrarObra('mismo@ejemplo.com')).json().obra.id;
     const primero = extraerTokenPortal(obtenerUltimoCorreo('mismo@ejemplo.com'));
@@ -221,5 +241,60 @@ describe('Enlace permanente del portal (RF-65)', () => {
     });
     expect(sinCorreo.statusCode).toBe(400);
     expect(sinCorreo.json().motivo).toBe('SIN_CORREO_CLIENTE');
+  });
+
+  it('CP16-PORTAL-A7 el correo lleva el nombre y logo de la empresa y el enlace como "Ver avances de obra"', async () => {
+    const nombreLogo = `${escenario.empresa.id}/logos/prueba`;
+    const bytesLogo = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+    imagenesEnMemoria.set(nombreLogo, { datos: bytesLogo, tipo: 'image/png' });
+    await prisma.empresa.update({
+      where: { id: escenario.empresa.id },
+      data: { logoBlob: nombreLogo, correo: 'contacto@todoconcreto.mx' },
+    });
+
+    try {
+      await registrarObra();
+
+      const correo = obtenerUltimoCorreo(CORREO_CLIENTE);
+      expect(correo?.html).toContain(escenario.empresa.nombre);
+      expect(correo?.html).toContain('src="cid:logo-empresa"');
+      expect(correo?.html).toMatch(
+        /<a href="https:\/\/portal\.prueba\/#\/o\/[^"]+"[^>]*>Ver avances de obra<\/a>/,
+      );
+      // La dirección solo aparece dentro del href, no como texto visible.
+      expect(correo?.html.match(/https:\/\/portal\.prueba/g)).toHaveLength(1);
+      expect(correo?.responderA).toBe('contacto@todoconcreto.mx');
+      expect(correo?.imagenes).toEqual([
+        { idContenido: 'logo-empresa', nombre: 'logo.png', tipo: 'image/png', datos: bytesLogo },
+      ]);
+    } finally {
+      await prisma.empresa.update({
+        where: { id: escenario.empresa.id },
+        data: { logoBlob: null, correo: null },
+      });
+      imagenesEnMemoria.delete(nombreLogo);
+    }
+  });
+
+  it('CP16-PORTAL-A8 si el logo no se puede leer el correo sale igual, solo con el nombre', async () => {
+    await prisma.empresa.update({
+      where: { id: escenario.empresa.id },
+      data: { logoBlob: `${escenario.empresa.id}/logos/no-existe` },
+    });
+
+    try {
+      const respuesta = await registrarObra();
+
+      expect(respuesta.json().enlacePortal).toBe('ENVIADO');
+      const correo = obtenerUltimoCorreo(CORREO_CLIENTE);
+      expect(correo?.html).toContain(escenario.empresa.nombre);
+      expect(correo?.html).not.toContain('cid:');
+      expect(correo?.imagenes).toBeUndefined();
+    } finally {
+      await prisma.empresa.update({
+        where: { id: escenario.empresa.id },
+        data: { logoBlob: null },
+      });
+    }
   });
 });

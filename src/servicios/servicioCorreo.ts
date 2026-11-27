@@ -6,10 +6,11 @@
  *   uso. En las pruebas se sustituye con pruebas/configuracion/dobleCorreo.ts.
  * @autor Emilio Manuel Esquivel
  * @fecha 24/11/2026
- * @version 1.0.0
+ * @version 1.1.0
  * @requerimientos RF-65 Enviar enlace del portal al cliente, RF-13 Enviar entrega al cliente,
  *   RF-14 Registrar aceptación de entrega
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Creación (feature 004)
+ *   26/11/2026 - Emilio Manuel Esquivel - Imágenes en línea (logo de la empresa) y "responder a"
  */
 
 // 1. Importaciones
@@ -20,11 +21,22 @@ import { entorno } from '@/configuracion/entorno';
 import { ErrorHttp } from '@/utilidades/errores';
 
 // 2. Tipos e interfaces
+/** Imagen incrustada en el HTML; se cita como `<img src="cid:<idContenido>">`. */
+export interface ImagenEnLinea {
+  idContenido: string;
+  nombre: string;
+  tipo: string;
+  datos: Buffer;
+}
+
 export interface MensajeCorreo {
   para: string;
   asunto: string;
   texto: string;
   html: string;
+  /** Correo al que llegan las respuestas (p. ej. el de la empresa), en lugar del remitente. */
+  responderA?: string;
+  imagenes?: ImagenEnLinea[];
 }
 
 // 3. Constantes del módulo
@@ -66,6 +78,15 @@ export async function enviarCorreo(mensaje: MensajeCorreo): Promise<void> {
       senderAddress: remitente,
       content: { subject: mensaje.asunto, plainText: mensaje.texto, html: mensaje.html },
       recipients: { to: [{ address: mensaje.para }] },
+      ...(mensaje.responderA && { replyTo: [{ address: mensaje.responderA }] }),
+      ...(mensaje.imagenes?.length && {
+        attachments: mensaje.imagenes.map((imagen) => ({
+          name: imagen.nombre,
+          contentType: imagen.tipo,
+          contentInBase64: imagen.datos.toString('base64'),
+          contentId: imagen.idContenido,
+        })),
+      }),
     });
     const resultado = await envio.pollUntilDone();
     if (resultado.status !== ESTADO_ENVIADO) {

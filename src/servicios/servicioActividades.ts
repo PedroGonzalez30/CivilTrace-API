@@ -6,12 +6,13 @@
  *              la relación del usuario con la obra.
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 2.1.0
+ * @version 2.2.0
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Permisos por obra y responsable, evidencia del
  *   trabajador pendiente de revisión (D-10), revisión con observación, entrega "Terminado", mis
  *   actividades, descripción y fecha de inicio (feature 003, R1–R8)
  *   24/11/2026 - Emilio Manuel Esquivel - Bloqueo de actividades terminadas de entregas aceptadas
  *   (feature 004, RF-17 Bloquear entrega aceptada, D-31)
+ *   25/11/2026 - Emilio Manuel Esquivel - Ubicación de cada evidencia (feature 007, RF-08)
  */
 
 // 1. Importaciones
@@ -20,6 +21,7 @@ import type {
   DatosActualizarEstadoActividad,
   DatosCrearActividad,
   DatosRevisionAvance,
+  DatosUbicacionAvance,
 } from '@/esquemas/esquemasActividad';
 import { EstadoActividad, EstadoAvance, Rol, TipoAvance } from '@/generated/prisma/enums';
 import { guardarImagen, obtenerImagen, type TipoImagen } from '@/servicios/servicioAlmacenamiento';
@@ -37,6 +39,12 @@ import {
   obtenerObraDeEmpresa,
   type ObraBasica,
 } from '@/utilidades/permisosObra';
+import {
+  convertirUbicacion,
+  SELECCION_UBICACION,
+  type FilaUbicacionEvidencia,
+  type UbicacionEvidencia,
+} from '@/utilidades/ubicacionEvidencia';
 
 // 2. Tipos e interfaces
 export interface AvanceActividadRespuesta {
@@ -50,6 +58,9 @@ export interface AvanceActividadRespuesta {
   revisadoPor: string | null;
   revisadoEn: string | null;
   tieneFoto: boolean;
+  // Feature 007 (RF-08): coordenadas al tomar la foto o, sin GPS, la referencia escrita.
+  ubicacion: UbicacionEvidencia | null;
+  referenciaUbicacion: string | null;
 }
 
 export interface ActividadResumenRespuesta {
@@ -81,7 +92,7 @@ export interface RevisionRespuesta {
   actividad: ActividadDetalleRespuesta;
 }
 
-interface FilaAvance {
+interface FilaAvance extends FilaUbicacionEvidencia {
   id: string;
   comentario: string;
   estado: EstadoAvance;
@@ -127,6 +138,7 @@ const SELECCION_AVANCE = {
   revisadoEn: true,
   registradoPor: { select: { nombre: true } },
   revisadoPor: { select: { nombre: true } },
+  ...SELECCION_UBICACION,
 } as const;
 
 const SELECCION_ACTIVIDAD = {
@@ -163,6 +175,7 @@ function convertirAvance(avance: FilaAvance): AvanceActividadRespuesta {
     revisadoPor: avance.revisadoPor?.nombre ?? null,
     revisadoEn: avance.revisadoEn?.toISOString() ?? null,
     tieneFoto: true,
+    ...convertirUbicacion(avance),
   };
 }
 
@@ -356,6 +369,7 @@ export async function registrarAvanceActividad(
   imagen: { datos: Buffer; tipo: TipoImagen },
   comentario: string,
   tipo: TipoAvance,
+  ubicacion: DatosUbicacionAvance,
 ): Promise<AvanceActividadRespuesta> {
   await obtenerObraAccesible(usuario, idObra);
   const actividad = await buscarActividad(usuario, idObra, idActividad);
@@ -386,6 +400,13 @@ export async function registrarAvanceActividad(
         actividadId: idActividad,
         empresaId: usuario.empresaId,
         registradoPorId: usuario.sub,
+        latitud: ubicacion.latitud ?? null,
+        longitud: ubicacion.longitud ?? null,
+        precisionMetros:
+          ubicacion.latitud === undefined ? null : (ubicacion.precisionMetros ?? null),
+        // Con coordenadas la referencia sobra: la ubicación es la del GPS.
+        referenciaUbicacion:
+          ubicacion.latitud === undefined ? (ubicacion.referenciaUbicacion ?? null) : null,
       },
       select: SELECCION_AVANCE,
     });

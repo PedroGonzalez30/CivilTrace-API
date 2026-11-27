@@ -5,10 +5,11 @@
  *   pdfkit (research R-01). Solo arma el documento; los datos los reúne servicioDocumentosEntrega.
  * @autor Emilio Manuel Esquivel
  * @fecha 24/11/2026
- * @version 1.0.0
+ * @version 1.1.0
  * @requerimientos RF-12 Generar reporte de avance de obra, RF-16 Generar acta de
  *   entrega-recepción, RF-71 Descargar documentos de una entrega en el portal
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Creación (feature 004)
+ *   25/11/2026 - Emilio Manuel Esquivel - Ubicación de cada foto (feature 007, RF-08)
  */
 
 // 1. Importaciones
@@ -18,6 +19,8 @@ import PDFDocument from 'pdfkit';
 export interface FotoDocumento {
   comentario: string;
   fechaHora: string;
+  // "Ubicación: lat, long", "Sin ubicación GPS · Referencia: …" o "Ubicación no registrada".
+  ubicacion: string;
   imagen: Buffer | null;
 }
 
@@ -122,7 +125,9 @@ function dibujarActividades(documento: DocumentoPdf, actividades: ActividadDocum
     documento.moveDown(0.3);
     for (const foto of actividad.fotos) {
       dibujarImagen(documento, foto.imagen, ANCHO_FOTO, ALTO_FOTO);
-      documento.fillColor(COLOR_TEXTO).fontSize(9).text(`${foto.fechaHora} · ${foto.comentario}`);
+      const pie = foto.comentario ? `${foto.fechaHora} · ${foto.comentario}` : foto.fechaHora;
+      documento.fillColor(COLOR_TEXTO).fontSize(9).text(pie);
+      documento.fillColor(COLOR_SECUNDARIO).fontSize(8).text(foto.ubicacion);
       documento.moveDown(0.5);
     }
     documento.moveDown();

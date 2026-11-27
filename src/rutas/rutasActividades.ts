@@ -5,9 +5,11 @@
  *              crear, cambiar estado, subir evidencia fotográfica y descargar foto).
  * @autor Pedro Ivan Gonzalez Valdez
  * @fecha 20/11/2026
- * @version 1.2.0
+ * @version 1.3.0
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Revisión de evidencias, tipo de avance y
  *   /actividades/mias; permisos por obra en el servicio (feature 003)
+ *   25/11/2026 - Emilio Manuel Esquivel - Ubicación de la evidencia en cabeceras (feature 007,
+ *   RF-08)
  */
 
 // 1. Importaciones
@@ -24,6 +26,7 @@ import {
   esquemaParametrosObra,
   esquemaRevisionAvance,
   esquemaTipoAvance,
+  esquemaUbicacionAvance,
 } from '@/esquemas/esquemasActividad';
 import { Rol } from '@/generated/prisma/enums';
 import { exigirRol, verificarToken } from '@/middleware/autenticacion';
@@ -49,6 +52,28 @@ const BYTES_POR_MEGABYTE = 1024 * 1024;
 const LIMITE_CUERPO_BYTES = entorno.TAMANO_MAX_EVIDENCIA_MB * BYTES_POR_MEGABYTE;
 const CABECERA_COMENTARIO = 'x-comentario-avance';
 const CABECERA_TIPO = 'x-tipo-avance';
+const CABECERA_LATITUD = 'x-latitud';
+const CABECERA_LONGITUD = 'x-longitud';
+const CABECERA_PRECISION = 'x-precision-ubicacion';
+const CABECERA_REFERENCIA = 'x-referencia-ubicacion';
+
+// Las cabeceras con texto libre llegan codificadas con encodeURIComponent.
+function leerCabecera(
+  valor: string | string[] | undefined,
+  codificada = false,
+): string | undefined {
+  if (typeof valor !== 'string') {
+    return undefined;
+  }
+  if (!codificada) {
+    return valor;
+  }
+  try {
+    return decodeURIComponent(valor);
+  } catch {
+    throw new ErrorHttp(CODIGO_PETICION_INVALIDA, 'La referencia de ubicación no es válida');
+  }
+}
 
 const esquemaQueryReporte = z.object({
   fechaInicio: z
@@ -140,6 +165,13 @@ export async function rutasActividades(app: FastifyInstance): Promise<void> {
         tipo: typeof tipoCabecera === 'string' ? tipoCabecera.trim().toUpperCase() : undefined,
       });
 
+      const ubicacion = validar(esquemaUbicacionAvance, {
+        latitud: leerCabecera(peticion.headers[CABECERA_LATITUD]),
+        longitud: leerCabecera(peticion.headers[CABECERA_LONGITUD]),
+        precisionMetros: leerCabecera(peticion.headers[CABECERA_PRECISION]),
+        referenciaUbicacion: leerCabecera(peticion.headers[CABECERA_REFERENCIA], true),
+      });
+
       const avance = await registrarAvanceActividad(
         peticion.user,
         idObra,
@@ -147,6 +179,7 @@ export async function rutasActividades(app: FastifyInstance): Promise<void> {
         { datos: cuerpo, tipo },
         comentario ?? '',
         tipoAvance,
+        ubicacion,
       );
       return respuesta.status(CODIGO_CREADO).send({ avance });
     },
