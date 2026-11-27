@@ -6,10 +6,12 @@
  *   mandar siempre el mismo enlace, research R-03).
  * @autor Emilio Manuel Esquivel
  * @fecha 24/11/2026
- * @version 1.1.0
+ * @version 1.2.0
  * @requerimientos RF-65 Enviar enlace del portal al cliente, RF-13 Enviar entrega al cliente
  * @historial 24/11/2026 - Emilio Manuel Esquivel - Creación (feature 004)
  *   25/11/2026 - Emilio Manuel Esquivel - Escribe en la consola por qué falló el envío
+ *   26/11/2026 - Emilio Manuel Esquivel - Encabezado con nombre y logo de la empresa, enlace con
+ *     el texto "Ver avances de obra" y respuestas al correo de la empresa
  */
 
 // 1. Importaciones
@@ -19,7 +21,8 @@ import { prisma } from '@/baseDatos/clientePrisma';
 import { entorno } from '@/configuracion/entorno';
 import { BYTES_TOKEN_PORTAL } from '@/constantes/portal';
 import { EstadoEnvioEnlace } from '@/generated/prisma/enums';
-import { enviarCorreo } from '@/servicios/servicioCorreo';
+import { obtenerImagen } from '@/servicios/servicioAlmacenamiento';
+import { enviarCorreo, type ImagenEnLinea } from '@/servicios/servicioCorreo';
 import { cifrarTexto, descifrarTexto } from '@/utilidades/cifrado';
 import { ErrorHttp } from '@/utilidades/errores';
 import { calcularHashToken } from '@/utilidades/tokens';
@@ -35,6 +38,12 @@ interface ObraParaEnlace {
   correoCliente: string | null;
 }
 
+interface EmpresaRemitente {
+  nombre: string;
+  correo: string | null;
+  logo: ImagenEnLinea | null;
+}
+
 export interface MensajeAdicional {
   asunto: string;
   parrafos: string[];
@@ -44,6 +53,8 @@ export interface MensajeAdicional {
 const CODIGO_PETICION_INVALIDA = 400;
 const CODIGO_NO_ENCONTRADO = 404;
 const CODIGO_NO_DISPONIBLE = 503;
+const ID_LOGO = 'logo-empresa';
+const TEXTO_ENLACE = 'Ver avances de obra';
 
 // 4. Funciones privadas
 function obtenerLlave(): Buffer {
@@ -63,23 +74,62 @@ function escaparHtml(texto: string): string {
     .replaceAll("'", '&#39;');
 }
 
+/**
+ * Nombre, correo y logo de la empresa para el encabezado del correo. Si el logo no se puede leer,
+ * el correo sale solo con el nombre: no vale la pena perder el envío por la imagen.
+ */
+async function obtenerEmpresaRemitente(empresaId: string): Promise<EmpresaRemitente> {
+  const empresa = await prisma.empresa.findUniqueOrThrow({
+    where: { id: empresaId },
+    select: { nombre: true, correo: true, logoBlob: true },
+  });
+  let logo: ImagenEnLinea | null = null;
+  if (empresa.logoBlob) {
+    try {
+      const { datos, tipo } = await obtenerImagen(empresa.logoBlob);
+      const extension = tipo.split('/')[1] ?? 'png';
+      logo = { idContenido: ID_LOGO, nombre: `logo.${extension}`, tipo, datos };
+    } catch (falla) {
+      console.error(
+        `[portal] No se pudo leer el logo de la empresa ${empresaId}:`,
+        falla instanceof Error ? falla.message : falla,
+      );
+    }
+  }
+  return { nombre: empresa.nombre, correo: empresa.correo, logo };
+}
+
+function construirEncabezado(empresa: EmpresaRemitente): string {
+  const nombre = escaparHtml(empresa.nombre);
+  const logo = empresa.logo
+    ? `<img src="cid:${ID_LOGO}" alt="${nombre}" height="56" style="height:56px;max-width:200px;vertical-align:middle;margin-right:12px">`
+    : '';
+  return `<div style="padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid #ddd">${logo}<strong style="font-size:18px;vertical-align:middle">${nombre}</strong></div>`;
+}
+
 function construirCorreoEnlace(
   obra: ObraParaEnlace,
+  empresa: EmpresaRemitente,
   url: string,
   adicional?: MensajeAdicional,
 ): { asunto: string; texto: string; html: string } {
   const asunto = adicional?.asunto ?? `Sigue el avance de ${obra.nombre}`;
   const parrafos = adicional?.parrafos ?? [
-    `Ya puedes consultar el avance de la obra ${obra.nombre}: actividades, fotografías y entregas.`,
+    `${empresa.nombre} te invita a consultar el avance de la obra ${obra.nombre}: actividades, fotografías y entregas.`,
   ];
   const cierre =
-    'Guarda este enlace: es el mismo para toda la obra y no necesitas crear una cuenta.';
-  const texto = [...parrafos, '', `Abre el portal: ${url}`, '', cierre].join('\n');
+    'Guarda este correo: el enlace es el mismo para toda la obra y no necesitas crear una cuenta.';
+  // La versión de solo texto no admite enlaces con texto: ahí la dirección va completa.
+  const texto = [empresa.nombre, '', ...parrafos, '', `${TEXTO_ENLACE}: ${url}`, '', cierre].join(
+    '\n',
+  );
   const html = [
+    '<div style="font-family:Arial,Helvetica,sans-serif;color:#222;max-width:560px">',
+    construirEncabezado(empresa),
     ...parrafos.map((parrafo) => `<p>${escaparHtml(parrafo)}</p>`),
-    `<p><a href="${url}">Abrir el portal de ${escaparHtml(obra.nombre)}</a></p>`,
-    `<p>${cierre}</p>`,
-    `<p style="color:#666">Si el botón no funciona, copia esta dirección: ${url}</p>`,
+    `<p style="margin:24px 0"><a href="${url}" style="background:#1f4e79;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:bold">${TEXTO_ENLACE}</a></p>`,
+    `<p style="color:#666">${cierre}</p>`,
+    '</div>',
   ].join('');
   return { asunto, texto, html };
 }
@@ -139,8 +189,14 @@ export async function enviarEnlacePortal(
   let estado: EstadoEnvioEnlace = EstadoEnvioEnlace.FALLIDO;
   try {
     const token = await obtenerTokenVigente(obra, obra.correoCliente);
-    const correo = construirCorreoEnlace(obra, construirUrlPortal(token), adicional);
-    await enviarCorreo({ para: obra.correoCliente, ...correo });
+    const empresa = await obtenerEmpresaRemitente(obra.empresaId);
+    const correo = construirCorreoEnlace(obra, empresa, construirUrlPortal(token), adicional);
+    await enviarCorreo({
+      para: obra.correoCliente,
+      ...correo,
+      ...(empresa.correo && { responderA: empresa.correo }),
+      ...(empresa.logo && { imagenes: [empresa.logo] }),
+    });
     estado = EstadoEnvioEnlace.ENVIADO;
   } catch (falla) {
     // La obra o la entrega ya se guardaron; el fallo queda registrado y la app ofrece reenviar.
